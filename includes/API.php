@@ -338,7 +338,7 @@ class API
                                 $sTag .= $tag . ',';
                             }
                             $faqs[$entry['id']]['faq_tag'] = trim($sTag, ',');
-                            $faqs[$entry['id']]['URLhasSlider'] = ((strpos($content, 'slider') !== false) ? $entry['link'] : false); // we cannot handle sliders, see note in Shortcode.php shortcodeOutput()
+                            $faqs[$entry['id']]['URLhasSlider'] = ((strpos($content, 'slider') !== false) ? $entry['link'] : false); // we cannot handle sliders, see note in Shortcode.php shortcodeFaq()
                         }
                     }
                 }

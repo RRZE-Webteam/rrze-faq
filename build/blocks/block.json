@@ -1,0 +1,82 @@
+{
+  "$schema": "https://schemas.wp.org/trunk/block.json",
+  "apiVersion": 3,
+  "name": "rrze/rrze-faq",
+  "version": "5.0.0",
+  "title": "FAQ",
+  "keywords": [
+    "faq",
+    "rrze faq"
+  ],
+  "category": "widgets",
+  "description": "Create and synchronize FAQ",
+  "supports": {
+    "html": false
+  },
+  "textdomain": "rrze-faq",
+  "editorScript": "file:./index.js",
+  "editorStyle": "file:./index.css",
+  "style": "file:./style-index.css",
+  "attributes": {
+    "glossary": {
+      "type": "string",
+      "default": ""
+    },
+    "glossarystyle": {
+      "type": "string",
+      "default": ""
+    },
+    "category": {
+      "type": "string",
+      "default": ""
+    },
+    "tag": {
+      "type": "string",
+      "default": "h2"
+    },
+    "id": {
+      "type": "string",
+      "default": ""
+    },
+    "hide_accordion": {
+      "type": "string",
+      "default": ""
+    },
+    "hide_title": {
+      "type": "string",
+      "default": ""
+    },
+    "expand_all_link": {
+      "type": "number",
+      "default": 0
+    },
+    "load_open": {
+      "type": "string",
+      "default": "16/9"
+    },
+    "color": {
+      "type": "string",
+      "default": "landscape"
+    },
+    "additional_class": {
+      "type": "string",
+      "default": "faufaq"
+    },
+    "lang": {
+      "type": "string",
+      "default": "faufaq"
+    },
+    "sort": {
+      "type": "string",
+      "default": "faufaq"
+    },
+    "order": {
+      "type": "string",
+      "default": "faufaq"
+    },
+    "hstart": {
+      "type": "string",
+      "default": ""
+    }
+  }
+}

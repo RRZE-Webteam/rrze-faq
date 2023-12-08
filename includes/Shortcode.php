@@ -20,17 +20,26 @@ class Shortcode
     private $settings = '';
     private $pluginname = '';
 
+    private static $instance = null;
+
+    public static function instance()
+    {
+        if (self::$instance === null) {
+            self::$instance = new self();
+        }
+        return self::$instance;
+    }
+
+
     public function __construct()
     {
         $this->settings = getShortcodeSettings();
         $this->pluginname = $this->settings['block']['blockname'];
-        // add_shortcode( 'fau_glossar', [ $this, 'shortcodeOutput' ]); // BK 2020-06-05 Shortcode [fau_glossar ...] wird in eigenes Plugin rrze-glossary ausgelagert, weil aus historischen Gründen inkompatibler Code in FAU-Einrichtungen besteht, was beim Umbau von rrze-faq nicht bekannt war
-        // add_shortcode( 'glossary', [ $this, 'shortcodeOutput' ]); // BK 2020-06-05 Shortcode [glossary ...] wird in eigenes Plugin rrze-glossary ausgelagert, weil aus historischen Gründen inkompatibler Code in FAU-Einrichtungen besteht, was beim Umbau von rrze-faq nicht bekannt war
-        add_shortcode('faq', [$this, 'shortcodeOutput']);
-        add_action('admin_enqueue_scripts', [$this, 'enqueueGutenberg']);
-        add_action('init', [$this, 'initGutenberg']);
-        add_action('admin_head', [$this, 'setMCEConfig']);
-        add_filter('mce_external_plugins', [$this, 'addMCEButtons']);
+    }
+
+    public function loaded()
+    {
+        add_shortcode('faq', [$this, 'shortcodeFaq']);
     }
 
     /**
@@ -143,7 +152,7 @@ class Shortcode
      * @param  string  $content Beiliegender Inhalt
      * @return string Gib den Inhalt zurück
      */
-    public function shortcodeOutput($atts)
+    public function shortcodeFaq($atts)
     {
         if (!$atts) {
             $atts = array();
@@ -496,151 +505,5 @@ class Shortcode
         uasort($arr, function ($a, $b) {
             return strtolower($a) <=> strtolower($b);
         });
-    }
-
-    public function isGutenberg()
-    {
-        $postID = get_the_ID();
-        if ($postID && !use_block_editor_for_post($postID)) {
-            return false;
-        }
-
-        return true;
-    }
-
-    public function fillGutenbergOptions()
-    {
-        // fill selects "category" and "tag"
-        $fields = array('category', 'tag');
-        foreach ($fields as $field) {
-            // set new params for gutenberg / the old ones are used for shortcode in classic editor
-            $this->settings[$field]['values'] = array();
-            $this->settings[$field]['field_type'] = 'multi_select';
-            $this->settings[$field]['default'] = array(0);
-            $this->settings[$field]['type'] = 'array';
-            $this->settings[$field]['items'] = array('type' => 'string');
-            $this->settings[$field]['values'][] = ['id' => 0, 'val' => __('-- all --', 'rrze-faq')];
-
-            // get categories and tags from this website
-            $terms = get_terms([
-                'taxonomy' => 'faq_' . $field,
-                'hide_empty' => true,
-                'orderby' => 'name',
-                'order' => 'ASC',
-            ]);
-
-            foreach ($terms as $term) {
-                $this->settings[$field]['values'][] = [
-                    'id' => $term->slug,
-                    'val' => $term->name,
-                ];
-            }
-        }
-
-        // fill select id ( = FAQ )
-        $faqs = get_posts(array(
-            'posts_per_page' => -1,
-            'post_type' => 'faq',
-            'orderby' => 'title',
-            'order' => 'ASC',
-        ));
-
-        $this->settings['id']['values'] = array();
-        $this->settings['id']['field_type'] = 'multi_select';
-        $this->settings['id']['default'] = array(0);
-        $this->settings['id']['type'] = 'array';
-        $this->settings['id']['items'] = array('type' => 'number');
-        $this->settings['id']['values'][] = ['id' => 0, 'val' => __('-- all --', 'rrze-faq')];
-        foreach ($faqs as $faq) {
-            $this->settings['id']['values'][] = [
-                'id' => $faq->ID,
-                'val' => str_replace("'", "", str_replace('"', "", $faq->post_title)),
-            ];
-        }
-
-        return $this->settings;
-    }
-
-    public function initGutenberg()
-    {
-        if (!$this->isGutenberg()) {
-            return;
-        }
-
-        // get prefills for dropdowns
-        $this->settings = $this->fillGutenbergOptions();
-
-        // register js-script to inject php config to call gutenberg lib
-        $editor_script = $this->settings['block']['blockname'] . '-block';
-        $js = '../assets/js/' . $editor_script . '.js';
-
-        wp_register_script(
-            $editor_script,
-            plugins_url($js, __FILE__),
-            array(
-                'RRZE-Gutenberg',
-            ),
-            null
-        );
-        wp_localize_script($editor_script, $this->settings['block']['blockname'] . 'Config', $this->settings);
-
-        // register block
-        register_block_type($this->settings['block']['blocktype'], array(
-            'editor_script' => $editor_script,
-            'render_callback' => [$this, 'shortcodeOutput'],
-            'attributes' => $this->settings,
-        )
-        );
-    }
-
-    public function enqueueGutenberg()
-    {
-        if (!$this->isGutenberg()) {
-            return;
-        }
-
-        // include gutenberg lib
-        wp_enqueue_script(
-            'RRZE-Gutenberg',
-            plugins_url('../assets/js/gutenberg.js', __FILE__),
-            array(
-                'wp-blocks',
-                'wp-i18n',
-                'wp-element',
-                'wp-components',
-                'wp-editor',
-            ),
-            null
-        );
-    }
-
-    public function setMCEConfig()
-    {
-        $shortcode = '';
-        foreach ($this->settings as $att => $details) {
-            if ($att != 'block') {
-                $shortcode .= ' ' . $att . '=""';
-            }
-        }
-        $shortcode = '[' . $this->pluginname . ' ' . $shortcode . ']';
-        ?>
-        <script type='text/javascript'>
-            tmp = [{
-                'name': <?php echo json_encode($this->pluginname); ?>,
-                'title': <?php echo json_encode($this->settings['block']['title']); ?>,
-                'icon': <?php echo json_encode($this->settings['block']['tinymce_icon']); ?>,
-                'shortcode': <?php echo json_encode($shortcode); ?>,
-            }];
-            phpvar = (typeof phpvar === 'undefined' ? tmp : phpvar.concat(tmp));
-        </script>
-        <?php
-}
-
-    public function addMCEButtons($pluginArray)
-    {
-        if (current_user_can('edit_posts') && current_user_can('edit_pages')) {
-            $pluginArray['rrze_shortcode'] = plugins_url('../assets/js/tinymce-shortcodes.js', plugin_basename(__FILE__));
-        }
-        return $pluginArray;
     }
 }

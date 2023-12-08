@@ -33,6 +33,8 @@ class Main {
      */
     public function __construct($pluginFile) {
         $this->pluginFile = $pluginFile;
+
+        Shortcode::instance()->loaded();    
     }
 
     /**
