@@ -46,21 +46,21 @@ export default function Edit(props) {
             <ServerSideRender
               block="rrze/rrze-faq"
               attributes={{
-                // glossary: attributes.glossary,
-                // glossarystyle: attributes.glossarystyle,
+                glossary: attributes.glossary,
+                glossarystyle: attributes.glossarystyle,
                 category: attributes.category,
                 tag: attributes.tag,
                 id: attributes.id,
-                // hide_accordion: attributes.hide_accordion,
-                // hide_title: attributes.hide_title,
-                // expand_all_link: attributes.expand_all_link,
-                // load_open: attributes.load_open,
-                // color: attributes.color,
-                // additional_class: attributes.additional_class,
-                // lang: attributes.lang,
-                // sort: attributes.sort,
-                // order: attributes.order,
-                // hstart: attributes.hstart,                
+                hide_accordion: attributes.hide_accordion,
+                hide_title: attributes.hide_title,
+                expand_all_link: attributes.expand_all_link,
+                load_open: attributes.load_open,
+                color: attributes.color,
+                additional_class: attributes.additional_class,
+                lang: attributes.lang,
+                sort: attributes.sort,
+                order: attributes.order,
+                hstart: attributes.hstart,                
               }}
               />
             </div>

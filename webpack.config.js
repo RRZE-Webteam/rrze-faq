@@ -4,8 +4,8 @@
     const TerserPlugin = require("terser-webpack-plugin");
 
     const path = require("path");
-    const admin = path.join(__dirname, "src", "admin");
-    const front = path.join(__dirname, "src", "front");
+    // const admin = path.join(__dirname, "src", "admin");
+    // const front = path.join(__dirname, "src", "front");
     const blocks = path.join(__dirname, "src", "blocks");
 
     const defaultConfig = require( '@wordpress/scripts/config/webpack.config.js' );
@@ -19,18 +19,18 @@
             ...{
             entry: {
                 blocks: blocks,
-                admin: admin,
-                front: front,
+                // admin: admin,
+                // front: front,
             },
             output: {
                 path: path.resolve(__dirname, "build"),
                 filename: ({ chunk: { name } }) => {
                     if (name === 'blocks') {
                         return 'blocks/index.js';  // Adjusted here
-                    } else if (name === 'admin') {
-                        return '[name].js';
-                    } else if (name === 'front') {
-                        return '[name].js';
+                    // } else if (name === 'admin') {
+                    //     return '[name].js';
+                    // } else if (name === 'front') {
+                    //     return '[name].js';
                     }
                     return '[name].js';
                 },
@@ -51,10 +51,10 @@
                         let name = chunkData.chunk.name;
                         if (name === 'blocks' || name === './style-blocks') {
                             return 'blocks/[name].css';  // Adjusted here
-                        } else if (name === 'admin') {
-                            return '[name].css';
-                        } else if (name === 'front') {
-                            return '[name].css';
+                        // } else if (name === 'admin') {
+                        //     return '[name].css';
+                        // } else if (name === 'front') {
+                        //     return '[name].css';
                         }
                         return '[name].css';
                     },

@@ -139,12 +139,12 @@ function create_block_rrze_faq_block_init()
 {
     $gutenberg_instance = new Gutenberg();
 
-    register_block_type(__DIR__ . '/src/blocks', [
+    register_block_type(__DIR__ . '/build/blocks', [
             'render_callback' => [$gutenberg_instance, 'rrze_faq_render_block']
     ]);
 
     $script_handle = generate_block_asset_handle( 'rrze/rrze-faq', 'editorScript' );
-    wp_set_script_translations( $script_handle, 'rrze-faq', plugin_dir_path( __FILE__ ) . 'languages' );
+    // wp_set_script_translations( $script_handle, 'rrze-faq', plugin_dir_path( __FILE__ ) . 'languages' );
 }
 
 

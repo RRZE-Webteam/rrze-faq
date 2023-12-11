@@ -27,7 +27,7 @@ import metadata from "./block.json";
  */
 registerBlockType(metadata.name, {
   icon: {
-		src: "book-alt",
+		src: "editor-help",
 		background: "#00458c"
 	},
   transforms: {
