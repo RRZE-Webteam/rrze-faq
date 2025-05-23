@@ -23,8 +23,7 @@ export default function Edit({attributes, setAttributes}) {
         additional_class,
         color,
         style,
-        load_open,
-        expand_all_link,
+        masonry,
         hide_title,
         hide_accordion,
         glossarystyle,
@@ -333,14 +332,9 @@ export default function Edit({attributes, setAttributes}) {
                             {!hide_accordion ? (
                                 <>
                                     <ToggleControl
-                                        checked={!!expand_all_link}
-                                        label={__('Show "expand all" button', 'rrze-faq')}
-                                        onChange={() => setAttributes({expand_all_link: !expand_all_link})}
-                                    />
-                                    <ToggleControl
-                                        checked={!!load_open}
-                                        label={__('Load website with opened accordions', 'rrze-faq')}
-                                        onChange={() => setAttributes({load_open: !load_open})}
+                                        checked={!!masonry}
+                                        label={__('Grid', 'rrze-faq')}
+                                        onChange={() => setAttributes({masonry: !masonry})}
                                     />
                                     <SelectControl
                                         label={__('Accordion-Style', 'rrze-faq')}

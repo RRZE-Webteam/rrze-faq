@@ -30,10 +30,7 @@
 		"hide_title": {
 			"type": "boolean"
 		},
-		"expand_all_link": {
-			"type": "boolean"
-		},
-		"load_open": {
+		"masonry": {
 			"type": "boolean"
 		},
 		"color": {
