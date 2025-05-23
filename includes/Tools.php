@@ -245,17 +245,17 @@ class Tools
     /**
      * Creates schema.org markup for a FAQ item if source is 'website'.
      *
-     * @param int    $postID   The post ID of the FAQ item.
-     * @param string $question The FAQ question.
-     * @param string $answer   The FAQ answer.
+     * @param int    &$postID   The post ID of the FAQ item.
+     * @param string &$question The FAQ question.
+     * @param string &$answer   The FAQ answer.
      * @return string JSON-LD schema markup string.
      */
-    public static function getSchema($postID, $question, $answer)
+    public static function getSchema(int &$postID, string &$question, string &$answer): string
     {
         $schema = '';
         $source = get_post_meta($postID, "source", true);
         $answer = wp_strip_all_tags($answer, true);
-        if ($source == 'website') {
+        if ($source === 'website') {
             $schema = RRZE_SCHEMA_QUESTION_START . $question . RRZE_SCHEMA_QUESTION_END;
             $schema .= RRZE_SCHEMA_ANSWER_START . $answer . RRZE_SCHEMA_ANSWER_END;
         }
