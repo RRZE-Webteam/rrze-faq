@@ -415,7 +415,6 @@ function getShortcodeSettings()
 			'default' => FALSE,
 			'checked' => FALSE
 		],
-
 		'additional_class' => [
 			'default' => '',
 			'field_type' => 'text',

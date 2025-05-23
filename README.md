@@ -74,10 +74,10 @@ The output order follows the order of the IDs listed.
 - `"glossary"`: Disables the glossary display  
 Default: accordion view is enabled
 
-**show**:  
-- `"expand-all-link"`: Adds a button to expand all accordion sections  
-- `"load-open"`: Loads all accordions in an expanded state  
-By default, accordions are collapsed and no "expand all" button is shown.
+**masonry**:  
+- `"true"`: Displays FAQs in a grid (masonry) layout  
+- `"false"`: Displays FAQs in the default stacked layout  
+By default, the grid layout is disabled.
 
 **class**: Allows you to set the color of the left border of the accordion.  
 Possible values: `"fau"` (default), or faculty identifiers like `"med"`, `"nat"`, `"rw"`, `"phil"`, or `"tf"`.  

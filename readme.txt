@@ -41,7 +41,7 @@ Examples of shortcodes:
     [faq tag="tag-1"]
     [faq id="123, 456"]
     [faq glossary="category tabs"]
-    [faq glossary="tag tagcloud" show="expand-all-link"]
+    [faq glossary="tag tagcloud"]
 
 More details on usage can be found in the `readme.md` file or the documentation.
 
