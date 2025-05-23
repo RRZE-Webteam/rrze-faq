@@ -16,6 +16,7 @@ $headerID = Tools::getHeaderID($postID);
 
 $cats = Tools::getTermLinks($postID, 'faq_category');
 $tags = Tools::getTermLinks($postID, 'faq_tag');
+$aLinkedPage = Tools::getLinkedPage($postID);
 
 $content = '';
 $content .= '<article>';
@@ -32,7 +33,15 @@ if ($tags) {
     $content .= '<span class="post-meta-tags">' . esc_html__('Tags', 'rrze-faq') . ': ' . wp_kses_post($tags) . '</span>';
 }
 
-$content .= Tools::getLinkedPageHTML($postID);
+if (!empty($aLinkedPage)) {
+    $linkHTML = sprintf(
+        '<a href="%1$s">%2$s</a>',
+        esc_html($aLinkedPage['url']),
+        esc_html($aLinkedPage['title'])
+    );
+
+    $content .= '<span class="post-meta-context">' . $linkHTML . '</span>';
+}
 
 $content .= '</p></footer>';
 $content .= '</article>';

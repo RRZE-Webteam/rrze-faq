@@ -324,19 +324,19 @@ class Tools
     }
 
     /**
-     * Returns an HTML link to a context page based on the first valid top-level FAQ category.
+     * Returns information about a context page based on the first valid top-level FAQ category.
      *
      * Among all assigned 'faq_category' terms, only top-level ones (not children of other assigned terms)
-     * are considered. The method returns the first valid 'linked_page' from those terms.
+     * are considered. The method returns the first valid 'linked_page' from those terms as structured data.
      *
-     * @param int $postID The ID of the current FAQ post.
-     * @return string HTML markup for the context page link, or an empty string if none found.
+     * @param int &$postID The ID of the current FAQ post (passed by reference, but not modified).
+     * @return array|null Array with keys 'id', 'url', and 'title' of the linked page, or null if none found.
      */
-    public static function getLinkedPageHTML(int $postID): string
+    public static function getLinkedPage(int &$postID): ?array
     {
         $assigned_terms = get_the_terms($postID, 'faq_category');
         if (!$assigned_terms || is_wp_error($assigned_terms)) {
-            return '';
+            return null;
         }
 
         // Collect all parent IDs among the assigned terms
@@ -353,17 +353,13 @@ class Tools
                 continue;
             }
 
-            $linked_url = get_permalink($linked_page_id);
-            $linked_title = get_the_title($linked_page_id);
-
-            return sprintf(
-                '<span class="faq-linked-page"><a href="%s">%s</a></span>',
-                esc_url($linked_url),
-                esc_html($linked_title)
-            );
+            return [
+                'url' => get_permalink($linked_page_id),
+                'title' => get_the_title($linked_page_id),
+            ];
         }
 
-        return '';
+        return null;
     }
 
 }
