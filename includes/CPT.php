@@ -48,7 +48,7 @@ class CPT
 
         // Get the slug from the options; fallback to 'faq' if not set.
         $options = get_option('rrze-faq');
-        $slug = !empty($options['website_custom_faq_slug']) ? sanitize_title($options['website_custom_faq_slug'])  : 'faq';
+        $slug = !empty($options['website_custom_faq_slug']) ? sanitize_title($options['website_custom_faq_slug']) : 'faq';
 
         $rewrite = array(
             'slug' => $slug, // dynamic slug
@@ -86,8 +86,8 @@ class CPT
 
         // Get the slug from the options; fallback to 'faq_category' and 'faq_tag' if not set.
         $options = get_option('rrze-faq');
-        $slug_category = !empty($options['website_custom_faq_category_slug']) ? sanitize_title($options['website_custom_faq_category_slug'])  : 'faq_category';
-        $slug_tag = !empty($options['website_custom_faq_tag_slug']) ? sanitize_title($options['website_custom_faq_tag_slug'])  : 'faq_tag';
+        $slug_category = !empty($options['website_custom_faq_category_slug']) ? sanitize_title($options['website_custom_faq_category_slug']) : 'faq_category';
+        $slug_tag = !empty($options['website_custom_faq_tag_slug']) ? sanitize_title($options['website_custom_faq_tag_slug']) : 'faq_tag';
 
         $tax = [
             [
@@ -138,7 +138,7 @@ class CPT
 
         foreach ($tax as $t) {
             $ret = register_taxonomy(
-                $t['name'], 
+                $t['name'],
                 'faq',
                 array(
                     'hierarchical' => $t['hierarchical'],
@@ -227,15 +227,18 @@ class CPT
     {
         $pages = get_pages();
         $selected = get_term_meta($term->term_id, 'linked_page', true);
+
         echo '<tr class="form-field term-linked-page-wrap">';
         echo '<th><label for="linked_page">' . esc_html__('Verlinkte Seite', 'rrze-faq') . '</label></th>';
         echo '<td><select name="linked_page">';
         echo '<option value="">' . esc_html__('None', 'rrze-faq') . '</option>';
         foreach ($pages as $page) {
+            $id = (int) $page->ID;
+
             printf(
                 '<option value="%1$d" %2$s>%3$s</option>',
-                $page->ID,
-                selected($selected, $page->ID, false),
+                esc_attr($id),
+                selected($selected, $id, false),
                 esc_html($page->post_title)
             );
         }

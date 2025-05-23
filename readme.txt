@@ -2,9 +2,9 @@
 Contributors: rrze-webteam
 Tags: faq, shortcode, block, widget, categories
 Requires at least: 6.1
-Tested up to: 6.8.1
+Tested up to: 6.8
 Requires PHP: 8.2
-Stable tag: 5.3.41
+Stable tag: 5.3.42
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 

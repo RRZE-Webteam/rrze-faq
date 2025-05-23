@@ -1061,7 +1061,7 @@ class Settings
         $value = esc_attr($this->getOption($args['section'], $args['id'], $args['default']));
         $size = isset($args['size']) && !is_null($args['size']) ? $args['size'] : 'regular';
         $id = $args['section'] . '[' . $args['id'] . ']';
-        $label = isset($args['options']['button_label']) ? $args['options']['button_label'] : __('Choose File');
+        $label = isset($args['options']['button_label']) ? $args['options']['button_label'] : __('Choose File', 'rrze-faq');
 
         $html = sprintf(
             '<input type="text" class="%1$s-text settings-media-url" id="%3$s-%4$s" name="%2$s[%3$s_%4$s]" value="%5$s"/>',

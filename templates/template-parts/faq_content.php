@@ -34,10 +34,13 @@ if ($tags) {
 }
 
 if (!empty($aLinkedPage)) {
+    $url = isset($aLinkedPage['url']) ? esc_url($aLinkedPage['url']) : '';
+    $title = isset($aLinkedPage['title']) ? esc_html($aLinkedPage['title']) : '';
+
     $linkHTML = sprintf(
         '<a href="%1$s">%2$s</a>',
-        esc_html($aLinkedPage['url']),
-        esc_html($aLinkedPage['title'])
+        $url,
+        $title
     );
 
     $content .= '<span class="post-meta-context">' . $linkHTML . '</span>';
@@ -50,5 +53,5 @@ $masonry = false;
 $color = '';
 $additional_class = '';
 
-echo Tools::renderFaqWrapper($content, $headerID, $masonry, $color, $additional_class);
+echo wp_kses_post(Tools::renderFaqWrapper($content, $headerID, $masonry, $color, $additional_class));
 

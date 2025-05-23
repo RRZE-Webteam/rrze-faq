@@ -231,7 +231,7 @@ class Main
 
         $custom_category = [
             'slug'  => 'rrze',
-            'title' => __('RRZE', 'rrze-bluesky'),
+            'title' => __('RRZE', 'rrze-faq'),
         ];
 
         // Add RRZE to the end of the categories array
