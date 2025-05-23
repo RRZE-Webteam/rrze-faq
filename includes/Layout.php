@@ -32,7 +32,7 @@ class Layout
         add_filter('manage_edit-faq_category_columns', [$this, 'addTaxColumns']);
         add_filter('manage_faq_category_custom_column', [$this, 'getTaxColumnsValues'], 10, 3);
         add_filter('manage_edit-faq_category_sortable_columns', [$this, 'addTaxColumns']);
-        
+
         // Table "Tags"
         add_filter('manage_edit-faq_tag_columns', [$this, 'addTaxColumns']);
         add_filter('manage_faq_tag_custom_column', [$this, 'getTaxColumnsValues'], 10, 3);
@@ -220,60 +220,62 @@ class Layout
         return $columns;
     }
 
-    public function addFaqFilters( $post_type ) {
-        if ( $post_type !== 'faq' ) {
+    public function addFaqFilters($post_type)
+    {
+        if ($post_type !== 'faq') {
             return;
         }
-    
-        $taxonomies_slugs = [ 'faq_category', 'faq_tag' ];
-        foreach ( $taxonomies_slugs as $slug ) {
-            $taxonomy = get_taxonomy( $slug );
-            $selected = isset( $_REQUEST[ $slug ] ) ? sanitize_text_field( wp_unslash( $_REQUEST[ $slug ] ) ) : '';
-            wp_dropdown_categories( [
+
+        $taxonomies_slugs = ['faq_category', 'faq_tag'];
+        foreach ($taxonomies_slugs as $slug) {
+            $taxonomy = get_taxonomy($slug);
+            $selected = isset($_REQUEST[$slug]) ? sanitize_text_field(wp_unslash($_REQUEST[$slug])) : '';
+            wp_dropdown_categories([
                 'show_option_all' => $taxonomy->labels->all_items,
-                'taxonomy'        => $slug,
-                'name'            => $slug,
-                'orderby'         => 'name',
-                'value_field'     => 'slug',
-                'selected'        => $selected,
-                'hierarchical'    => true,
-                'hide_empty'      => true,
-                'show_count'      => true,
-            ] );
+                'taxonomy' => $slug,
+                'name' => $slug,
+                'orderby' => 'name',
+                'value_field' => 'slug',
+                'selected' => $selected,
+                'hierarchical' => true,
+                'hide_empty' => true,
+                'show_count' => true,
+            ]);
         }
-    
+
         // dropdown "source"
         global $wpdb;
-        $selectedVal = isset( $_REQUEST['source'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['source'] ) ) : '';
-    
+        $selectedVal = isset($_REQUEST['source']) ? sanitize_text_field(wp_unslash($_REQUEST['source'])) : '';
+
         // Prepare the SQL query to prevent SQL injection
-        $query = "
-            SELECT DISTINCT pm.meta_value
-            FROM {$wpdb->postmeta} pm
-            LEFT JOIN {$wpdb->posts} p ON p.ID = pm.post_id
-            WHERE pm.meta_key = %s
-            AND p.post_status = %s
-            ORDER BY pm.meta_value
-        ";
         $meta_key = 'source';
         $post_status = 'publish';
-        $prepared_query = $wpdb->prepare( $query, $meta_key, $post_status );
-    
-        // Execute the prepared query
-        $myTerms = $wpdb->get_col( $prepared_query );
-    
+
+        $myTerms = $wpdb->get_col($wpdb->prepare(
+            "
+    SELECT DISTINCT pm.meta_value
+    FROM {$wpdb->postmeta} pm
+    LEFT JOIN {$wpdb->posts} p ON p.ID = pm.post_id
+    WHERE pm.meta_key = %s
+    AND p.post_status = %s
+    ORDER BY pm.meta_value
+    ",
+            $meta_key,
+            $post_status
+        ));
+
         $output = "<select name='source'>";
-        $output .= '<option value="0">' . __( 'All Sources', 'rrze-faq' ) . '</option>';
-    
-        foreach ( $myTerms as $term ) {
-            $selected = ( $term == $selectedVal ) ? 'selected' : '';
-            $output .= "<option value='" . esc_attr( $term ) . "' $selected>" . esc_html( $term ) . "</option>";
+        $output .= '<option value="0">' . __('All Sources', 'rrze-faq') . '</option>';
+
+        foreach ($myTerms as $term) {
+            $selected = ($term == $selectedVal) ? 'selected' : '';
+            $output .= "<option value='" . esc_attr($term) . "' $selected>" . esc_html($term) . "</option>";
         }
-    
+
         $output .= "</select>";
-        echo wp_kses_post( $output );
+        echo wp_kses_post($output);
     }
-    
+
     public function filterRequestQuery($query)
     {
         if (!(is_admin() && $query->is_main_query())) {
@@ -310,7 +312,7 @@ class Layout
             echo esc_html($post_id);
         }
         if ($column_name == 'lang') {
-            echo esc_html(get_post_meta($post_id, 'lang', true) );
+            echo esc_html(get_post_meta($post_id, 'lang', true));
         }
         if ($column_name == 'source') {
             echo esc_html(get_post_meta($post_id, 'source', true));
