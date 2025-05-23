@@ -224,8 +224,8 @@ class Tools
                 }
 
                 if (!empty($source)) {
-                    $query['meta_key'] = 'source';
-                    $query['meta_value'] = $source;
+                    $query['meta_key'] = 'source'; // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key
+                    $query['meta_value'] = $source; // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value
                 }
 
                 $ret[$taxfield][] = $query;

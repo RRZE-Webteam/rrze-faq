@@ -124,7 +124,7 @@ class API
         try {
             $args = array(
                 'hide_empty' => false,
-                'meta_query' => array(
+                'meta_query' => array( // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
                     array(
                         'key' => 'source',
                         'value' => $source,
@@ -250,7 +250,7 @@ class API
         $this->setCategories($aCategories, $shortname);
         $categories = get_terms(array(
             'taxonomy' => 'faq_category',
-            'meta_query' => array(
+            'meta_query' => array( // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
                 array(
                     'key' => 'source',
                     'value' => $shortname,
@@ -269,7 +269,7 @@ class API
     {
         // deletes all FAQ by source
         $iDel = 0;
-        $allFAQ = get_posts(array('post_type' => 'faq', 'meta_key' => 'source', 'meta_value' => $source, 'numberposts' => -1));
+        $allFAQ = get_posts(array('post_type' => 'faq', 'meta_key' => 'source', 'meta_value' => $source, 'numberposts' => -1)); // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key, WordPress.DB.SlowDBQuery.slow_db_query_meta_value
 
         foreach ($allFAQ as $faq) {
             wp_delete_post($faq->ID, true);
@@ -402,7 +402,7 @@ class API
     {
         try {
             $aRet = array();
-            $allFAQ = get_posts(array('post_type' => 'faq', 'meta_key' => 'source', 'meta_value' => $source, 'fields' => 'ids', 'numberposts' => -1));
+            $allFAQ = get_posts(array('post_type' => 'faq', 'meta_key' => 'source', 'meta_value' => $source, 'fields' => 'ids', 'numberposts' => -1));// phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key, WordPress.DB.SlowDBQuery.slow_db_query_meta_value
             foreach ($allFAQ as $postID) {
                 $remoteID = get_post_meta($postID, 'remoteID', true);
                 $remoteChanged = get_post_meta($postID, 'remoteChanged', true);

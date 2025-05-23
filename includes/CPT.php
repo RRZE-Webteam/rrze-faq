@@ -225,6 +225,8 @@ class CPT
 
     public static function edit_category_page_field($term)
     {
+        wp_nonce_field('save_faq_category_meta', 'faq_category_meta_nonce');
+
         $pages = get_pages();
         $selected = get_term_meta($term->term_id, 'linked_page', true);
 
@@ -247,6 +249,13 @@ class CPT
 
     public static function save_category_page_field($term_id)
     {
+        if (
+            !isset($_POST['faq_category_meta_nonce']) ||
+            !wp_verify_nonce(sanitize_text_field(wp_unslash($_POST['faq_category_meta_nonce'])), 'save_faq_category_meta')
+        ) {
+            return;
+        }
+
         if (isset($_POST['linked_page'])) {
             update_term_meta($term_id, 'linked_page', (int) $_POST['linked_page']);
         }

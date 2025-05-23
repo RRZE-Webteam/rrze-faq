@@ -231,10 +231,10 @@ class Shortcode
         $postQuery = array('post_type' => 'faq', 'post_status' => 'publish', 'numberposts' => -1, 'suppress_filters' => false);
         if ($sort == 'sortfield') {
             $postQuery['orderby'] = array(
-                'meta_value' => $order,
+                'meta_value' => $order, // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value
                 'title' => $order,
             );
-            $postQuery['meta_key'] = 'sortfield';
+            $postQuery['meta_key'] = 'sortfield'; // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key
         } else {
             $postQuery['orderby'] = $sort;
             $postQuery['order'] = $order;
@@ -249,7 +249,7 @@ class Shortcode
         if ($aTax) {
             $tax_query = Tools::getTaxQuery($aTax);
             if ($tax_query) {
-                $postQuery['tax_query'] = $tax_query;
+                $postQuery['tax_query'] = $tax_query; // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_tax_query
             }
         }
 
@@ -275,11 +275,10 @@ class Shortcode
         }
 
         if ($metaQuery) {
-            $postQuery['meta_query'] = array_merge([
+            $postQuery['meta_query'] = array_merge([ // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
                 'relation' => 'AND'
             ], $metaQuery);
         }
-        // error_log(print_r($postQuery, true));
 
         $posts = get_posts($postQuery);
 

@@ -61,7 +61,12 @@ class Layout
 
     public function savePostMeta($postID)
     {
-        if (!current_user_can('edit_post', $postID) || !isset($_POST['sortfield']) || !isset($_POST['anchorfield']) || (defined('DOING_AUTOSAVE') && DOING_AUTOSAVE)) {
+        if (
+            !current_user_can('edit_post', $postID) ||
+            !isset($_POST['sortfield'], $_POST['anchorfield'], $_POST['rrze_faq_meta_nonce']) ||
+            (defined('DOING_AUTOSAVE') && DOING_AUTOSAVE) ||
+            !wp_verify_nonce(sanitize_text_field(wp_unslash($_POST['rrze_faq_meta_nonce'])), 'rrze_faq_save_meta')
+        ) {
             return $postID;
         }
 
@@ -79,6 +84,8 @@ class Layout
 
     public function sortboxCallback($meta_id)
     {
+        wp_nonce_field('rrze_faq_save_meta', 'rrze_faq_meta_nonce');
+
         $output = '<input type="hidden" name="source" id="source" value="' . esc_attr(get_post_meta($meta_id->ID, 'source', true)) . '">';
         $output .= '<input type="text" name="sortfield" id="sortfield" class="sortfield" value="' . esc_attr(get_post_meta($meta_id->ID, 'sortfield', true)) . '">';
         $output .= '<p class="description">' . __('Criterion for sorting the output of the shortcode', 'rrze-faq') . '</p>';
@@ -142,16 +149,23 @@ class Layout
 
     public function toggleEditor()
     {
-        $post_id = isset($_GET['post']) ? sanitize_text_field(wp_unslash($_GET['post'])) : (isset($_POST['post_ID']) ? sanitize_text_field(wp_unslash($_POST['post_ID'])) : 0);
+        $post_id = 0;
+
+        if (isset($_GET['post'])) {
+            $post_id = isset($_GET['faq_nonce']) && wp_verify_nonce(sanitize_text_field(wp_unslash($_GET['faq_nonce'])), 'faq_edit_nonce') ? (int) sanitize_text_field(wp_unslash($_GET['post'])) : 0;
+        } elseif (isset($_POST['post_ID'])) {
+            $post_id = isset($_POST['faq_nonce']) && wp_verify_nonce(sanitize_text_field(wp_unslash($_POST['faq_nonce'])), 'faq_edit_nonce') ? (int) sanitize_text_field(wp_unslash($_POST['post_ID'])) : 0;
+        }
 
         if ($post_id) {
-            if (get_post_type($post_id) == 'faq') {
-                $source = get_post_meta($post_id, "source", true);
-                if ($source && $source != 'website') {
+            if (get_post_type($post_id) === 'faq') {
+                $source = get_post_meta($post_id, 'source', true);
+                if ($source && $source !== 'website') {
                     $api = new API();
                     $domains = $api->getDomains();
-                    $remoteID = get_post_meta($post_id, "remoteID", true);
-                    $link = $domains[$source] . 'wp-admin/post.php?post=' . $remoteID . '&action=edit';
+                    $remoteID = get_post_meta($post_id, 'remoteID', true);
+                    $link = esc_url($domains[$source] . 'wp-admin/post.php?post=' . $remoteID . '&action=edit');
+
                     remove_post_type_support('faq', 'title');
                     remove_post_type_support('faq', 'editor');
                     remove_meta_box('faq_categorydiv', 'faq', 'side');
@@ -159,7 +173,12 @@ class Layout
 
                     add_meta_box(
                         'read_only_content_box',
-                        __('This FAQ cannot be edited because it is synchronized', 'rrze-faq') . '. <a href="' . esc_url($link) . '" target="_blank">' . __('You can edit it at the source', 'rrze-faq') . '</a>',
+                        sprintf(
+                            '%1$s. <a href="%2$s" target="_blank">%3$s</a>',
+                            esc_html__('This FAQ cannot be edited because it is synchronized', 'rrze-faq'),
+                            $link,
+                            esc_html__('You can edit it at the source', 'rrze-faq')
+                        ),
                         [$this, 'fillContentBox'],
                         'faq',
                         'normal',
@@ -177,27 +196,9 @@ class Layout
             );
         }
 
-        add_meta_box(
-            'langbox',
-            __('Language', 'rrze-faq'),
-            [$this, 'langboxCallback'],
-            'faq',
-            'side'
-        );
-        add_meta_box(
-            'sortbox',
-            __('Sort', 'rrze-faq'),
-            [$this, 'sortboxCallback'],
-            'faq',
-            'side'
-        );
-        add_meta_box(
-            'anchorbox',
-            __('Anchor', 'rrze-faq'),
-            [$this, 'anchorboxCallback'],
-            'faq',
-            'side'
-        );
+        add_meta_box('langbox', __('Language', 'rrze-faq'), [$this, 'langboxCallback'], 'faq', 'side');
+        add_meta_box('sortbox', __('Sort', 'rrze-faq'), [$this, 'sortboxCallback'], 'faq', 'side');
+        add_meta_box('anchorbox', __('Anchor', 'rrze-faq'), [$this, 'anchorboxCallback'], 'faq', 'side');
     }
 
     public function addFaqColumns($columns)
@@ -226,10 +227,14 @@ class Layout
             return;
         }
 
+        if (!isset($_GET['_wpnonce']) || !wp_verify_nonce(sanitize_key($_GET['_wpnonce']), 'bulk-posts')) {
+            return;
+        }
+
         $taxonomies_slugs = ['faq_category', 'faq_tag'];
         foreach ($taxonomies_slugs as $slug) {
             $taxonomy = get_taxonomy($slug);
-            $selected = isset($_REQUEST[$slug]) ? sanitize_text_field(wp_unslash($_REQUEST[$slug])) : '';
+            $selected = isset($_GET[$slug]) ? sanitize_text_field(wp_unslash($_GET[$slug])) : '';
             wp_dropdown_categories([
                 'show_option_all' => $taxonomy->labels->all_items,
                 'taxonomy' => $slug,
@@ -243,32 +248,34 @@ class Layout
             ]);
         }
 
-        // dropdown "source"
-        global $wpdb;
-        $selectedVal = isset($_REQUEST['source']) ? sanitize_text_field(wp_unslash($_REQUEST['source'])) : '';
+        $selectedVal = isset($_GET['source']) ? sanitize_text_field(wp_unslash($_GET['source'])) : '';
 
-        // Prepare the SQL query to prevent SQL injection
-        $meta_key = 'source';
-        $post_status = 'publish';
+        $posts = get_posts([
+            'post_type' => 'faq',
+            'post_status' => 'publish',
+            'numberposts' => -1,
+            'fields' => 'ids',
+            'meta_key' => 'source', // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key
+            'orderby' => 'meta_value',
+        ]);
 
-        $myTerms = $wpdb->get_col($wpdb->prepare(
-            "
-    SELECT DISTINCT pm.meta_value
-    FROM {$wpdb->postmeta} pm
-    LEFT JOIN {$wpdb->posts} p ON p.ID = pm.post_id
-    WHERE pm.meta_key = %s
-    AND p.post_status = %s
-    ORDER BY pm.meta_value
-    ",
-            $meta_key,
-            $post_status
-        ));
+        $sources = [];
+
+        foreach ($posts as $post_id) {
+            $value = get_post_meta($post_id, 'source', true);
+            if (!empty($value)) {
+                $sources[] = $value;
+            }
+        }
+
+        $sources = array_unique($sources);
+        sort($sources, SORT_NATURAL | SORT_FLAG_CASE);
 
         $output = "<select name='source'>";
         $output .= '<option value="0">' . __('All Sources', 'rrze-faq') . '</option>';
 
-        foreach ($myTerms as $term) {
-            $selected = ($term == $selectedVal) ? 'selected' : '';
+        foreach ($sources as $term) {
+            $selected = ($term === $selectedVal) ? 'selected' : '';
             $output .= "<option value='" . esc_attr($term) . "' $selected>" . esc_html($term) . "</option>";
         }
 
@@ -282,18 +289,25 @@ class Layout
             return $query;
         }
 
-        if ($query->query['post_type'] !== 'faq') {
+        if (!isset($query->query['post_type']) || $query->query['post_type'] !== 'faq') {
             return $query;
         }
 
-        if (!empty($_REQUEST['source'])) {
-            $query->query_vars['meta_query'] = [
-                [
-                    'key' => 'source',
-                    'value' => sanitize_text_field(wp_unslash($_REQUEST['source'])),
-                    'compare' => '=',
-                ],
-            ];
+        if (!isset($_GET['_wpnonce']) || !wp_verify_nonce(sanitize_key($_GET['_wpnonce']), 'bulk-posts')) {
+            return $query;
+        }
+
+        if (isset($_GET['source'])) {
+            $source = sanitize_text_field(wp_unslash($_GET['source']));
+            if (!empty($source)) {
+                $query->query_vars['meta_query'] = [ // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
+                    [
+                        'key' => 'source', // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key
+                        'value' => $source,
+                        'compare' => '=',
+                    ],
+                ];
+            }
         }
 
         return $query;
