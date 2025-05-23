@@ -53,6 +53,64 @@ $faq-font-size: 0.875rem;
             height: 100%;
         }
     }
+
+    // Accordion-Styling: Farben nur per extern definierte CSS-Variablen
+    details.faq-item {
+        border: 1px solid var(--wp--preset--color--primary, #ccc);
+        border-radius: 4px;
+        margin-bottom: 1.5rem;
+        background-color: var(--wp--preset--color--heller, #f9f9f9);
+        overflow: hidden;
+
+        summary {
+            display: flex;
+            align-items: center;
+            padding: 0.75rem 1rem 0.75rem 2rem;
+            font-weight: bold;
+            font-size: 1rem;
+            line-height: 1.25;
+            color: var(--wp--preset--color--base, #222);
+            background-color: var(--wp--preset--color--heller, #f9f9f9);
+            border: none;
+            border-bottom: 1px solid var(--wp--preset--color--primary, #ccc);
+            cursor: pointer;
+            position: relative;
+            transition: background-color 0.2s ease;
+
+            list-style: none;
+
+            &::-webkit-details-marker {
+                display: none;
+            }
+
+            &::marker {
+                content: "";
+            }
+
+            &::before {
+                content: "▶";
+                position: absolute;
+                left: 1rem;
+                font-size: 0.75rem;
+                line-height: 1;
+                transform: translateY(0);
+                transition: transform 0.2s ease;
+            }
+
+            &:hover {
+                background-color: var(--wp--preset--color--heller, #eee);
+            }
+        }
+
+        &[open] > summary::before {
+            transform: rotate(90deg);
+        }
+
+        .faq-content {
+            background-color: #ffffff;
+            padding: 1rem 1rem 0.5rem;
+        }
+    }
 }
 
 details.faq-term summary,
