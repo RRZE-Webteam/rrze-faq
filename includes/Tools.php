@@ -323,4 +323,47 @@ class Tools
         return substr($ret, 0, -2);
     }
 
+    /**
+     * Returns an HTML link to a context page based on the first valid top-level FAQ category.
+     *
+     * Among all assigned 'faq_category' terms, only top-level ones (not children of other assigned terms)
+     * are considered. The method returns the first valid 'linked_page' from those terms.
+     *
+     * @param int $postID The ID of the current FAQ post.
+     * @return string HTML markup for the context page link, or an empty string if none found.
+     */
+    public static function getLinkedPageHTML(int $postID): string
+    {
+        $assigned_terms = get_the_terms($postID, 'faq_category');
+        if (!$assigned_terms || is_wp_error($assigned_terms)) {
+            return '';
+        }
+
+        // Collect all parent IDs among the assigned terms
+        $parent_term_ids = array_filter(wp_list_pluck($assigned_terms, 'parent'));
+
+        // Keep only terms that are not children of another assigned term
+        $top_level_terms = array_filter($assigned_terms, function ($term) use ($parent_term_ids) {
+            return !in_array($term->term_id, $parent_term_ids, true);
+        });
+
+        foreach ($top_level_terms as $term) {
+            $linked_page_id = get_term_meta($term->term_id, 'linked_page', true);
+            if (!$linked_page_id || get_post_status($linked_page_id) !== 'publish') {
+                continue;
+            }
+
+            $linked_url = get_permalink($linked_page_id);
+            $linked_title = get_the_title($linked_page_id);
+
+            return sprintf(
+                '<span class="faq-linked-page"><a href="%s">%s</a></span>',
+                esc_url($linked_url),
+                esc_html($linked_title)
+            );
+        }
+
+        return '';
+    }
+
 }

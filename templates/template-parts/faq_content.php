@@ -25,23 +25,15 @@ $content .= '</header>';
 $content .= apply_filters('the_content', get_the_content());
 $content .= '<footer><p class="meta-footer">';
 
-$terms = get_the_terms(get_the_ID(), 'faq_category');
-if ($terms && !is_wp_error($terms)) {
-    $primary_term = reset($terms);
-    $linked_page_id = get_term_meta($primary_term->term_id, 'linked_page', true);
-    if ($linked_page_id) {
-        $linked_url = get_permalink($linked_page_id);
-        $content .= '<p class="faq-linked-page"><a href="' . esc_url($linked_url) . '">';
-        $content .= esc_html(get_the_title($linked_page_id)) . '</a></p>';
-    }
-}
-
 if ($cats) {
     $content .= '<span class="post-meta-categories">' . esc_html__('Categories', 'rrze-faq') . ': ' . wp_kses_post($cats) . '</span> ';
 }
 if ($tags) {
     $content .= '<span class="post-meta-tags">' . esc_html__('Tags', 'rrze-faq') . ': ' . wp_kses_post($tags) . '</span>';
 }
+
+$content .= Tools::getLinkedPageHTML($postID);
+
 $content .= '</p></footer>';
 $content .= '</article>';
 
