@@ -20,6 +20,7 @@ $aLinkedPage = Tools::getLinkedPage($postID);
 
 $content = '';
 $content .= '<article>';
+$content .= '<div id="content"><div class="content-container">';
 $content .= '<header>';
 $content .= '<h1 id="' . esc_attr($headerID) . '">' . esc_html(get_the_title()) . '</h1>';
 $content .= '</header>';
@@ -47,6 +48,7 @@ if (!empty($aLinkedPage)) {
 }
 
 $content .= '</p></footer>';
+$content .= '</div></div>';
 $content .= '</article>';
 
 $masonry = false;

@@ -6,6 +6,11 @@ Template Name: Part of the Custom Taxonomy Templates
 $cat_slug = get_queried_object()->slug;
 $cat_name = get_queried_object()->name;
 
+?>
+<article>
+<div id="content"><div class="content-container">
+
+<?php 
 echo '<h2>' . esc_html($cat_name) . '</h2>';
 
 $tax_post_args = array(
@@ -30,3 +35,6 @@ if ($tax_post_query->have_posts()){
     }
     echo '</ul>';
 }
+?>
+</div></div>
+</article>
