@@ -3,7 +3,18 @@
 Template Name: Custom Taxonomy faq_category Template
 */
 
-include_once('template-parts/archive_head.php');
+get_header();
+
+?>
+
+<main id="main" class="site-main rrze-faq category">
+
+<?php
+
 $taxonomy = 'faq_category';
 include_once('template-parts/faq_taxonomy.php');
-include_once('template-parts/foot.php');
+?>
+</main>
+
+<?php
+get_footer();

@@ -2,8 +2,19 @@
 /* 
 Template Name: Custom Taxonomy faq_tag Template
 */
+get_header();
 
-include_once('template-parts/archive_head.php');
+?>
+
+<main id="main" class="site-main rrze-faq tag">
+
+<?php
+
 $taxonomy = 'faq_tag';
 include_once('template-parts/faq_taxonomy.php');
-include_once('template-parts/foot.php');
+
+?>
+</main>
+
+<?php
+get_footer();
