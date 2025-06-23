@@ -185,10 +185,10 @@ class Shortcode
                         $content .= '<summary>' . esc_html($title) . '</summary>';
                         $content .= '<div class="faq-content">' . $description . '</div>';
                         $content .= '</details>';
-
-                        $schema .= Tools::getSchema($id, $title, $description);
                     }
                 }
+
+                $content .= Tools::getSchema($id, $title, $description);
 
                 $found = true;
             }
@@ -383,7 +383,7 @@ class Shortcode
                         $content .= '<div class="faq-content">' . $tmp . '</div>';
                         $content .= '</details>';
 
-                        $schema .= Tools::getSchema($ID, $title, $tmp);
+                        $content .= Tools::getSchema($ID, $title, $tmp);
                     }
 
                     $content .= '</div></details>';
@@ -421,7 +421,7 @@ class Shortcode
                     } else {
                         $content .= ($hide_title ? '' : '<h' . $hstart . '>' . $title . '</h' . $hstart . '>') . ($tmp ? '<p>' . $tmp . '</p>' : '');
                     }
-                    $schema .= Tools::getSchema($post->ID, $title, $tmp);
+                    $content .= Tools::getSchema($post->ID, $title, $tmp);
                     $last_anchor = $letter;
                 }
 
