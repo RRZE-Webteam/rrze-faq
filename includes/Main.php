@@ -81,7 +81,6 @@ class Main
      */
     public function enqueueScripts()
     {
-
         wp_enqueue_style(
             'rrze-faq-css',
             plugins_url('build/css/rrze-faq.css', $this->pluginFile),
@@ -127,6 +126,8 @@ class Main
                             if (($shortname = array_search($url, $domains)) !== false) {
                                 unset($domains[$shortname]);
                                 $api->deleteFAQ($shortname);
+                                $api->deleteCategories($shortname);
+                                $api->deleteTags($shortname);
                             }
                             unset($options['faqsync_categories_' . $shortname]);
                             unset($options['faqsync_donotsync_' . $shortname]);
