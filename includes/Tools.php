@@ -4,6 +4,9 @@ namespace RRZE\FAQ;
 
 defined('ABSPATH') || exit;
 
+use function RRZE\FAQ\Config\getConstants;
+
+
 class Tools
 {
     /**
@@ -101,7 +104,9 @@ class Tools
             $classes .= ' ' . trim($additional_class);
         }
 
-        return '<div class="' . esc_attr($classes) . '" aria-labeledby="' . esc_attr($headerID) . '">' . $content . '</div>';
+        $constants = getConstants();
+
+        return '<div class="' . esc_attr($classes) . '" aria-labeledby="' . esc_attr($headerID) . '">' . $constants['schema']['RRZE_SCHEMA_START'] . $content . $constants['schema']['RRZE_SCHEMA_END'] . '</div>';
     }
 
 
@@ -255,9 +260,11 @@ class Tools
         $schema = '';
         $source = get_post_meta($postID, "source", true);
         $answer = wp_strip_all_tags($answer, true);
+        $constants = getConstants();
+
         if ($source === 'website') {
-            $schema = RRZE_SCHEMA_QUESTION_START . $question . RRZE_SCHEMA_QUESTION_END;
-            $schema .= RRZE_SCHEMA_ANSWER_START . $answer . RRZE_SCHEMA_ANSWER_END;
+            $schema = $constants['schema']['RRZE_SCHEMA_QUESTION_START'] . $question . $constants['schema']['RRZE_SCHEMA_QUESTION_END'];
+            $schema .= $constants['schema']['RRZE_SCHEMA_ANSWER_START'] . $answer . $constants['schema']['RRZE_SCHEMA_ANSWER_END'];
         }
         return $schema;
     }
