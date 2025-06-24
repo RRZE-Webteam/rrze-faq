@@ -355,8 +355,9 @@ class Shortcode
                     }
 
                     $term_id_attr = $anchor . '-' . $aVal[$anchor];
-                    $content .= '<details' . ($load_open ? ' open' : '') . ' id="' . esc_attr($term_id_attr) . '" class="faq-term' . ($color ? ' color-' . esc_attr($color) : '') . '">';
-                    $content .= '<summary>' . esc_html($k) . '</summary>';
+                    $content .= '<section id="' . esc_attr($term_id_attr) . '" class="faq-term' . ($color ? ' color-' . esc_attr($color) : '') . '">';
+                    $content .= '<h3>' . esc_html($k) . '</h3>'; // ersetzt <summary>
+
                     $content .= '<div class="faq-term-content">';
 
                     // find the postIDs to this tag
@@ -374,10 +375,6 @@ class Shortcode
                             $anchorfield = 'innerID-' . $ID;
                         }
 
-
-
-                        // HERE WE ARE
-
                         $content .= '<details id="' . esc_attr($anchorfield) . '" class="faq-item">';
                         $content .= '<summary>' . esc_html($title) . '</summary>';
                         $content .= '<div class="faq-content">' . $tmp . '</div>';
@@ -386,7 +383,7 @@ class Shortcode
                         $content .= Tools::getSchema($ID, $title, $tmp);
                     }
 
-                    $content .= '</div></details>';
+                    $content .= '</div></section>';
                     $last_anchor = $aVal[$anchor];
                 }
             } else {
