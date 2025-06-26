@@ -487,7 +487,7 @@ class Shortcode
 
         wp_enqueue_style('rrze-faq-css');
 
-        $content = Tools::renderFAQWrapper($content, $headerID, $masonry, $color, $additional_class);
+        $content = Tools::renderFAQWrapper($postID, $content, $headerID, $masonry, $color, $additional_class);
 
         return $content;
 

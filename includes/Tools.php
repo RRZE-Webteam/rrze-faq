@@ -88,7 +88,7 @@ class Tools
      * @param string &$additional_class  Additional CSS classes to append.
      * @return string The wrapped HTML output.
      */
-    public static function renderFAQWrapper(string &$content, string &$headerID, bool &$masonry, string &$color, string &$additional_class): string
+    public static function renderFAQWrapper(?int $postID = null, string &$content, string &$headerID, bool &$masonry, string &$color, string &$additional_class): string
     {
         $classes = 'rrze-faq';
 
@@ -104,21 +104,9 @@ class Tools
             $classes .= ' ' . trim($additional_class);
         }
 
-        $constants = getConstants();
-
-        foreach ($constants['schema'] as $key => $value) {
-    echo "<strong>$key</strong>:<br>" . htmlentities($value) . "<br><br>";
-}
-exit;
-        echo '<pre>';
-        print_r($constants['schema']);
-        exit;
-
-        return '===' . $constants['schema']['RRZE_SCHEMA_START'] . '###';
-
+        $content .= Tools::getSchema($postID, $question, $answer);
 
         return '<div class="' . esc_attr($classes) . '" aria-labeledby="' . esc_attr($headerID) . '">' . $content . '</div>';
-        // return '<div class="' . esc_attr($classes) . '" aria-labeledby="' . esc_attr($headerID) . '">' . $constants['schema']['RRZE_SCHEMA_START'] . $content . $constants['schema']['RRZE_SCHEMA_END'] . '</div>';
     }
 
 

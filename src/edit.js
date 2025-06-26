@@ -326,6 +326,7 @@ export default function Edit( { attributes, setAttributes } ) {
 							'Only show FAQ-entries in this language.',
 							'rrze-faq'
 						) }
+						value={ lang }
 						options={ langoptions }
 						onChange={ ( value ) =>
 							setAttributes( { lang: value } )
@@ -337,6 +338,7 @@ export default function Edit( { attributes, setAttributes } ) {
 							'Group FAQ-entries by categories or tags.',
 							'rrze-faq'
 						) }
+						value={ glossary }
 						options={ glossaryoptions }
 						onChange={ ( value ) =>
 							setAttributes( { glossary: value } )
