@@ -15,6 +15,7 @@ get_header();
 <main id="main" class="site-main rrze-faq">
 
 <?php
+
 include_once('template-parts/faq_content.php');
 ?>
 </main>

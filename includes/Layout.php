@@ -6,6 +6,8 @@ defined('ABSPATH') || exit;
 
 use function RRZE\FAQ\Config\getConstants;
 use RRZE\FAQ\API;
+use RRZE\FAQ\Tools;
+
 
 /**
  * Layout settings for "faq"
@@ -205,7 +207,11 @@ class Layout
     {
         $columns['lang'] = __('Language', 'rrze-faq');
         $columns['sortfield'] = __('Sort criterion', 'rrze-faq');
-        $columns['source'] = __('Source', 'rrze-faq');
+
+        if (Tools::hasSync()) {
+            $columns['source'] = __('Source', 'rrze-faq');
+        }
+
         $columns['id'] = __('ID', 'rrze-faq');
         return $columns;
     }
@@ -216,7 +222,11 @@ class Layout
         $columns['taxonomy-faq_tag'] = __('Tag', 'rrze-faq');
         $columns['lang'] = __('Language', 'rrze-faq');
         $columns['sortfield'] = 'sortfield';
-        $columns['source'] = __('Source', 'rrze-faq');
+
+        if (Tools::hasSync()) {
+            $columns['source'] = __('Source', 'rrze-faq');
+        }
+
         $columns['id'] = __('ID', 'rrze-faq');
         return $columns;
     }
@@ -271,16 +281,20 @@ class Layout
         $sources = array_unique($sources);
         sort($sources, SORT_NATURAL | SORT_FLAG_CASE);
 
-        $output = "<select name='source'>";
-        $output .= '<option value="0">' . __('All Sources', 'rrze-faq') . '</option>';
+        if (count($sources) < 2) {
+            echo '';
+        } else {
+            $output = "<select name='source'>";
+            $output .= '<option value="0">' . __('All Sources', 'rrze-faq') . '</option>';
 
-        foreach ($sources as $term) {
-            $selected = ($term === $selectedVal) ? 'selected' : '';
-            $output .= "<option value='" . esc_attr($term) . "' $selected>" . esc_html($term) . "</option>";
+            foreach ($sources as $term) {
+                $selected = ($term === $selectedVal) ? 'selected' : '';
+                $output .= "<option value='" . esc_attr($term) . "' $selected>" . esc_html($term) . "</option>";
+            }
+
+            $output .= "</select>";
+            echo wp_kses_post($output);
         }
-
-        $output .= "</select>";
-        echo wp_kses_post($output);
     }
 
     public function filterRequestQuery($query)
@@ -316,7 +330,10 @@ class Layout
     public function addTaxColumns($columns)
     {
         $columns['lang'] = __('Language', 'rrze-faq');
-        $columns['source'] = __('Source', 'rrze-faq');
+
+        if (Tools::hasSync()) {
+            $columns['source'] = __('Source', 'rrze-faq');
+        }
         return $columns;
     }
 
@@ -329,7 +346,9 @@ class Layout
             echo esc_html(get_post_meta($post_id, 'lang', true));
         }
         if ($column_name == 'source') {
-            echo esc_html(get_post_meta($post_id, 'source', true));
+            if (Tools::hasSync()) {
+                echo esc_html(get_post_meta($post_id, 'source', true));
+            }
         }
         if ($column_name == 'sortfield') {
             echo esc_html(get_post_meta($post_id, 'sortfield', true));
@@ -346,8 +365,10 @@ class Layout
             echo esc_html($lang);
         }
         if ($column_name == 'source') {
-            $source = get_term_meta($term_id, 'source', true);
-            echo esc_html($source);
+            if (Tools::hasSync()) {
+                $source = get_term_meta($term_id, 'source', true);
+                echo esc_html($source);
+            }
         }
     }
 

@@ -106,7 +106,19 @@ class Tools
 
         $constants = getConstants();
 
-        return '<div class="' . esc_attr($classes) . '" aria-labeledby="' . esc_attr($headerID) . '">' . $constants['schema']['RRZE_SCHEMA_START'] . $content . $constants['schema']['RRZE_SCHEMA_END'] . '</div>';
+        foreach ($constants['schema'] as $key => $value) {
+    echo "<strong>$key</strong>:<br>" . htmlentities($value) . "<br><br>";
+}
+exit;
+        echo '<pre>';
+        print_r($constants['schema']);
+        exit;
+
+        return '===' . $constants['schema']['RRZE_SCHEMA_START'] . '###';
+
+
+        return '<div class="' . esc_attr($classes) . '" aria-labeledby="' . esc_attr($headerID) . '">' . $content . '</div>';
+        // return '<div class="' . esc_attr($classes) . '" aria-labeledby="' . esc_attr($headerID) . '">' . $constants['schema']['RRZE_SCHEMA_START'] . $content . $constants['schema']['RRZE_SCHEMA_END'] . '</div>';
     }
 
 
@@ -129,8 +141,6 @@ class Tools
      */
     public static function createAZ(&$aSearch)
     {
-
-        // echo Tools::renderFaqWrapper($content, $headerId, false);
         if (count($aSearch) == 1) {
             return '';
         }
@@ -368,5 +378,26 @@ class Tools
 
         return null;
     }
+
+    public static function hasSync(): bool
+    {
+        $query = new WP_Query([
+            'post_type' => 'faq',
+            'post_status' => 'publish',
+            'posts_per_page' => 1,
+            'meta_query' => [
+                [
+                    'key' => 'source',
+                    'value' => 'website',
+                    'compare' => '!=',
+                ],
+            ],
+            'fields' => 'ids',
+            'no_found_rows' => true,
+        ]);
+
+        return $query->have_posts();
+    }
+
 
 }

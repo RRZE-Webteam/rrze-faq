@@ -55,5 +55,8 @@ $masonry = false;
 $color = '';
 $additional_class = '';
 
-echo wp_kses_post(Tools::renderFaqWrapper($content, $headerID, $masonry, $color, $additional_class));
+echo wp_kses_post(Tools::renderFaqWrapper($postID, $content, $headerID, $masonry, $color, $additional_class));
+
+echo '7';
+
 

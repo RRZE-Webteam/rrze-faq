@@ -164,7 +164,7 @@ class Shortcode
         foreach ($aIDs as $id) {
             $id = trim($id);
             if ($id) {
-                $title = get_the_title($id);
+                $question = get_the_title($id);
                 $anchorfield = get_post_meta($id, 'anchorfield', true);
 
                 if (empty($anchorfield)) {
@@ -177,18 +177,18 @@ class Shortcode
                 }
 
                 if ($hide_accordion) {
-                    $content .= ($hide_title ? '' : '<h' . $hstart . '>' . $title . '</h' . $hstart . '>') .
+                    $content .= ($hide_title ? '' : '<h' . $hstart . '>' . $question . '</h' . $hstart . '>') .
                         ($description ? '<p>' . $description . '</p>' : '');
                 } else {
                     if ($description) {
                         $content .= '<details' . ($load_open ? ' open' : '') . ' id="' . esc_attr($anchorfield) . '" class="faq-item' . ($color ? ' color-' . esc_attr($color) : '') . '">';
-                        $content .= '<summary>' . esc_html($title) . '</summary>';
+                        $content .= '<summary>' . esc_html($question) . '</summary>';
                         $content .= '<div class="faq-content">' . $description . '</div>';
                         $content .= '</details>';
                     }
                 }
 
-                $content .= Tools::getSchema($id, $title, $description);
+                $content .= Tools::getSchema($id, $question, $description);
 
                 $found = true;
             }
@@ -364,11 +364,11 @@ class Shortcode
                     $aIDs = Tools::searchArrayByKey($aVal['ID'], $aPostIDs);
 
                     foreach ($aIDs as $ID) {
-                        $tmp = str_replace(']]>', ']]&gt;', apply_filters('the_content', get_post_field('post_content', $ID)));
-                        if (!isset($tmp) || (mb_strlen($tmp) < 1)) {
-                            $tmp = get_post_meta($ID, 'description', true);
+                        $answer = str_replace(']]>', ']]&gt;', apply_filters('the_content', get_post_field('post_content', $ID)));
+                        if (!isset($answer) || (mb_strlen($answer) < 1)) {
+                            $answer = get_post_meta($ID, 'description', true);
                         }
-                        $title = get_the_title($ID);
+                        $question = get_the_title($ID);
 
                         $anchorfield = get_post_meta($ID, 'anchorfield', true);
                         if (empty($anchorfield)) {
@@ -376,11 +376,11 @@ class Shortcode
                         }
 
                         $content .= '<details id="' . esc_attr($anchorfield) . '" class="faq-item">';
-                        $content .= '<summary>' . esc_html($title) . '</summary>';
-                        $content .= '<div class="faq-content">' . $tmp . '</div>';
+                        $content .= '<summary>' . esc_html($question) . '</summary>';
+                        $content .= '<div class="faq-content">' . $answer . '</div>';
                         $content .= '</details>';
 
-                        $content .= Tools::getSchema($ID, $title, $tmp);
+                        $content .= Tools::getSchema($ID, $question, $answer);
                     }
 
                     $content .= '</div></section>';
@@ -391,13 +391,13 @@ class Shortcode
                 $last_anchor = '';
                 foreach ($posts as $post) {
 
-                    $title = get_the_title($post->ID);
-                    $letter = Tools::getLetter($title);
+                    $question = get_the_title($post->ID);
+                    $letter = Tools::getLetter($question);
                     $aLetters[$letter] = true;
 
-                    $tmp = str_replace(']]>', ']]&gt;', apply_filters('the_content', get_post_field('post_content', $post->ID)));
-                    if (!isset($tmp) || (mb_strlen($tmp) < 1)) {
-                        $tmp = get_post_meta($post->ID, 'description', true);
+                    $answer = str_replace(']]>', ']]&gt;', apply_filters('the_content', get_post_field('post_content', $post->ID)));
+                    if (!isset($answer) || (mb_strlen($answer) < 1)) {
+                        $answer = get_post_meta($post->ID, 'description', true);
                     }
 
                     if (!$hide_accordion) {
@@ -411,14 +411,14 @@ class Shortcode
                             $content .= ($last_anchor != $letter ? '<h2 id="letter-' . $letter . '">' . $letter . '</h2>' : '');
                         }
                         $content .= '<details' . ($load_open ? ' open' : '') . ' id="' . esc_attr($anchorfield) . '" class="faq-item' . ($color ? ' color-' . esc_attr($color) : '') . '">';
-                        $content .= '<summary>' . esc_html($title) . '</summary>';
-                        $content .= '<div class="faq-content">' . $tmp . '</div>';
+                        $content .= '<summary>' . esc_html($question) . '</summary>';
+                        $content .= '<div class="faq-content">' . $answer . '</div>';
                         $content .= '</details>';
 
                     } else {
-                        $content .= ($hide_title ? '' : '<h' . $hstart . '>' . $title . '</h' . $hstart . '>') . ($tmp ? '<p>' . $tmp . '</p>' : '');
+                        $content .= ($hide_title ? '' : '<h' . $hstart . '>' . $question . '</h' . $hstart . '>') . ($answer ? '<p>' . $answer . '</p>' : '');
                     }
-                    $content .= Tools::getSchema($post->ID, $title, $tmp);
+                    $content .= Tools::getSchema($post->ID, $question, $answer);
                     $last_anchor = $letter;
                 }
 

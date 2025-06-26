@@ -39,11 +39,11 @@ function getConstants()
 			'zh' => __('Chinese', 'rrze-faq')
 		],
 		'schema' => [
-			'RRZE_SCHEMA_START' => '<div hidden itemscope itemtype="https://schema.org/FAQPage">',
+			'RRZE_SCHEMA_START' => '<div itemscope itemtype="https://schema.org/FAQPage">',
 			'RRZE_SCHEMA_END' => '</div>',
-			'RRZE_SCHEMA_QUESTION_START' => '<div hidden itemscope itemprop="mainEntity" itemtype="https://schema.org/Question"><div hidden itemprop="name">',
+			'RRZE_SCHEMA_QUESTION_START' => '<div itemscope itemprop="mainEntity" itemtype="https://schema.org/Question"><div itemprop="name">',
 			'RRZE_SCHEMA_QUESTION_END' => '</div>',
-			'RRZE_SCHEMA_ANSWER_START' => '<div hidden itemscope itemprop="acceptedAnswer" itemtype="https://schema.org/Answer"><div hidden itemprop="text">',
+			'RRZE_SCHEMA_ANSWER_START' => '<div itemscope itemprop="acceptedAnswer" itemtype="https://schema.org/Answer"><div itemprop="text">',
 			'RRZE_SCHEMA_ANSWER_END' => '</div></div></div>',
 		],
 	);
