@@ -212,7 +212,6 @@ class Layout
             $columns['source'] = __('Source', 'rrze-faq');
         }
 
-        $columns['id'] = __('ID', 'rrze-faq');
         return $columns;
     }
 
@@ -227,7 +226,6 @@ class Layout
             $columns['source'] = __('Source', 'rrze-faq');
         }
 
-        $columns['id'] = __('ID', 'rrze-faq');
         return $columns;
     }
 
@@ -339,9 +337,6 @@ class Layout
 
     public function getFaqColumnsValues($column_name, $post_id)
     {
-        if ($column_name == 'id') {
-            echo esc_html($post_id);
-        }
         if ($column_name == 'lang') {
             echo esc_html(get_post_meta($post_id, 'lang', true));
         }
