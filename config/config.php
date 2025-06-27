@@ -13,7 +13,7 @@ function getOptionName()
 	return 'rrze-faq';
 }
 
-function getConstants()
+function getConstants(?string $key = null)
 {
 	$options = array(
 		'fauthemes' => [
@@ -47,6 +47,11 @@ function getConstants()
 			'RRZE_SCHEMA_ANSWER_END' => '</div></div></div>',
 		],
 	);
+
+	if ($key !== null && array_key_exists($key, $options)) {
+		return $options[$key];
+	}
+
 	return $options;
 }
 
@@ -260,9 +265,6 @@ function getFields()
 
 function getShortcodeSettings()
 {
-	$conts = getConstants();
-	$langs = $conts['langcodes'];
-
 	$ret = [
 		'block' => [
 			'blocktype' => 'rrze-faq/faq',
@@ -489,8 +491,8 @@ function getShortcodeSettings()
 			'val' => __('All languages', 'rrze-faq')
 		],
 	];
-	$consts = getConstants();
-	$langs = $consts['langcodes'];
+
+	$langs = getConstants('langcodes');
 	asort($langs);
 
 	foreach ($langs as $short => $long) {

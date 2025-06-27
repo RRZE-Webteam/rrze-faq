@@ -258,11 +258,11 @@ class Tools
         $schema = '';
         $source = get_post_meta($postID, "source", true);
         $answer = wp_strip_all_tags($answer, true);
-        $constants = getConstants();
+        $schemaHTML = getConstants('schema');
 
         if ($source === 'website') {
-            $schema = $constants['schema']['RRZE_SCHEMA_QUESTION_START'] . $question . $constants['schema']['RRZE_SCHEMA_QUESTION_END'];
-            $schema .= $constants['schema']['RRZE_SCHEMA_ANSWER_START'] . $answer . $constants['schema']['RRZE_SCHEMA_ANSWER_END'];
+            $schema = $schemaHTML['RRZE_SCHEMA_QUESTION_START'] . $question . $schemaHTML['RRZE_SCHEMA_QUESTION_END'];
+            $schema .= $schemaHTML['RRZE_SCHEMA_ANSWER_START'] . $answer . $schemaHTML['RRZE_SCHEMA_ANSWER_END'];
         }
         return $schema;
     }
