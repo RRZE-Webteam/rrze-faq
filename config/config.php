@@ -16,6 +16,11 @@ function getOptionName()
 function getConstants(?string $key = null)
 {
 	$options = array(
+		'cpt' => [
+			'faq' => 'rrze_faq',
+			'category' => 'rrze_faq_category',
+			'tag' => 'rrze_faq_tag'
+		],
 		'fauthemes' => [
 			'FAU-Einrichtungen',
 			'FAU-Einrichtungen-BETA',

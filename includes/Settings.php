@@ -4,6 +4,7 @@ namespace RRZE\FAQ;
 
 defined('ABSPATH') || exit;
 
+use function RRZE\FAQ\Config\getConstants;
 use function RRZE\FAQ\Config\getOptionName;
 use function RRZE\FAQ\Config\getMenuSettings;
 use function RRZE\FAQ\Config\getHelpTab;
@@ -18,7 +19,8 @@ use RRZE\FAQ\API;
  */
 class Settings
 {
-    /**
+     private $cpt = [];
+   /**
      * The complete path and file name of the plugin file.
      * @var string
      */
@@ -94,7 +96,8 @@ class Settings
     public function __construct($pluginFile)
     {
         $this->pluginFile = $pluginFile;
-    }
+         $this->cpt = getConstants('cpt');
+   }
 
     /**
      * It is executed as soon as the class is instantiated.
@@ -221,7 +224,7 @@ class Settings
         // CPT-Single 404
         if (
             isset($wp_query->query_vars['post_type']) &&
-            $wp_query->query_vars['post_type'] === 'faq' &&
+            $wp_query->query_vars['post_type'] === $this->cpt['faq'] &&
             empty($wp_query->post)
         ) {
             self::render_custom_404();

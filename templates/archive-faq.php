@@ -14,7 +14,6 @@ get_header();
 <main id="main" class="site-main rrze-faq archive">
     <div id="content"><div class="content-container">
         <h2>FAQ</h2>
-
         <ul>
         <?php
         if (have_posts()) {

@@ -4,6 +4,7 @@ namespace RRZE\FAQ;
 
 defined('ABSPATH') || exit;
 
+use function RRZE\FAQ\Config\getConstants;
 use function RRZE\FAQ\Config\getShortcodeSettings;
 use RRZE\FAQ\Tools;
 
@@ -20,9 +21,13 @@ class Shortcode
      */
     private $settings = '';
     private $pluginname = '';
+    private $cpt = [];
+
 
     public function __construct()
     {
+        $this->cpt = getConstants('cpt');
+
         $this->settings = getShortcodeSettings();
         $this->pluginname = $this->settings['block']['blockname'];
         // add_shortcode( 'fau_glossar', [ $this, 'shortcodeOutput' ]); // BK 2020-06-05 Shortcode [fau_glossar ...] is moved to its own plugin rrze-glossary, because for historical reasons incompatible code exists in FAU institutions, which was not known when rrze-faq was rebuilt
@@ -142,12 +147,11 @@ class Shortcode
      * @param bool $hide_title Whether the title should be suppressed
      * @param string $color Color attribute of the accordion
      * @param string $load_open Attribute for open state
-     * @param string &$schema Is supplemented by generated JSON-LD schema
      * @return string The generated HTML content
      */
 
 
-    private function renderExplicitFAQs($id, bool $gutenberg, int $hstart, string $style, bool $masonry, string $expand_all_link, bool $hide_accordion, bool $hide_title, string $color, string $load_open, string &$schema): string
+    private function renderExplicitFAQs($id, bool $gutenberg, int $hstart, string $style, bool $masonry, string $expand_all_link, bool $hide_accordion, bool $hide_title, string $color, string $load_open): string
     {
         $content = '';
 
@@ -217,10 +221,9 @@ class Shortcode
      * @param mixed $tag Tag(s) as string or array
      * @param string $glossary “category” or “tag”
      * @param string $glossarystyle “a-z”, “tabs”, “tagcloud” or empty
-     * @param string &$schema Reference to the schema markup
      * @return string Rendered HTML content
      */
-    private function renderFilteredFAQs(array $atts, int $hstart, string $style, string $expand_all_link, bool $hide_accordion, bool $hide_title, string $color, string $load_open, string $sort, string $order, $category, $tag, string $glossary, string $glossarystyle, string &$schema): string
+    private function renderFilteredFAQs(array $atts, int $hstart, string $style, string $expand_all_link, bool $hide_accordion, bool $hide_title, string $color, string $load_open, string $sort, string $order, $category, $tag, string $glossary, string $glossarystyle): string
     {
         $content = '';
 
@@ -228,7 +231,7 @@ class Shortcode
         $aLetters = array();
         $tax_query = '';
 
-        $postQuery = array('post_type' => 'faq', 'post_status' => 'publish', 'numberposts' => -1, 'suppress_filters' => false);
+        $postQuery = array('post_type' => $this->cpt['faq'], 'post_status' => 'publish', 'numberposts' => -1, 'suppress_filters' => false);
         if ($sort == 'sortfield') {
             $postQuery['orderby'] = array(
                 'meta_value' => $order, // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value
@@ -242,8 +245,8 @@ class Shortcode
 
         // filter by category and/or tag and -if given- by domain related to category/tag, too
         $aTax = [];
-        $aTax['faq_category'] = Tools::getTaxBySource($category);
-        $aTax['faq_tag'] = Tools::getTaxBySource($tag);
+        $aTax[$this->cpt['category']] = Tools::getTaxBySource($category);
+        $aTax[$this->cpt['tag']] = Tools::getTaxBySource($tag);
         $aTax = array_filter($aTax); // delete empty entries
 
         if ($aTax) {
@@ -299,7 +302,7 @@ class Shortcode
                             $aCats = $category;
                         }
                         foreach ($aCats as $slug) {
-                            $filter_term = get_term_by('slug', $slug, 'faq_category');
+                            $filter_term = get_term_by('slug', $slug, $this->cpt['category']);
                             if ($filter_term) {
                                 $valid_term_ids[] = $filter_term->term_id;
                             }
@@ -311,7 +314,7 @@ class Shortcode
                             $aTags = $tag;
                         }
                         foreach ($aTags as $slug) {
-                            $filter_term = get_term_by('slug', $slug, 'faq_tag');
+                            $filter_term = get_term_by('slug', $slug, $this->cpt['tag']);
                             if ($filter_term) {
                                 $valid_term_ids[] = $filter_term->term_id;
                             }
@@ -470,9 +473,13 @@ class Shortcode
         $gutenberg = (is_array($id) ? true : false);
 
         if ($id && (!$gutenberg || $gutenberg && $id[0])) {
-            $content = $this->renderExplicitFAQs($id, $gutenberg, $hstart, $style, $masonry, $expand_all_link, $hide_accordion, $hide_title, $color, $load_open, $schema);
+            $content = $this->renderExplicitFAQs($id, $gutenberg, $hstart, $style, $masonry, $expand_all_link, $hide_accordion, $hide_title, $color, $load_open);
+            echo 'A';
+            exit;
         } else {
-            $content = $this->renderFilteredFAQs($atts, $hstart, $style, $expand_all_link, $hide_accordion, $hide_title, $color, $load_open, $sort, $order, $category, $tag, $glossary, $glossarystyle, $schema);
+            // echo 'B';
+            // exit;
+            $content = $this->renderFilteredFAQs($atts, $hstart, $style, $expand_all_link, $hide_accordion, $hide_title, $color, $load_open, $sort, $order, $category, $tag, $glossary, $glossarystyle);
         }
 
         // 2020-05-12 THIS IS NOT IN USE because f.e. [faq glossary="category"] led to errors ("TypeError: e.$slides is null slick.min.js" and "TypeError: can't access property "add"" ) as FAQ can have >1 category and so equal sliders would be returned in output which leads to JS errors that avoid accordeons to work properly
@@ -483,7 +490,7 @@ class Shortcode
         // }
 
         $postID = get_the_ID();
-        $headerID = Tools::getHeaderID($postID);
+        $headerID = (new Tools())->getHeaderID($postID);
 
         wp_enqueue_style('rrze-faq-css');
 
@@ -492,9 +499,6 @@ class Shortcode
         return $content;
 
     }
-
-
-
 
     public function setMCEConfig()
     {

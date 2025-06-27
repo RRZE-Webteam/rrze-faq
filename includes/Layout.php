@@ -211,7 +211,7 @@ class Layout
         $columns['lang'] = __('Language', 'rrze-faq');
         $columns['sortfield'] = __('Sort criterion', 'rrze-faq');
 
-        if (Tools::hasSync()) {
+        if ((new Tools())->hasSync()) {
             $columns['source'] = __('Source', 'rrze-faq');
         }
 
@@ -225,7 +225,7 @@ class Layout
         $columns['lang'] = __('Language', 'rrze-faq');
         $columns['sortfield'] = 'sortfield';
 
-        if (Tools::hasSync()) {
+        if ((new Tools())->hasSync()) {
             $columns['source'] = __('Source', 'rrze-faq');
         }
 
@@ -332,7 +332,7 @@ class Layout
     {
         $columns['lang'] = __('Language', 'rrze-faq');
 
-        if (Tools::hasSync()) {
+        if ((new Tools())->hasSync()) {
             $columns['source'] = __('Source', 'rrze-faq');
         }
         return $columns;
@@ -344,7 +344,7 @@ class Layout
             echo esc_html(get_post_meta($post_id, 'lang', true));
         }
         if ($column_name == 'source') {
-            if (Tools::hasSync()) {
+            if ((new Tools())->hasSync()) {
                 echo esc_html(get_post_meta($post_id, 'source', true));
             }
         }
@@ -363,7 +363,7 @@ class Layout
             echo esc_html($lang);
         }
         if ($column_name == 'source') {
-            if (Tools::hasSync()) {
+            if ((new Tools())->hasSync()) {
                 $source = get_term_meta($term_id, 'source', true);
                 echo esc_html($source);
             }

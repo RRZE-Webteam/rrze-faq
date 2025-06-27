@@ -9,14 +9,17 @@
 
 namespace RRZE\FAQ;
 
+use function RRZE\FAQ\Config\getConstants;
 use RRZE\FAQ\Tools;
 
 $postID = get_the_ID();
-$headerID = Tools::getHeaderID($postID);
+$tools = new Tools();
+$headerID = $tools->getHeaderID($postID);
+$cpt = getConstants('cpt');
 
-$cats = Tools::getTermLinks($postID, 'faq_category');
-$tags = Tools::getTermLinks($postID, 'faq_tag');
-$aLinkedPage = Tools::getLinkedPage($postID);
+$cats = $tools->getTermLinks($postID, $cpt['category']);
+$tags = $tools->getTermLinks($postID, $cpt['tag']);
+$aLinkedPage = $tools->getLinkedPage($postID);
 
 $content = '';
 $content .= '<article>';
@@ -55,8 +58,4 @@ $masonry = false;
 $color = '';
 $additional_class = '';
 
-echo wp_kses_post(Tools::renderFaqWrapper($postID, $content, $headerID, $masonry, $color, $additional_class));
-
-echo '7';
-
-
+echo wp_kses_post($tools->renderFaqWrapper($postID, $content, $headerID, $masonry, $color, $additional_class));
