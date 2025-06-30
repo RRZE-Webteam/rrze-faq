@@ -4,8 +4,7 @@ namespace RRZE\FAQ;
 
 defined('ABSPATH') || exit;
 
-use function RRZE\FAQ\Config\getConstants;
-use function RRZE\FAQ\Config\getShortcodeSettings;
+use RRZE\FAQ\Config;
 use RRZE\FAQ\Tools;
 
 
@@ -26,9 +25,9 @@ class Shortcode
 
     public function __construct()
     {
-        $this->cpt = getConstants('cpt');
+        $this->cpt = Config::getConstants('cpt');
 
-        $this->settings = getShortcodeSettings();
+        $this->settings = Config::getShortcodeSettings();
         $this->pluginname = $this->settings['block']['blockname'];
         // add_shortcode( 'fau_glossar', [ $this, 'shortcodeOutput' ]); // BK 2020-06-05 Shortcode [fau_glossar ...] is moved to its own plugin rrze-glossary, because for historical reasons incompatible code exists in FAU institutions, which was not known when rrze-faq was rebuilt
         // add_shortcode( 'glossary', [ $this, 'shortcodeOutput' ]); // BK 2020-06-05 Shortcode [glossary ...] is outsourced to its own plugin rrze-glossary, because for historical reasons incompatible code exists in FAU facilities, which was not known when rrze-faq was rebuilt

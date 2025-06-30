@@ -4,8 +4,7 @@ namespace RRZE\FAQ;
 
 defined('ABSPATH') || exit;
 
-use function RRZE\FAQ\Config\logIt;
-use function RRZE\FAQ\Config\deleteLogfile;
+use RRZE\FAQ\Config;
 use RRZE\FAQ\API;
 use RRZE\FAQ\CPT;
 use RRZE\FAQ\Layout;
@@ -53,14 +52,14 @@ class Main
         // Register the Custom RRZE Category, if it is not set by another plugin
         add_filter('block_categories_all', [$this, 'my_custom_block_category'], 10, 2);
 
+        $config = new Config();
         $cpt = new CPT();
-
-        $this->settings = new Settings($this->pluginFile);
-        $this->settings->onLoaded();
-
         $restAPI = new RESTAPI();
         $layout = new Layout();
         $shortcode = new Shortcode();
+
+        $this->settings = new Settings($this->pluginFile);
+        $this->settings->onLoaded();
 
         // Widget
         add_action('widgets_init', [$this, 'loadWidget']);

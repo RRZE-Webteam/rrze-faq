@@ -1,147 +1,115 @@
 <?php
 
-namespace RRZE\FAQ\Config;
+namespace RRZE\FAQ;
+
+use function __;
 
 defined('ABSPATH') || exit;
 
-/**
- * Gibt der Name der Option zurück.
- * @return array [description]
- */
-function getOptionName()
+class Config
 {
-	return 'rrze-faq';
-}
-
-function getConstants(?string $key = null)
-{
-	$options = array(
-		'cpt' => [
-			'faq' => 'rrze_faq',
-			'category' => 'rrze_faq_category',
-			'tag' => 'rrze_faq_tag'
-		],
-		'fauthemes' => [
-			'FAU-Einrichtungen',
-			'FAU-Einrichtungen-BETA',
-			'FAU-Medfak',
-			'FAU-RWFak',
-			'FAU-Philfak',
-			'FAU-Techfak',
-			'FAU-Natfak',
-			'FAU-Blog',
-			'FAU-Jobs'
-		],
-		'rrzethemes' => [
-			'RRZE 2019',
-		],
-		'langcodes' => [
-			'de' => __('German', 'rrze-faq'),
-			'en' => __('English', 'rrze-faq'),
-			'es' => __('Spanish', 'rrze-faq'),
-			'fr' => __('French', 'rrze-faq'),
-			'ru' => __('Russian', 'rrze-faq'),
-			'zh' => __('Chinese', 'rrze-faq')
-		],
-		'schema' => [
-			'RRZE_SCHEMA_START' => '<div itemscope itemtype="https://schema.org/FAQPage">',
-			'RRZE_SCHEMA_END' => '</div>',
-			'RRZE_SCHEMA_QUESTION_START' => '<div itemscope itemprop="mainEntity" itemtype="https://schema.org/Question"><div itemprop="name">',
-			'RRZE_SCHEMA_QUESTION_END' => '</div>',
-			'RRZE_SCHEMA_ANSWER_START' => '<div itemscope itemprop="acceptedAnswer" itemtype="https://schema.org/Answer"><div itemprop="text">',
-			'RRZE_SCHEMA_ANSWER_END' => '</div></div></div>',
-		],
-	);
-
-	if ($key !== null && array_key_exists($key, $options)) {
-		return $options[$key];
-	}
-
-	return $options;
-}
-
-
-/**
- * Gibt die Einstellungen des Menus zurück.
- * @return array [description]
- */
-function getMenuSettings()
-{
-	return [
-		'page_title' => __('RRZE FAQ', 'rrze-faq'),
-		'menu_title' => __('RRZE FAQ', 'rrze-faq'),
-		'capability' => 'manage_options',
-		'menu_slug' => 'rrze-faq',
-		'title' => __('RRZE FAQ Settings', 'rrze-faq'),
-	];
-}
-
-/**
- * Gibt die Einstellungen der Inhaltshilfe zurück.
- * @return array [description]
- */
-function getHelpTab()
-{
-	return [
-		[
-			'id' => 'rrze-faq-help',
-			'content' => [
-				'<p>' . __('Here comes the Context Help content.', 'rrze-faq') . '</p>'
-			],
-			'title' => __('Overview', 'rrze-faq'),
-			'sidebar' => sprintf('<p><strong>%1$s:</strong></p><p><a href="https://blogs.fau.de/webworking">RRZE Webworking</a></p><p><a href="https://github.com/RRZE Webteam">%2$s</a></p>', __('For more information', 'rrze-faq'), __('RRZE Webteam on Github', 'rrze-faq'))
-		]
-	];
-}
-
-/**
- * Gibt die Einstellungen der Optionsbereiche zurück.
- * @return array [description]
- */
-
-function getSections()
-{
-	return [
-		[
-			'id' => 'doms',
-			'title' => __('Domains', 'rrze-faq')
-		],
-		[
-			'id' => 'faqsync',
-			'title' => __('Synchronize', 'rrze-faq')
-		],
-		[
-			'id' => 'website',
-			'title' => __('Website', 'rrze-faq')
-		],
-		[
-			'id' => 'faqlog',
-			'title' => __('Logfile', 'rrze-faq')
-		]
-	];
-}
-
-
-function getPageList() {
-  $pages = \get_pages([
-        'sort_column' => 'post_title',
-        'sort_order' => 'asc',
-        'post_status' => 'publish'
-    ]);
-	
-	$options = ['' => __('Default archive', 'rrze-faq')];
-    foreach ($pages as $page) {
-        $options[get_permalink($page->ID)] = $page->post_title;
+    public static function getOptionName(): string
+    {
+        return 'rrze-faq';
     }
-    return $options;
-}
 
-/**
+    public static function getConstants(?string $key = null): array|string|null
+    {
+        $options = [
+            'cpt' => [
+                'faq' => 'rrze_faq',
+                'category' => 'rrze_faq_category',
+                'tag' => 'rrze_faq_tag'
+            ],
+            'fauthemes' => [
+                'FAU-Einrichtungen',
+                'FAU-Einrichtungen-BETA',
+                'FAU-Medfak',
+                'FAU-RWFak',
+                'FAU-Philfak',
+                'FAU-Techfak',
+                'FAU-Natfak',
+                'FAU-Blog',
+                'FAU-Jobs'
+            ],
+            'rrzethemes' => ['RRZE 2019'],
+            'langcodes' => [
+                'de' => __('German', 'rrze-faq'),
+                'en' => __('English', 'rrze-faq'),
+                'es' => __('Spanish', 'rrze-faq'),
+                'fr' => __('French', 'rrze-faq'),
+                'ru' => __('Russian', 'rrze-faq'),
+                'zh' => __('Chinese', 'rrze-faq')
+            ],
+            'schema' => [
+                'RRZE_SCHEMA_START' => '<div itemscope itemtype="https://schema.org/FAQPage">',
+                'RRZE_SCHEMA_END' => '</div>',
+                'RRZE_SCHEMA_QUESTION_START' => '<div itemscope itemprop="mainEntity" itemtype="https://schema.org/Question"><div itemprop="name">',
+                'RRZE_SCHEMA_QUESTION_END' => '</div>',
+                'RRZE_SCHEMA_ANSWER_START' => '<div itemscope itemprop="acceptedAnswer" itemtype="https://schema.org/Answer"><div itemprop="text">',
+                'RRZE_SCHEMA_ANSWER_END' => '</div></div></div>',
+            ]
+        ];
+
+        return $key !== null && array_key_exists($key, $options) ? $options[$key] : $options;
+    }
+
+    public static function getMenuSettings(): array
+    {
+        return [
+            'page_title' => __('RRZE FAQ', 'rrze-faq'),
+            'menu_title' => __('RRZE FAQ', 'rrze-faq'),
+            'capability' => 'manage_options',
+            'menu_slug' => 'rrze-faq',
+            'title' => __('RRZE FAQ Settings', 'rrze-faq'),
+        ];
+    }
+
+    public static function getHelpTab(): array
+    {
+        return [[
+            'id' => 'rrze-faq-help',
+            'content' => ['<p>' . __('Here comes the Context Help content.', 'rrze-faq') . '</p>'],
+            'title' => __('Overview', 'rrze-faq'),
+            'sidebar' => sprintf(
+                '<p><strong>%1$s:</strong></p><p><a href="https://blogs.fau.de/webworking">RRZE Webworking</a></p><p><a href="https://github.com/RRZE Webteam">%2$s</a></p>',
+                __('For more information', 'rrze-faq'),
+                __('RRZE Webteam on Github', 'rrze-faq')
+            )
+        ]];
+    }
+
+    public static function getSections(): array
+    {
+        return [
+            ['id' => 'doms', 'title' => __('Domains', 'rrze-faq')],
+            ['id' => 'faqsync', 'title' => __('Synchronize', 'rrze-faq')],
+            ['id' => 'website', 'title' => __('Website', 'rrze-faq')],
+            ['id' => 'faqlog', 'title' => __('Logfile', 'rrze-faq')]
+        ];
+    }
+
+    public static function getPageList(): array
+    {
+        $pages = \get_pages([
+            'sort_column' => 'post_title',
+            'sort_order' => 'asc',
+            'post_status' => 'publish'
+        ]);
+
+        $options = ['' => __('Default archive', 'rrze-faq')];
+        foreach ($pages as $page) {
+            $options[get_permalink($page->ID)] = $page->post_title;
+        }
+        return $options;
+    }
+
+    /**
  * Gibt die Einstellungen der Optionsfelder zurück.
  * @return array [description]
  */
 
-function getFields()
+public static function getFields():array
 {
 	return [
 		'doms' => [
@@ -223,7 +191,7 @@ function getFields()
 				'label' => __('Custom archive page', 'rrze-faq'),
 				'desc' => '',
 				'type' => 'select',
-                'options' => getPageList(),				
+                'options' => self::getPageList(),				
 				'default' => ''
 			],
 			[
@@ -268,7 +236,7 @@ function getFields()
  * @return array [description]
  */
 
-function getShortcodeSettings()
+public static function getShortcodeSettings():array
 {
 	$ret = [
 		'block' => [
@@ -497,7 +465,7 @@ function getShortcodeSettings()
 		],
 	];
 
-	$langs = getConstants('langcodes');
+	$langs = self::getConstants('langcodes');
 	asort($langs);
 
 	foreach ($langs as $short => $long) {
@@ -512,36 +480,34 @@ function getShortcodeSettings()
 
 }
 
-function logIt($msg)
-{
-    global $wp_filesystem;
+    public static function logIt(string $msg): void
+    {
+        global $wp_filesystem;
 
-    // Initialisiere das WP_Filesystem
-    if ( ! function_exists( 'WP_Filesystem' ) ) {
-        require_once ABSPATH . 'wp-admin/includes/file.php';
+        if (!function_exists('WP_Filesystem')) {
+            require_once ABSPATH . 'wp-admin/includes/file.php';
+        }
+        WP_Filesystem();
+
+        $msg = wp_date("Y-m-d H:i:s") . ' | ' . $msg;
+
+        if ($wp_filesystem->exists(FAQLOGFILE)) {
+            $content = $wp_filesystem->get_contents(FAQLOGFILE);
+            $content = $msg . "\n" . $content;
+        } else {
+            $content = $msg;
+        }
+
+        $wp_filesystem->put_contents(FAQLOGFILE, $content, FS_CHMOD_FILE);
     }
-    WP_Filesystem();
 
-    // Formatierte Nachricht
-    $msg = wp_date("Y-m-d H:i:s") . ' | ' . $msg;
-
-    // Lese den Inhalt der Datei, falls sie existiert
-    if ($wp_filesystem->exists(FAQLOGFILE)) {
-        $content = $wp_filesystem->get_contents(FAQLOGFILE);
-        $content = $msg . "\n" . $content;
-    } else {
-        $content = $msg;
+    public static function deleteLogfile(): void
+    {
+        if (file_exists(FAQLOGFILE)) {
+            wp_delete_file(FAQLOGFILE);
+        }
     }
 
-    // Schreibe den neuen Inhalt in die Datei
-    $wp_filesystem->put_contents(FAQLOGFILE, $content, FS_CHMOD_FILE);
+    // Hinweis: getFields() und getShortcodeSettings() wären zu umfangreich für diese Darstellung,
+    // sollten aber analog eingebaut und in überschaubare Teilmethoden ausgelagert werden.
 }
-
-function deleteLogfile()
-{
-	if (file_exists(FAQLOGFILE)) {
-		wp_delete_file(FAQLOGFILE);
-	}
-}
-
-

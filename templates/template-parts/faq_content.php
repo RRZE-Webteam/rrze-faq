@@ -9,13 +9,13 @@
 
 namespace RRZE\FAQ;
 
-use function RRZE\FAQ\Config\getConstants;
+use RRZE\FAQ\Config;
 use RRZE\FAQ\Tools;
 
 $postID = get_the_ID();
 $tools = new Tools();
 $headerID = $tools->getHeaderID($postID);
-$cpt = getConstants('cpt');
+$cpt = Config::getConstants('cpt');
 
 $cats = $tools->getTermLinks($postID, $cpt['category']);
 $tags = $tools->getTermLinks($postID, $cpt['tag']);

@@ -4,7 +4,7 @@ namespace RRZE\FAQ;
 
 defined('ABSPATH') || exit;
 
-use function RRZE\FAQ\Config\getConstants;
+use RRZE\FAQ\Config;
 use RRZE\FAQ\API;
 use RRZE\FAQ\Tools;
 
@@ -18,7 +18,7 @@ class Layout
 
     public function __construct()
     {
-        $this->cpt = getConstants('cpt');
+        $this->cpt = Config::getConstants('cpt');
 
         add_filter('pre_get_posts', [$this, 'makeFaqSortable']);
         add_filter('enter_title_here', [$this, 'changeTitleText']);
@@ -375,7 +375,7 @@ class Layout
         $ret = '';
         $active_theme = wp_get_theme();
         $active_theme = $active_theme->get('Name');
-        $fauthemes = getConstants('fauthemes');
+        $fauthemes = Config::getConstants('fauthemes');
 
         if (in_array($active_theme, $fauthemes)) {
             $ret = 'fauthemes';

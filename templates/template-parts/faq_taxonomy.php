@@ -5,9 +5,10 @@ Template Name: Part of the Custom Taxonomy Templates
 
 namespace RRZE\FAQ;
 
-use function RRZE\FAQ\Config\getConstants;
+use RRZE\FAQ\Config;
+getConstants;
 
-$cpt = getConstants('cpt');
+$cpt = Config::getConstants('cpt');
 
 $cat_slug = get_queried_object()->slug;
 $cat_name = get_queried_object()->name;

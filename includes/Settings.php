@@ -4,12 +4,7 @@ namespace RRZE\FAQ;
 
 defined('ABSPATH') || exit;
 
-use function RRZE\FAQ\Config\getConstants;
-use function RRZE\FAQ\Config\getOptionName;
-use function RRZE\FAQ\Config\getMenuSettings;
-use function RRZE\FAQ\Config\getHelpTab;
-use function RRZE\FAQ\Config\getSections;
-use function RRZE\FAQ\Config\getFields;
+use RRZE\FAQ\Config;
 use RRZE\FAQ\API;
 
 
@@ -96,7 +91,7 @@ class Settings
     public function __construct($pluginFile)
     {
         $this->pluginFile = $pluginFile;
-         $this->cpt = getConstants('cpt');
+         $this->cpt = Config::getConstants('cpt');
    }
 
     /**
@@ -218,7 +213,7 @@ class Settings
     {
         global $wp_query;
 
-        $options = get_option('rrze-faq');
+        $this->options = $this->getOptions();
         $slug = !empty($this->options['website_custom_faq_slug']) ? sanitize_title($this->options['website_custom_faq_slug']) : 'faq';
 
         // CPT-Single 404
@@ -298,13 +293,13 @@ class Settings
         $this->setFields();
         $this->setTabs();
 
-        $this->optionName = getOptionName();
+        $this->optionName = Config::getOptionName();
         $this->options = $this->getOptions();
     }
 
     protected function setMenu()
     {
-        $this->settingsMenu = getmenuSettings();
+        $this->settingsMenu = Config::getmenuSettings();
     }
 
     /**
@@ -312,7 +307,7 @@ class Settings
      */
     protected function setSections()
     {
-        $this->settingsSections = getSections();
+        $this->settingsSections = Config::getSections();
     }
 
     /**
@@ -329,7 +324,7 @@ class Settings
      */
     protected function setFields()
     {
-        $this->settingsFields = getFields();
+        $this->settingsFields = Config::getFields();
         if (isset($_GET['page']) && $_GET['page'] == 'rrze-faq' && isset($_GET['current-tab']) && $_GET['current-tab'] == 'faqsync') {
             // Add Sync fields for each domain
             $this->settingsFields['faqsync'] = $this->setSettingsDomains();

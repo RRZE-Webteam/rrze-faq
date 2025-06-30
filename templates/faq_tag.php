@@ -4,9 +4,10 @@ Template Name: Custom Taxonomy faq_tag Template
 */
 namespace RRZE\FAQ;
 
-use function RRZE\FAQ\Config\getConstants;
+use RRZE\FAQ\Config;
+getConstants;
 
-$cpt = getConstants('cpt');
+$cpt = Config::getConstants('cpt');
 
 get_header();
 

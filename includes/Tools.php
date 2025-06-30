@@ -5,7 +5,7 @@ namespace RRZE\FAQ;
 defined('ABSPATH') || exit;
 
 use WP_Query;
-use function RRZE\FAQ\Config\getConstants;
+use RRZE\FAQ\Config;
 
 class Tools
 {
@@ -13,7 +13,7 @@ class Tools
 
     public function __construct()
     {
-        $this->cpt = getConstants('cpt');
+        $this->cpt = Config::getConstants('cpt');
     }
 
     public static function preventGutenbergDoubleBracketBug(string $shortcode_tag)
@@ -181,7 +181,7 @@ class Tools
         $schema = '';
         $source = get_post_meta($postID, "source", true);
         $answer = wp_strip_all_tags($answer, true);
-        $schemaHTML = getConstants('schema');
+        $schemaHTML = Config::getConstants('schema');
 
         if ($source === 'website') {
             $schema = $schemaHTML['RRZE_SCHEMA_QUESTION_START'] . $question . $schemaHTML['RRZE_SCHEMA_QUESTION_END'];

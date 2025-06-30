@@ -6,7 +6,7 @@ defined('ABSPATH') || exit;
 
 require_once ABSPATH . 'wp-includes/class-wp-widget.php';
 
-use function RRZE\FAQ\Config\getConstants;
+use RRZE\FAQ\Config;
 
 
 // Creating the widget
@@ -16,7 +16,7 @@ class FAQWidget extends \WP_Widget
 
     public function __construct()
     {
-        $this->cpt = getConstants('cpt');
+        $this->cpt = Config::getConstants('cpt');
 
         parent::__construct(
             'faq_widget',

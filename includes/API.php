@@ -6,7 +6,7 @@ defined('ABSPATH') || exit;
 
 define('ENDPOINT', 'wp-json/wp/v2/faq');
 
-use function RRZE\FAQ\Config\getConstants;
+use RRZE\FAQ\Config;
 
 
 class API
@@ -16,7 +16,7 @@ class API
 
     public function __construct()
     {
-        $this->cpt = getConstants('cpt');
+        $this->cpt = Config::getConstants('cpt');
     }
 
     public function setDomain($shortname, $url, $domains)

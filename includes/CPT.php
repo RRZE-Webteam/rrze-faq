@@ -3,7 +3,7 @@
 namespace RRZE\FAQ;
 
 defined('ABSPATH') || exit;
-use function RRZE\FAQ\Config\getConstants;
+use RRZE\FAQ\Config;
 
 /**
  * Custom Post Type "faq"
@@ -16,7 +16,7 @@ class CPT
 
     public function __construct()
     {
-        $this->cpt = getConstants('cpt');
+        $this->cpt = Config::getConstants('cpt');
         $this->lang = substr(get_locale(), 0, 2);
 
         add_action('init', [$this, 'registerFaq'], 0);
@@ -278,6 +278,9 @@ class CPT
 
     public function filter_archive_template($template)
     {
+    // echo '<pre>';
+    // var_dump($this->cpt['faq']);
+    // exit;
         if (is_post_type_archive($this->cpt['faq'])) {
             $template = plugin_dir_path(__DIR__) . 'templates/archive-faq.php';
         }

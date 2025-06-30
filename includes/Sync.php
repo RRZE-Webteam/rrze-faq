@@ -2,7 +2,6 @@
 
 namespace RRZE\FAQ;
 
-use function RRZE\FAQ\Config\logIt;
 use RRZE\FAQ\API;
 
 defined('ABSPATH') || exit;
