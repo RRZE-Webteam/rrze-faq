@@ -21,18 +21,6 @@ class Config
                 'category' => 'rrze_faq_category',
                 'tag' => 'rrze_faq_tag'
             ],
-            'fauthemes' => [
-                'FAU-Einrichtungen',
-                'FAU-Einrichtungen-BETA',
-                'FAU-Medfak',
-                'FAU-RWFak',
-                'FAU-Philfak',
-                'FAU-Techfak',
-                'FAU-Natfak',
-                'FAU-Blog',
-                'FAU-Jobs'
-            ],
-            'rrzethemes' => ['RRZE 2019'],
             'langcodes' => [
                 'de' => __('German', 'rrze-faq'),
                 'en' => __('English', 'rrze-faq'),

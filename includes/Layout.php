@@ -369,19 +369,4 @@ class Layout
             }
         }
     }
-
-    public static function getThemeGroup()
-    {
-        $ret = '';
-        $active_theme = wp_get_theme();
-        $active_theme = $active_theme->get('Name');
-        $fauthemes = Config::getConstants('fauthemes');
-
-        if (in_array($active_theme, $fauthemes)) {
-            $ret = 'fauthemes';
-        } elseif (in_array($active_theme, $fauthemes)) {
-            $ret = 'rrzethemes';
-        }
-        return $ret;
-    }
 }
