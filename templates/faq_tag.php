@@ -5,7 +5,6 @@ Template Name: Custom Taxonomy faq_tag Template
 namespace RRZE\FAQ;
 
 use RRZE\FAQ\Config;
-getConstants;
 
 $cpt = Config::getConstants('cpt');
 

@@ -6,7 +6,6 @@ Template Name: Part of the Custom Taxonomy Templates
 namespace RRZE\FAQ;
 
 use RRZE\FAQ\Config;
-getConstants;
 
 $cpt = Config::getConstants('cpt');
 
