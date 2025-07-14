@@ -4,7 +4,7 @@
 Plugin Name:     RRZE FAQ
 Plugin URI:      https://gitlab.rrze.fau.de/rrze-webteam/rrze-faq
 Description:     Plugin, um FAQ zu erstellen und aus dem FAU-Netzwerk zu synchronisieren. Verwendbar als Shortcode, Block oder Widget. 
-Version:         5.4.5
+Version:         5.4.6
 Requires at least: 6.1
 Requires PHP:      8.2
 Author:          RRZE Webteam
@@ -121,71 +121,50 @@ function deactivation()
     flush_rewrite_rules();
 }
 
-    function migrate_faq_post_type_and_taxonomies()
-    {
-        $option_name = 'rrze_faq_migration_done';
+function migrate_faq_post_type_and_taxonomies()
+{
+    $option_name = 'rrze_faq_final_migration_done';
 
-        if (get_option($option_name)) {
-            return;
-        }
-
-        global $wpdb;
-
-        $faq_posts = $wpdb->get_results("
-        SELECT ID FROM {$wpdb->posts}
-        WHERE post_type = 'faq'
-    ");
-
-        foreach ($faq_posts as $post) {
-            $source = get_post_meta($post->ID, 'source', true);
-
-            if ($source) {
-                $wpdb->update(
-                    $wpdb->posts,
-                    ['post_type' => 'rrze_faq'],
-                    ['ID' => $post->ID]
-                );
-                clean_post_cache($post->ID);
-            }
-        }
-
-        $categories = get_terms([
-            'taxonomy' => 'category',
-            'hide_empty' => false,
-        ]);
-
-        foreach ($categories as $term) {
-            if (get_term_meta($term->term_id, 'source', true)) {
-                $wpdb->update(
-                    $wpdb->term_taxonomy,
-                    ['taxonomy' => 'rrze_category'],
-                    ['term_taxonomy_id' => $term->term_taxonomy_id]
-                );
-            }
-        }
-
-        $tags = get_terms([
-            'taxonomy' => 'tag',
-            'hide_empty' => false,
-        ]);
-
-        foreach ($tags as $term) {
-            if (get_term_meta($term->term_id, 'source', true)) {
-                $wpdb->update(
-                    $wpdb->term_taxonomy,
-                    ['taxonomy' => 'rrze_tag'],
-                    ['term_taxonomy_id' => $term->term_taxonomy_id]
-                );
-            }
-        }
-
-        update_option($option_name, 1);
+    if (get_option($option_name)) {
+        return;
     }
 
-function rrze_faq_init() {
-	register_block_type( __DIR__ . '/build' );
-    $script_handle = generate_block_asset_handle( 'create-block/rrze-faq', 'editorScript' );
-    wp_set_script_translations( $script_handle, 'rrze-faq', plugin_dir_path( __FILE__ ) . 'languages' );
+    global $wpdb;
+
+
+    $wpdb->query("
+    UPDATE {$wpdb->term_taxonomy} tt
+    INNER JOIN {$wpdb->term_relationships} tr ON tr.term_taxonomy_id = tt.term_taxonomy_id
+    INNER JOIN {$wpdb->posts} p ON p.ID = tr.object_id
+    SET tt.taxonomy = 'rrze_category'
+    WHERE tt.taxonomy = 'category' AND p.post_type = 'faq'
+");
+
+    $wpdb->query("
+    UPDATE {$wpdb->term_taxonomy} tt
+    INNER JOIN {$wpdb->term_relationships} tr ON tr.term_taxonomy_id = tt.term_taxonomy_id
+    INNER JOIN {$wpdb->posts} p ON p.ID = tr.object_id
+    SET tt.taxonomy = 'rrze_tag'
+    WHERE tt.taxonomy = 'tag' AND p.post_type = 'faq'
+");
+
+    $wpdb->update(
+        $wpdb->posts,
+        ['post_type' => 'rrze_faq'],
+        ['post_type' => 'faq']
+    );
+
+    wp_cache_flush();
+    flush_rewrite_rules();
+
+    update_option($option_name, 1);
+}
+
+function rrze_faq_init()
+{
+    register_block_type(__DIR__ . '/build');
+    $script_handle = generate_block_asset_handle('create-block/rrze-faq', 'editorScript');
+    wp_set_script_translations($script_handle, 'rrze-faq', plugin_dir_path(__FILE__) . 'languages');
 }
 
 /**
@@ -210,9 +189,9 @@ function loaded()
         // Hauptklasse (Main) wird instanziiert.
         $main = new Main(__FILE__);
         $main->onLoaded();
-	    add_action( 'init', __NAMESPACE__ . '\migrate_faq_post_type_and_taxonomies' );
+        add_action('init', __NAMESPACE__ . '\migrate_faq_post_type_and_taxonomies');
     }
 
-	add_action( 'init', __NAMESPACE__ . '\rrze_faq_init' );
-	
+    add_action('init', __NAMESPACE__ . '\rrze_faq_init');
+
 }
