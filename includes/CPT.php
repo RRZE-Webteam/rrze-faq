@@ -278,9 +278,6 @@ class CPT
 
     public function filter_archive_template($template)
     {
-    // echo '<pre>';
-    // var_dump($this->cpt['faq']);
-    // exit;
         if (is_post_type_archive($this->cpt['faq'])) {
             $template = plugin_dir_path(__DIR__) . 'templates/archive-faq.php';
         }
