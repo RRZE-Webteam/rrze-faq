@@ -69,6 +69,7 @@ class Main
     }
 
 
+
     public function loadWidget()
     {
         $myWidget = new FAQWidget();
@@ -85,7 +86,7 @@ class Main
             plugins_url('build/css/rrze-faq.css', $this->pluginFile),
             [],
             filemtime(plugin_dir_path($this->pluginFile) . 'build/css/rrze-faq.css')
-        );        
+        );
     }
 
 
@@ -230,7 +231,7 @@ class Main
         }
 
         $custom_category = [
-            'slug'  => 'rrze',
+            'slug' => 'rrze',
             'title' => __('RRZE', 'rrze-faq'),
         ];
 

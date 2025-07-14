@@ -4,7 +4,7 @@
 Plugin Name:     RRZE FAQ
 Plugin URI:      https://gitlab.rrze.fau.de/rrze-webteam/rrze-faq
 Description:     Plugin, um FAQ zu erstellen und aus dem FAU-Netzwerk zu synchronisieren. Verwendbar als Shortcode, Block oder Widget. 
-Version:         5.4.4
+Version:         5.4.5
 Requires at least: 6.1
 Requires PHP:      8.2
 Author:          RRZE Webteam
@@ -121,6 +121,67 @@ function deactivation()
     flush_rewrite_rules();
 }
 
+    function migrate_faq_post_type_and_taxonomies()
+    {
+        $option_name = 'rrze_faq_migration_done';
+
+        if (get_option($option_name)) {
+            return;
+        }
+
+        global $wpdb;
+
+        $faq_posts = $wpdb->get_results("
+        SELECT ID FROM {$wpdb->posts}
+        WHERE post_type = 'faq'
+    ");
+
+        foreach ($faq_posts as $post) {
+            $source = get_post_meta($post->ID, 'source', true);
+
+            if ($source) {
+                $wpdb->update(
+                    $wpdb->posts,
+                    ['post_type' => 'rrze_faq'],
+                    ['ID' => $post->ID]
+                );
+                clean_post_cache($post->ID);
+            }
+        }
+
+        $categories = get_terms([
+            'taxonomy' => 'category',
+            'hide_empty' => false,
+        ]);
+
+        foreach ($categories as $term) {
+            if (get_term_meta($term->term_id, 'source', true)) {
+                $wpdb->update(
+                    $wpdb->term_taxonomy,
+                    ['taxonomy' => 'rrze_category'],
+                    ['term_taxonomy_id' => $term->term_taxonomy_id]
+                );
+            }
+        }
+
+        $tags = get_terms([
+            'taxonomy' => 'tag',
+            'hide_empty' => false,
+        ]);
+
+        foreach ($tags as $term) {
+            if (get_term_meta($term->term_id, 'source', true)) {
+                $wpdb->update(
+                    $wpdb->term_taxonomy,
+                    ['taxonomy' => 'rrze_tag'],
+                    ['term_taxonomy_id' => $term->term_taxonomy_id]
+                );
+            }
+        }
+
+        update_option($option_name, 1);
+    }
+
 function rrze_faq_init() {
 	register_block_type( __DIR__ . '/build' );
     $script_handle = generate_block_asset_handle( 'create-block/rrze-faq', 'editorScript' );
@@ -149,6 +210,7 @@ function loaded()
         // Hauptklasse (Main) wird instanziiert.
         $main = new Main(__FILE__);
         $main->onLoaded();
+	    add_action( 'init', __NAMESPACE__ . '\migrate_faq_post_type_and_taxonomies' );
     }
 
 	add_action( 'init', __NAMESPACE__ . '\rrze_faq_init' );
