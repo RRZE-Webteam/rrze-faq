@@ -8,6 +8,17 @@
  * @since FAU 1.0
 */
 
-include_once('template-parts/single_head.php');
+get_header();
+
+?>
+
+<main id="main" class="site-main rrze-faq">
+
+<?php
+
 include_once('template-parts/faq_content.php');
-include_once('template-parts/foot.php');
+?>
+</main>
+
+<?php
+get_footer();

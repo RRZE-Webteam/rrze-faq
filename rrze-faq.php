@@ -4,9 +4,9 @@
 Plugin Name:     RRZE FAQ
 Plugin URI:      https://gitlab.rrze.fau.de/rrze-webteam/rrze-faq
 Description:     Plugin, um FAQ zu erstellen und aus dem FAU-Netzwerk zu synchronisieren. Verwendbar als Shortcode, Block oder Widget. 
-Version:         5.3.5
+Version:         5.4.4
 Requires at least: 6.1
-Requires PHP:      8.0
+Requires PHP:      8.2
 Author:          RRZE Webteam
 Author URI:      https://blogs.fau.de/webworking/
 License:         GNU General Public License v2
@@ -19,7 +19,6 @@ namespace RRZE\FAQ;
 
 defined('ABSPATH') || exit;
 
-require_once 'config/config.php';
 use RRZE\FAQ\Main;
 
 $s = array(
@@ -38,12 +37,6 @@ define('FAQLOGFILE', plugin_dir_path(__FILE__) . 'rrze-faq-' . preg_replace($s, 
 const RRZE_PHP_VERSION = '8.0';
 const RRZE_WP_VERSION = '6.1';
 const RRZE_PLUGIN_FILE = __FILE__;
-const RRZE_SCHEMA_START = '<div style="display:none" itemscope itemtype="https://schema.org/FAQPage">';
-const RRZE_SCHEMA_END = '</div>';
-const RRZE_SCHEMA_QUESTION_START = '<div style="display:none" itemscope itemprop="mainEntity" itemtype="https://schema.org/Question"><div style="display:none" itemprop="name">';
-const RRZE_SCHEMA_QUESTION_END = '</div>';
-const RRZE_SCHEMA_ANSWER_START = '<div style="display:none" itemscope itemprop="acceptedAnswer" itemtype="https://schema.org/Answer"><div style="display:none" itemprop="text">';
-const RRZE_SCHEMA_ANSWER_END = '</div></div></div>';
 
 // Automatische Laden von Klassen.
 spl_autoload_register(function ($class) {
@@ -86,10 +79,10 @@ function system_requirements()
     $error = '';
     if (version_compare(PHP_VERSION, RRZE_PHP_VERSION, '<')) {
         /* translators: 1: current PHP version, 2: required PHP version */
-        $error = sprintf(__('The server is running PHP version %1$s. The Plugin requires at least PHP version %2$s.', 'rrze-typesettings'), PHP_VERSION, RRZE_PHP_VERSION);
+        $error = sprintf(__('The server is running PHP version %1$s. The Plugin requires at least PHP version %2$s.', 'rrze-faq'), PHP_VERSION, RRZE_PHP_VERSION);
     } elseif (version_compare($GLOBALS['wp_version'], RRZE_WP_VERSION, '<')) {
         /* translators: 1: current WordPress version, 2: required WordPress version */
-        $error = sprintf(__('The server is running WordPress version %1$s. The Plugin requires at least WordPress version %2$s.', 'rrze-typesettings'), $GLOBALS['wp_version'], RRZE_WP_VERSION);
+        $error = sprintf(__('The server is running WordPress version %1$s. The Plugin requires at least WordPress version %2$s.', 'rrze-faq'), $GLOBALS['wp_version'], RRZE_WP_VERSION);
     }
     return $error;
 }

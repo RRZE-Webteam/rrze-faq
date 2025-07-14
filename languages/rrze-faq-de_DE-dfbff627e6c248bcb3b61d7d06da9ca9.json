@@ -1,1 +1,70 @@
-{"translation-revision-date":"2025-02-27 11:05+0100","generator":"WP-CLI\/2.11.0","source":"build\/index.js","domain":"messages","locale_data":{"messages":{"":{"domain":"messages","lang":"de_DE","plural-forms":"nplurals=2; plural=(n != 1);"},"German":["Deutsch"],"English":["Englisch"],"Spanish":["Spanisch"],"French":["Franz\u00f6sisch"],"Russian":["Russisch"],"Chinese":["Chinesisch"],"Categories":["Kategorien"],"none":["keine"],"Tags":["Schlagw\u00f6rter"],"-- hidden --":["-- versteckt --"],"A - Z":["A - Z"],"Tagcloud":["Schlagw\u00f6rterwolke"],"Tabs":["Tabs"],"Glossary style":["Glossar Stil"],"Hide title":["Titel ausblenden"],"Show \"expand all\" button":["Schaltfl\u00e4che \"Alles erweitern\" anzeigen"],"Color":["Farbe"],"Language":["Sprache"],"Title":["Titel"],"ID":["ID"],"Sort field":["Sortierfeld"],"Sort":["Sortieren"],"ASC":["Aufsteigend"],"DESC":["Absteigend"],"Order":["Bestellung"],"all":["alle"],"No title":["Kein Titel"],"Filter options":["Filterm\u00f6glichkeiten"],"Filter the FAQ-entries.":["Filtere die FAQ-Eintr\u00e4ge."],"Only show FAQ-entries with these selected categories.":["Zeige nur FAQ-Eintr\u00e4ge mit diesen ausgew\u00e4hlten Kategorien."],"Only show FAQ-entries with these selected tags.":["Zeige nur FAQ-Eintr\u00e4ge mit diesen ausgew\u00e4hlten Schlagw\u00f6rtern."],"Single FAQ-Entries":["Einzelne FAQ-Eintr\u00e4ge"],"Only show these FAQ-entries.":["Zeige nur diese FAQ-Eintr\u00e4ge an."],"Only show FAQ-entries in this language.":["Zeige nur FAQ-Eintr\u00e4ge in dieser Sprache an."],"Group Glossary Content by":["Gruppiere Glossar-Inhalte nach"],"Group FAQ-entries by categories or tags.":["Gruppiere FAQ-Eintr\u00e4ge nach Kategorien oder Schlagw\u00f6rter."],"Appearance":["Darstellungsoptionen"],"Hide accordion":["Akkordeon ausblenden"],"Load website with opened accordions":["Website mit ge\u00f6ffneten Akkordeons laden"],"Accordion-Style":["Akkordeon-Stil"],"Sorting options":["Sortieren"]}}}
+{
+	"translation-revision-date": "2025-02-27 11:05+0100",
+	"generator": "WP-CLI/2.11.0",
+	"source": "build/index.js",
+	"domain": "messages",
+	"locale_data": {
+		"messages": {
+			"": {
+				"domain": "messages",
+				"lang": "de_DE",
+				"plural-forms": "nplurals=2; plural=(n != 1);"
+			},
+			"German": ["Deutsch"],
+			"English": ["Englisch"],
+			"Spanish": ["Spanisch"],
+			"French": ["Franz\u00f6sisch"],
+			"Russian": ["Russisch"],
+			"Chinese": ["Chinesisch"],
+			"Categories": ["Kategorien"],
+			"none": ["keine"],
+			"Tags": ["Schlagw\u00f6rter"],
+			"-- hidden --": ["-- versteckt --"],
+			"A - Z": ["A - Z"],
+			"Tagcloud": ["Schlagw\u00f6rterwolke"],
+			"Tabs": ["Tabs"],
+			"Glossary style": ["Glossar Stil"],
+			"Hide title": ["Titel ausblenden"],
+			"Show \"expand all\" button": [
+				"Schaltfl\u00e4che \"Alles erweitern\" anzeigen"
+			],
+			"Color": ["Farbe"],
+			"Language": ["Sprache"],
+			"Title": ["Titel"],
+			"ID": ["ID"],
+			"Sort field": ["Sortierfeld"],
+			"Sort": ["Sortieren"],
+			"ASC": ["Aufsteigend"],
+			"DESC": ["Absteigend"],
+			"Order": ["Bestellung"],
+			"all": ["alle"],
+			"No title": ["Kein Titel"],
+			"Filter options": ["Filterm\u00f6glichkeiten"],
+			"Filter the FAQ-entries.": ["Filtere die FAQ-Eintr\u00e4ge."],
+			"Only show FAQ-entries with these selected categories.": [
+				"Zeige nur FAQ-Eintr\u00e4ge mit diesen ausgew\u00e4hlten Kategorien."
+			],
+			"Only show FAQ-entries with these selected tags.": [
+				"Zeige nur FAQ-Eintr\u00e4ge mit diesen ausgew\u00e4hlten Schlagw\u00f6rtern."
+			],
+			"Single FAQ-Entries": ["Einzelne FAQ-Eintr\u00e4ge"],
+			"Only show these FAQ-entries.": [
+				"Zeige nur diese FAQ-Eintr\u00e4ge an."
+			],
+			"Only show FAQ-entries in this language.": [
+				"Zeige nur FAQ-Eintr\u00e4ge in dieser Sprache an."
+			],
+			"Group Glossary Content by": ["Gruppiere Glossar-Inhalte nach"],
+			"Group FAQ-entries by categories or tags.": [
+				"Gruppiere FAQ-Eintr\u00e4ge nach Kategorien oder Schlagw\u00f6rter."
+			],
+			"Appearance": ["Darstellungsoptionen"],
+			"Hide accordion": ["Akkordeon ausblenden"],
+			"Load website with opened accordions": [
+				"Website mit ge\u00f6ffneten Akkordeons laden"
+			],
+			"Accordion-Style": ["Akkordeon-Stil"],
+			"Sorting options": ["Sortieren"]
+		}
+	}
+}

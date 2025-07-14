@@ -4,107 +4,246 @@ namespace RRZE\FAQ;
 
 defined('ABSPATH') || exit;
 
-use function RRZE\FAQ\Config\getOptionName;
-use function RRZE\FAQ\Config\getMenuSettings;
-use function RRZE\FAQ\Config\getHelpTab;
-use function RRZE\FAQ\Config\getSections;
-use function RRZE\FAQ\Config\getFields;
+use RRZE\FAQ\Config;
 use RRZE\FAQ\API;
 
 
 
 /**
- * Settings-Klasse
+ * Settings class
  */
 class Settings
 {
-    /**
-     * Der vollständige Pfad- und Dateiname der Plugin-Datei.
+     private $cpt = [];
+   /**
+     * The complete path and file name of the plugin file.
      * @var string
      */
     protected $pluginFile;
 
     /**
-     * Optionsname
+     * Option name
      * @var string
      */
     protected $optionName;
 
     /**
-     * Einstellungsoptionen
+     * Settings options
      * @var array
      */
     protected $options;
 
     /**
-     * Settings-Menü
+     * Settings menue
      * @var array
      */
     protected $settingsMenu;
 
     /**
-     * Settings-Bereiche
+     * Settings areas
      * @var array
      */
     protected $settingsSections;
 
     /**
-     * Settings-Felder
+     * Settings fields
      * @var array
      */
     protected $settingsFields;
 
     /**
-     * Alle Registerkarte
+     * All tabs
      * @var array
      */
     protected $allTabs = [];
 
     /**
-     * Standard-Registerkarte
+     * Standard tab
      * @var string
      */
     protected $defaultTab = '';
 
     /**
-     * Aktuelle Registerkarte
+     * Current tab
      * @var string
      */
     protected $currentTab = '';
 
 
     /**
-     * Registrierte Domains
+     * Registered domains
      * @var string
      */
     protected $domains = array();
 
     /**
-     * Optionsseite
+     * Options page
      * @var string
      */
     protected $optionsPage;
 
     /**
-     * Variablen Werte zuweisen.
+     * Assign values to variables.
      * @param string $pluginFile [description]
+     * 
      */
+
     public function __construct($pluginFile)
     {
         $this->pluginFile = $pluginFile;
-    }
+         $this->cpt = Config::getConstants('cpt');
+   }
 
     /**
-     * Er wird ausgeführt, sobald die Klasse instanziiert wird.
+     * It is executed as soon as the class is instantiated.
      * @return void
      */
     public function onLoaded()
     {
         add_action('init', [$this, 'regularInit'], 1);
         add_action('admin_init', [$this, 'adminInit']);
+
         add_action('admin_menu', [$this, 'adminMenu']);
         add_action('admin_enqueue_scripts', [$this, 'adminEnqueueScripts']);
+
+        add_action('init', [$this, 'maybeFlushRewriteRules'], 20);
+        add_action('update_option_rrze-faq', [$this, 'checkSlugChange'], 10, 2);
+
+        add_action('template_redirect', [$this, 'maybe_disable_canonical_redirect'], 1);
+        add_action('template_redirect', [$this, 'custom_cpt_404_message']);
+
     }
+    public function checkSlugChange($old_value, $value)
+    {
+        $rewriteKeys = [
+            'website_custom_faq_slug',
+            'website_custom_faq_category_slug',
+            'website_custom_faq_tag_slug',
+        ];
+
+        foreach ($rewriteKeys as $key) {
+            if (isset($old_value[$key], $value[$key]) && $old_value[$key] !== $value[$key]) {
+                set_transient('rrze_faq_flush_rewrite_needed', true, 60); // 1 minute is enough 
+                break;
+            }
+        }
+    }
+
+    public function maybeFlushRewriteRules()
+    {
+        if (get_transient('rrze_faq_flush_rewrite_needed')) {
+            flush_rewrite_rules();
+            delete_transient('rrze_faq_flush_rewrite_needed');
+        }
+    }
+
+    public function rrze_faq_get_redirect_page_url($options): string
+    {
+        $redirect_id = isset($this->options['website_redirect_archivpage_uri']) ? (int) $this->options['website_redirect_archivpage_uri'] : 0;
+        if ($redirect_id > 0) {
+            $post = get_post($redirect_id);
+            if ($post && get_post_status($post) === 'publish') {
+                return get_permalink($redirect_id);
+            }
+        }
+        return '';
+    }
+
+    public static function is_slug_request($slug): bool
+    {
+        if (empty($slug)) {
+            return false;
+        }
+
+        global $wp;
+        $request_path = trim($wp->request, '/');
+
+        return $request_path === trim($slug, '/');
+    }
+
+
+    public function rrze_faq_redirect_if_needed(string $custom_slug): void
+    {
+        if (!self::is_slug_request($custom_slug)) {
+            return;
+        }
+
+        $target_url = rrze_faq_get_redirect_page_url($this->options);
+        if (!empty($target_url)) {
+            wp_redirect(esc_url_raw($target_url), 301);
+            exit;
+        }
+    }
+
+    public function rrze_faq_disable_canonical_redirect_if_needed(string $custom_slug): void
+    {
+        if (!self::is_slug_request($custom_slug)) {
+            return;
+        }
+
+        $target_url = rrze_faq_get_redirect_page_url($this->options);
+        if (!empty($target_url)) {
+            remove_filter('template_redirect', 'redirect_canonical');
+        }
+    }
+
+    public function maybe_disable_canonical_redirect(): void
+    {
+        $this->options = $this->getOptions();
+        $slug = !empty($this->options['website_custom_faq_slug']) ? sanitize_title($this->options['website_custom_faq_slug']) : 'faq';
+
+        // Nur deaktivieren, wenn eine Weiterleitungsseite gesetzt ist UND exakt der Slug aufgerufen wird
+        $redirect_id = (int) ($this->options['website_redirect_archivpage_uri'] ?? 0);
+        if ($redirect_id > 0 && self::is_slug_request($slug)) {
+            remove_filter('template_redirect', 'redirect_canonical');
+        }
+    }
+
+    public static function render_custom_404(): void
+    {
+        global $wp_query;
+        $wp_query->set_404();
+        status_header(404);
+        nocache_headers();
+        include get_404_template();
+        exit;
+    }
+
+    public function custom_cpt_404_message(): void
+    {
+        global $wp_query;
+
+        $this->options = $this->getOptions();
+        $slug = !empty($this->options['website_custom_faq_slug']) ? sanitize_title($this->options['website_custom_faq_slug']) : 'faq';
+
+        // CPT-Single 404
+        if (
+            isset($wp_query->query_vars['post_type']) &&
+            $wp_query->query_vars['post_type'] === $this->cpt['faq'] &&
+            empty($wp_query->post)
+        ) {
+            self::render_custom_404();
+            return;
+        }
+
+        // Archiv-Slug direkt aufgerufen?
+        if (self::is_slug_request($slug)) {
+            $redirect_id = (int) ($this->options['website_redirect_archivpage_uri'] ?? 0);
+
+            if ($redirect_id > 0) {
+                $post = get_post($redirect_id);
+                if ($post && get_post_status($post) === 'publish') {
+                    wp_redirect(esc_url_raw(get_permalink($post)), 301);
+                    exit;
+                }
+            }
+            // Andernfalls keine Weiterleitung, Archiv anzeigen lassen
+        }
+    }
+
+
+
+
 
     public function my_custom_allowed_html($allowed_tags, $context)
     {
@@ -154,26 +293,26 @@ class Settings
         $this->setFields();
         $this->setTabs();
 
-        $this->optionName = getOptionName();
+        $this->optionName = Config::getOptionName();
         $this->options = $this->getOptions();
     }
 
     protected function setMenu()
     {
-        $this->settingsMenu = getmenuSettings();
+        $this->settingsMenu = Config::getmenuSettings();
     }
 
     /**
-     * Einstellungsbereiche einstellen.
+     * Set setting ranges.
      */
     protected function setSections()
     {
-        $this->settingsSections = getSections();
+        $this->settingsSections = Config::getSections();
     }
 
     /**
-     * Einen einzelnen Einstellungsbereich hinzufügen.
-     * @param array   $section
+     * Add a single settings section.
+     * @param array $section
      */
     protected function addSection($section)
     {
@@ -181,11 +320,11 @@ class Settings
     }
 
     /**
-     * Einstellungsfelder einstellen.
+     * Set settings fields.
      */
     protected function setFields()
     {
-        $this->settingsFields = getFields();
+        $this->settingsFields = Config::getFields();
         if (isset($_GET['page']) && $_GET['page'] == 'rrze-faq' && isset($_GET['current-tab']) && $_GET['current-tab'] == 'faqsync') {
             // Add Sync fields for each domain
             $this->settingsFields['faqsync'] = $this->setSettingsDomains();
@@ -193,9 +332,9 @@ class Settings
     }
 
     /**
-     * Ein einzelnes Einstellungsfeld hinzufügen.
+     * Add a single settings field.
      * @param [type] $section [description]
-     * @param [type] $field   [description]
+     * @param [type] $field [description]
      */
     protected function addField($section, $field)
     {
@@ -211,7 +350,7 @@ class Settings
     }
 
     /**
-     * Gibt die Standardeinstellungen zurück.
+     * Returns the default settings.
      * @return array
      */
     protected function defaultOptions()
@@ -229,7 +368,7 @@ class Settings
     }
 
     /**
-     * Gibt die Einstellungen zurück.
+     * Returns the settings.
      * @return array
      */
     public function getOptions()
@@ -244,10 +383,10 @@ class Settings
     }
 
     /**
-     * Gibt den Wert eines Einstellungsfelds zurück.
-     * @param string  $name  settings field name
-     * @param string  $section the section name this field belongs to
-     * @param string  $default default text if it's not found
+     * Returns the value of a settings field.
+     * @param string $name the name of the settings field
+     * @param string $section the name of the section to which the field belongs
+     * @param string $default Default text if it is not found
      * @return string
      */
     public function getOption($section, $name, $default = '')
@@ -262,7 +401,7 @@ class Settings
     }
 
     /**
-     * Sanitize-Callback für die Optionen.
+     * Sanitize callback for the options.
      * @return mixed
      */
     public function sanitizeOptions($options)
@@ -283,9 +422,9 @@ class Settings
     }
 
     /**
-     * Gibt die Sanitize-Callback-Funktion für die angegebene Option-Key.
+     * Returns the sanitize callback function for the specified option key.
      * @param string $key Option-Key
-     * @return mixed string oder (bool) false
+     * @return mixed string or (bool) false
      */
     protected function getSanitizeCallback($key = '')
     {
@@ -307,8 +446,8 @@ class Settings
     }
 
     /**
-     * Einstellungsbereiche als Registerkarte anzeigen.
-     * Zeigt alle Beschriftungen der Einstellungsbereiche als Registerkarte an.
+     * Show settings areas as a tab.
+     * Shows all labels of the settings areas as a tab.
      */
     public function showTabs()
     {
@@ -337,8 +476,8 @@ class Settings
     }
 
     /**
-     * Anzeigen der Einstellungsbereiche.
-     * Zeigt für jeden Einstellungsbereich das entsprechende Formular an.
+     * Display the settings areas.
+     * Displays the corresponding form for each settings area.
      */
     public function showSections()
     {
@@ -377,7 +516,7 @@ class Settings
     }
 
     /**
-     * Optionen Seitenausgabe
+     * Page output options
      */
     public function pageOutput()
     {
@@ -453,7 +592,7 @@ class Settings
     }
 
     /**
-     * Erstellt die Kontexthilfe der Einstellungsseite.
+     * Creates the context help for the settings page.
      */
     public function adminHelpTab()
     {
@@ -482,13 +621,13 @@ class Settings
     }
 
     /**
-     * Initialisierung und Registrierung der Bereiche und Felder.
+     * Initialization and registration of areas and fields.
      */
     public function adminInit()
     {
         add_filter('wp_kses_allowed_html', [$this, 'my_custom_allowed_html'], 10, 2);
 
-        // Hinzufügen von Einstellungsbereichen
+        // Adding setting areas
         foreach ($this->settingsSections as $section) {
             if (isset($section['desc']) && !empty($section['desc'])) {
                 $section['desc'] = '<div class="inside">' . $section['desc'] . '</div>';
@@ -504,7 +643,7 @@ class Settings
             add_settings_section($section['id'], $section['title'], $callback, $section['id']);
         }
 
-        // Hinzufügen von Einstellungsfelder
+        // Add settings fields
         foreach ($this->settingsFields as $section => $field) {
             foreach ($field as $option) {
                 $name = $option['name'];
@@ -538,14 +677,15 @@ class Settings
             }
         }
 
-        // Registrieren der Einstellungen
+        // Register the settings
         foreach ($this->settingsSections as $section) {
             register_setting($section['id'], $this->optionName, [$this, 'sanitizeOptions']);
         }
     }
 
+
     /**
-     * Hinzufügen der Optionen-Seite
+     * Add the options page
      * @return void
      */
     public function adminMenu()
@@ -562,7 +702,7 @@ class Settings
     }
 
     /**
-     * Registerkarten einstellen
+     * Set tabs
      */
     protected function setTabs()
     {
@@ -577,7 +717,7 @@ class Settings
     }
 
     /**
-     * Enqueue Skripte und Style
+     * Enqueue scripts and style
      * @return void
      */
     public function adminEnqueueScripts()
@@ -587,7 +727,7 @@ class Settings
     }
 
     /**
-     * Enqueue WP-Color-Picker-Skripte.
+     * Enqueue WP color picker scripts.
      * @return [type] [description]
      */
     public function colorEnqueueScripts()
@@ -599,7 +739,7 @@ class Settings
     }
 
     /**
-     * Enqueue WP-Media-Skripte.
+     * Enqueue WP-Media scripts.
      * @return [type] [description]
      */
     public function fileEnqueueScripts()
@@ -610,8 +750,8 @@ class Settings
     }
 
     /**
-     * Gibt die Feldbeschreibung des Einstellungsfelds zurück.
-     * @param array   $args Argumente des Einstellungsfelds
+     * Returns the field description of the settings field.
+     * @param array $args Arguments of the settings field
      */
     public function getFieldDescription($args)
     {
@@ -625,8 +765,8 @@ class Settings
     }
 
     /**
-     * Zeigt ein Textfeld für ein Einstellungsfeld an.
-     * @param array   $args Argumente des Einstellungsfelds
+     * Displays a text field for a settings field.
+     * @param array $args Arguments of the settings field
      */
     public function callbackText($args)
     {
@@ -652,8 +792,8 @@ class Settings
 
 
     /**
-     * Zeigt ein Zahlenfeld für ein Einstellungsfeld an.
-     * @param array   $args Argumente des Einstellungsfelds
+     * Displays a number field for a settings field.
+     * @param array $args Arguments of the settings field
      */
     public function callbackNumber($args)
     {
@@ -684,8 +824,8 @@ class Settings
     }
 
     /**
-     * Zeigt ein Kontrollkästchen (Checkbox) für ein Einstellungsfeld an.
-     * @param array   $args Argumente des Einstellungsfelds
+     * Displays a checkbox for a settings field.
+     * @param array $args Arguments of the settings field
      */
     public function callbackCheckbox($args)
     {
@@ -720,8 +860,8 @@ class Settings
     }
 
     /**
-     * Zeigt ein Multicheckbox für ein Einstellungsfeld an.
-     * @param array   $args Argumente des Einstellungsfelds
+     * Displays a multicheckbox for a settings field.
+     * @param array $args Arguments of the settings field
      */
     public function callbackMulticheck($args)
     {
@@ -759,8 +899,8 @@ class Settings
     }
 
     /**
-     * Zeigt einen Auswahlknopf (Radio-Button) für ein Einstellungsfeld an.
-     * @param array   $args Argumente des Einstellungsfelds
+     * Displays a radio button for a settings field.
+     * @param array $args Arguments of the settings field
      */
     public function callbackRadio($args)
     {
@@ -795,8 +935,8 @@ class Settings
     }
 
     /**
-     * Zeigt eine Auswahlliste (Selectbox) für ein Einstellungsfeld an.
-     * @param array   $args Argumente des Einstellungsfelds
+     * Displays a selection list (select box) for a settings field.
+     * @param array $args Arguments of the settings field
      */
     public function callbackMultiSelect($args)
     {
@@ -828,8 +968,8 @@ class Settings
 
 
     /**
-     * Zeigt eine Auswahlliste (Selectbox) für ein Einstellungsfeld an.
-     * @param array   $args Argumente des Einstellungsfelds
+     * Displays a selection list (select box) for a settings field.
+     * @param array $args Arguments of the settings field
      */
     public function callbackSelect($args)
     {
@@ -859,8 +999,8 @@ class Settings
     }
 
     /**
-     * Zeigt ein Textfeld für ein Einstellungsfeld an.
-     * @param array   $args Argumente des Einstellungsfelds
+     * Displays a text field for a settings field.
+     * @param array $args Arguments of the settings field
      */
     public function callbackTextarea($args)
     {
@@ -883,8 +1023,8 @@ class Settings
     }
 
     /**
-     * Zeigt ein Rich-Text-Textfeld (WP-Editor) für ein Einstellungsfeld an.
-     * @param array   $args Argumente des Einstellungsfelds
+     * Displays a rich text text field (WP editor) for a settings field.
+     * @param array $args Arguments of the settings field
      */
     public function callbackWysiwyg($args)
     {
@@ -911,15 +1051,15 @@ class Settings
     }
 
     /**
-     * Zeigt ein Datei-Upload-Feld für ein Einstellungsfeld an.
-     * @param array   $args Argumente des Einstellungsfelds
+     * Displays a file upload field for a settings field.
+     * @param array $args Arguments of the settings field
      */
     public function callbackFile($args)
     {
         $value = esc_attr($this->getOption($args['section'], $args['id'], $args['default']));
         $size = isset($args['size']) && !is_null($args['size']) ? $args['size'] : 'regular';
         $id = $args['section'] . '[' . $args['id'] . ']';
-        $label = isset($args['options']['button_label']) ? $args['options']['button_label'] : __('Choose File');
+        $label = isset($args['options']['button_label']) ? $args['options']['button_label'] : __('Choose File', 'rrze-faq');
 
         $html = sprintf(
             '<input type="text" class="%1$s-text settings-media-url" id="%3$s-%4$s" name="%2$s[%3$s_%4$s]" value="%5$s"/>',
@@ -936,8 +1076,8 @@ class Settings
     }
 
     /**
-     * Zeigt ein Passwortfeld für ein Einstellungsfeld an.
-     * @param array   $args Argumente des Einstellungsfelds
+     * Displays a password field for a settings field.
+     * @param array $args Arguments of the settings field
      */
     public function callbackPassword($args)
     {
@@ -958,8 +1098,8 @@ class Settings
     }
 
     /**
-     * Zeigt ein Farbauswahlfeld (WP-Color-Picker) für ein Einstellungsfeld an.
-     * @param array   $args Argumente des Einstellungsfelds
+     * Displays a color picker field (WP-Color-Picker) for a settings field.
+     * @param array $args Arguments of the settings field
      */
     public function callbackColor($args)
     {

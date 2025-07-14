@@ -4,9 +4,9 @@ namespace RRZE\FAQ;
 
 defined('ABSPATH') || exit;
 
-use function RRZE\FAQ\Config\getShortcodeSettings;
+use RRZE\FAQ\Config;
+use RRZE\FAQ\Tools;
 
-$settings;
 
 /**
  * Shortcode
@@ -20,13 +20,17 @@ class Shortcode
      */
     private $settings = '';
     private $pluginname = '';
+    private $cpt = [];
+
 
     public function __construct()
     {
-        $this->settings = getShortcodeSettings();
+        $this->cpt = Config::getConstants('cpt');
+
+        $this->settings = Config::getShortcodeSettings();
         $this->pluginname = $this->settings['block']['blockname'];
-        // add_shortcode( 'fau_glossar', [ $this, 'shortcodeOutput' ]); // BK 2020-06-05 Shortcode [fau_glossar ...] wird in eigenes Plugin rrze-glossary ausgelagert, weil aus historischen Gründen inkompatibler Code in FAU-Einrichtungen besteht, was beim Umbau von rrze-faq nicht bekannt war
-        // add_shortcode( 'glossary', [ $this, 'shortcodeOutput' ]); // BK 2020-06-05 Shortcode [glossary ...] wird in eigenes Plugin rrze-glossary ausgelagert, weil aus historischen Gründen inkompatibler Code in FAU-Einrichtungen besteht, was beim Umbau von rrze-faq nicht bekannt war
+        // add_shortcode( 'fau_glossar', [ $this, 'shortcodeOutput' ]); // BK 2020-06-05 Shortcode [fau_glossar ...] is moved to its own plugin rrze-glossary, because for historical reasons incompatible code exists in FAU institutions, which was not known when rrze-faq was rebuilt
+        // add_shortcode( 'glossary', [ $this, 'shortcodeOutput' ]); // BK 2020-06-05 Shortcode [glossary ...] is outsourced to its own plugin rrze-glossary, because for historical reasons incompatible code exists in FAU facilities, which was not known when rrze-faq was rebuilt
 
         add_shortcode('faq', [$this, 'shortcodeOutput']);
         add_action('admin_head', [$this, 'setMCEConfig']);
@@ -34,181 +38,16 @@ class Shortcode
     }
 
     /**
-     * Enqueue der Skripte.
+     * Translates composite shortcode attributes into individual properties
+     * 
+     * Splits the values of attributes such as “glossary”, “hide”, “show” and “class” into sub-terms 
+     * and assigns these to logical individual fields in the attribute array. This simplifies further internal processing.
+     * 
+     * @param array $atts Reference to the shortcode attribute array
+     * @return void
      */
-    private function getLetter(&$txt)
+    private function translateNewAttributes(array &$atts): void
     {
-        return mb_strtoupper(mb_substr(remove_accents($txt), 0, 1), 'UTF-8');
-    }
-
-    private function createAZ(&$aSearch)
-    {
-        if (count($aSearch) == 1) {
-            return '';
-        }
-        $ret = '<div class="fau-glossar"><ul class="letters">';
-        foreach (range('A', 'Z') as $a) {
-            if (array_key_exists($a, $aSearch)) {
-                $ret .= '<li class="filled"><a href="#letter-' . $a . '">' . $a . '</a></li>';
-            } else {
-                $ret .= '<li>' . $a . '</li>';
-            }
-        }
-        return $ret . '</ul></div>';
-    }
-
-    private function createTabs(&$aTerms, $aPostIDs)
-    {
-        if (count($aTerms) == 1) {
-            return '';
-        }
-        $ret = '<div class="fau-glossar">';
-        foreach ($aTerms as $name => $aDetails) {
-            $ret .= '<a href="#ID-' . $aDetails['ID'] . '">' . $name . '</a> | ';
-        }
-        return rtrim($ret, ' | ') . '</div>';
-    }
-
-    private function createTagcloud(&$aTerms, $aPostIDs)
-    {
-        if (count($aTerms) == 1) {
-            return '';
-        }
-        $ret = '<div class="fau-glossar">';
-        $smallest = 12;
-        $largest = 22;
-        $aCounts = array();
-        foreach ($aTerms as $name => $aDetails) {
-            $aCounts[$aDetails['ID']] = count($aPostIDs[$aDetails['ID']]);
-        }
-        $iMax = max($aCounts);
-        $aSizes = array();
-        foreach ($aCounts as $ID => $cnt) {
-            $aSizes[$ID] = round(($cnt / $iMax) * $largest, 0);
-            $aSizes[$ID] = ($aSizes[$ID] < $smallest ? $smallest : $aSizes[$ID]);
-        }
-        foreach ($aTerms as $name => $aDetails) {
-            $ret .= '<a href="#ID-' . $aDetails['ID'] . '" style="font-size:' . $aSizes[$aDetails['ID']] . 'px">' . $name . '</a> | ';
-        }
-        return rtrim($ret, ' | ') . '</div>';
-    }
-
-    private function getTaxQuery(&$aTax)
-    {
-        $ret = array();
-
-        foreach ($aTax as $taxfield => $aEntries) {
-            $term_queries = array();
-            $sources = array();
-    
-            foreach ($aEntries as $entry) {
-                $source = !empty($entry['source']) ? $entry['source'] : '';
-                $term_queries[$source][] = $entry['value'];
-            }
-
-            foreach ($term_queries as $source => $aTerms) {
-
-                $query = array(
-                    'taxonomy' => $taxfield,
-                    'field' => 'slug',
-                    'terms' => $aTerms,
-                );
-
-                if (count($aTerms) > 1){
-                    $query['operator'] = 'IN';
-                }
-    
-                if (!empty($source)) {
-                    $query['meta_key'] = 'source';
-                    $query['meta_value'] = $source;
-                }
-    
-                $ret[$taxfield][] = $query;
-            }
-            if (count($ret[$taxfield]) > 1){
-                $ret[$taxfield]['relation'] = 'OR';
-            }
-        }
-
-        if (count($ret) > 1){
-            $ret['relation'] = 'AND';
-        }
-
-        return $ret;
-    }
-    
-    private function searchArrayByKey(&$needle, &$aHaystack)
-    {
-        foreach ($aHaystack as $k => $v) {
-            if ($k === $needle) {
-                return $v;
-            }
-        }
-        return false;
-    }
-
-    private function getSchema($postID, $question, $answer)
-    {
-        $schema = '';
-        $source = get_post_meta($postID, "source", true);
-        $answer = wp_strip_all_tags($answer, true);
-        if ($source == 'website') {
-            $schema = RRZE_SCHEMA_QUESTION_START . $question . RRZE_SCHEMA_QUESTION_END;
-            $schema .= RRZE_SCHEMA_ANSWER_START . $answer . RRZE_SCHEMA_ANSWER_END;
-        }
-        return $schema;
-    }
-
-    // returns the pairs source and category(or tag) as an Array; values without source are added to "sourceless" 
-    // example:
-    // $atts['category'] = "rrze:allgemeines, fau:allgemeines, fau:neues, sonstiges";
-    // getTaxBySource($atts['category']) returns [faq_category] => ['source' => 'rrze', 'value' => 'allgemeines'], ['source' => 'fau', 'value' => 'allgemeines'], ['source' => 'fau', 'value' => 'neues'], ['source' => '', 'value' => 'sonstiges']
-    private function getTaxBySource($input)
-    {
-        $result = [];
-
-        if (empty($input)){
-            return $result;
-        }
-
-        // Teilen des Eingabestrings in einzelne Kategorien
-        $categories = explode(', ', $input);
-
-        foreach ($categories as $category) {
-            // Teilen der Kategorie in Quelle und Wert
-            list($source, $value) = array_pad(explode(':', $category, 2), 2, '');
-
-            // Überprüfen, ob $value leer ist
-            if ($value === '') {
-                $value = $source; // Wenn $value leer ist, setze $value auf $source
-                $source = ''; // Setze $source auf leer
-            }
-
-            // Erstellen des Ergebnisarrays für jede Kategorie
-            $result[] = array(
-                'source' => preg_replace('/[\s,]+$/', '', $source),
-                'value' => preg_replace('/[\s,]+$/', '', $value)
-            );
-        }
-
-        return $result;
-    }
-
-
-    /**
-     * Generieren Sie die Shortcode-Ausgabe
-     * @param  array   $atts Shortcode-Attribute
-     * @param  string  $content Beiliegender Inhalt
-     * @return string Gib den Inhalt zurück
-     */
-    public function shortcodeOutput($atts)
-    {
-        if (empty($atts)) {
-            $atts = array();
-        } else {
-            $atts = array_map('sanitize_text_field', $atts);
-        }
-
         // translate new attributes
         if (isset($atts['glossary'])) {
             $parts = explode(' ', $atts['glossary']);
@@ -227,6 +66,7 @@ class Shortcode
                 }
             }
         }
+
         if (isset($atts['hide'])) {
             $parts = explode(' ', $atts['hide']);
             foreach ($parts as $part) {
@@ -234,10 +74,10 @@ class Shortcode
                 switch ($part) {
                     case 'title':
                         $atts['hide_title'] = true;
+                        break;
                     case 'accordion':
                     case 'accordeon':
                         $atts['hide_accordion'] = true;
-                        break;
                         break;
                     case 'glossary':
                         $atts['glossarystyle'] = '';
@@ -246,8 +86,6 @@ class Shortcode
             }
         }
 
-        $atts['expand_all_link'] = (isset($atts['expand_all_link']) && $atts['expand_all_link'] ? ' expand-all-link="true"' : '');
-        $atts['load_open'] = (isset($atts['load_open']) && $atts['load_open'] ? ' load="open"' : '');
         if (isset($atts['show'])) {
             $parts = explode(' ', $atts['show']);
             foreach ($parts as $part) {
@@ -262,7 +100,8 @@ class Shortcode
                 }
             }
         }
-        $atts['additional_class'] = (isset($atts['additional_class']) ? $atts['additional_class'] : '');
+
+        $atts['additional_class'] = isset($atts['additional_class']) ? $atts['additional_class'] : '';
         if (isset($atts['class'])) {
             $parts = explode(' ', $atts['class']);
             foreach ($parts as $part) {
@@ -281,8 +120,337 @@ class Shortcode
                 }
             }
         }
-        // possible values for "sort" : title, id and sortfield / default = 'title'
-        $atts['sort'] = (isset($atts['sort']) && ($atts['sort'] == 'title' || $atts['sort'] == 'id' || $atts['sort'] == 'sortfield') ? $atts['sort'] : 'title');
+
+        $atts['sort'] = (isset($atts['sort']) && ($atts['sort'] == 'title' || $atts['sort'] == 'id' || $atts['sort'] == 'sortfield')) ? $atts['sort'] : 'title';
+
+        $atts['expand_all_link'] = (isset($atts['expand_all_link']) && $atts['expand_all_link'] ? ' expand-all-link="true"' : '');
+        $atts['load_open'] = (isset($atts['load_open']) && $atts['load_open'] ? ' load="open"' : '');
+    }
+
+
+
+
+
+    /**
+     * Outputs explicitly requested FAQs as accordion or simple content.
+     *
+     * Supports both Gutenberg blocks (multiple IDs as an array) and the classic editor (comma-separated).
+     *
+     * @param mixed $id Single ID or array of IDs
+     * @param bool $gutenberg Whether Gutenberg is used
+     * @param int $hstart HTML heading level
+     * @param string $style Inline styles for the accordion
+     * @param bool $masonry Whether tiles should be displayed (fake masonry - see https://github.com/RRZE-Webteam/rrze-faq/issues/105#issuecomment-2873361435 )
+     * @param string $expand_all_link Attribute for “expand all” link
+     * @param bool $hide_accordion Whether the accordion should be suppressed
+     * @param bool $hide_title Whether the title should be suppressed
+     * @param string $color Color attribute of the accordion
+     * @param string $load_open Attribute for open state
+     * @return string The generated HTML content
+     */
+
+
+    private function renderExplicitFAQs($id, bool $gutenberg, int $hstart, string $style, bool $masonry, string $expand_all_link, bool $hide_accordion, bool $hide_title, string $color, string $load_open): string
+    {
+        $content = '';
+
+        // EXPLICIT FAQ(s)
+        if ($gutenberg) {
+            $aIDs = $id;
+        } else {
+            // classic editor
+            $aIDs = explode(',', $id);
+        }
+
+        $found = false;
+
+        foreach ($aIDs as $id) {
+            $id = trim($id);
+            if ($id) {
+                $question = get_the_title($id);
+                $anchorfield = get_post_meta($id, 'anchorfield', true);
+
+                if (empty($anchorfield)) {
+                    $anchorfield = 'ID-' . $id;
+                }
+
+                $description = str_replace(']]>', ']]&gt;', apply_filters('the_content', get_post_field('post_content', $id)));
+                if (!isset($description) || (mb_strlen($description) < 1)) {
+                    $description = get_post_meta($id, 'description', true);
+                }
+
+                if ($hide_accordion) {
+                    $content .= ($hide_title ? '' : '<h' . $hstart . '>' . $question . '</h' . $hstart . '>') .
+                        ($description ? '<p>' . $description . '</p>' : '');
+                } else {
+                    if ($description) {
+                        $content .= '<details' . ($load_open ? ' open' : '') . ' id="' . esc_attr($anchorfield) . '" class="faq-item' . ($color ? ' color-' . esc_attr($color) : '') . '">';
+                        $content .= '<summary>' . esc_html($question) . '</summary>';
+                        $content .= '<div class="faq-content">' . $description . '</div>';
+                        $content .= '</details>';
+                    }
+                }
+
+                $content .= Tools::getSchema($id, $question, $description);
+
+                $found = true;
+            }
+        }
+
+        return $content;
+    }
+
+
+    /**
+     * Outputs FAQs based on taxonomies (category/tag) or glossary view.
+     * 
+     * Supports classic and alphabetical output, tabs or tag cloud display.
+     * 
+     * @param array $atts Original shortcode attributes
+     * @param int $hstart HTML heading level
+     * @param string $style Inline styles for the accordion
+     * @param string $expand_all_link Attribute for “expand all” link
+     * @param bool $hide_accordion Whether the accordion should be suppressed
+     * @param bool $hide_title Whether the title should be suppressed
+     * @param string $color Color attribute
+     * @param string $load_open Attribute for open state
+     * @param string $sort Sort criterion (title, id, sortfield)
+     * @param string $order Sort order
+     * @param mixed $category Category(ies) as string or array
+     * @param mixed $tag Tag(s) as string or array
+     * @param string $glossary “category” or “tag”
+     * @param string $glossarystyle “a-z”, “tabs”, “tagcloud” or empty
+     * @return string Rendered HTML content
+     */
+    private function renderFilteredFAQs(array $atts, int $hstart, string $style, string $expand_all_link, bool $hide_accordion, bool $hide_title, string $color, string $load_open, string $sort, string $order, $category, $tag, string $glossary, string $glossarystyle): string
+    {
+        $content = '';
+
+        // attribute category or tag is given or none of them
+        $aLetters = array();
+        $tax_query = '';
+
+        $postQuery = array('post_type' => $this->cpt['faq'], 'post_status' => 'publish', 'numberposts' => -1, 'suppress_filters' => false);
+        if ($sort == 'sortfield') {
+            $postQuery['orderby'] = array(
+                'meta_value' => $order, // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value
+                'title' => $order,
+            );
+            $postQuery['meta_key'] = 'sortfield'; // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key
+        } else {
+            $postQuery['orderby'] = $sort;
+            $postQuery['order'] = $order;
+        }
+
+        // filter by category and/or tag and -if given- by domain related to category/tag, too
+        $aTax = [];
+        $aTax[$this->cpt['category']] = Tools::getTaxBySource($category);
+        $aTax[$this->cpt['tag']] = Tools::getTaxBySource($tag);
+        $aTax = array_filter($aTax); // delete empty entries
+
+        if ($aTax) {
+            $tax_query = Tools::getTaxQuery($aTax);
+            if ($tax_query) {
+                $postQuery['tax_query'] = $tax_query; // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_tax_query
+            }
+        }
+
+        $metaQuery = [];
+        $lang = $atts['lang'] ? trim($atts['lang']) : '';
+        if ($lang) {
+            $metaQuery[] = [
+                'key' => 'lang',
+                'value' => $lang,
+                'compare' => '=',
+            ];
+        }
+
+        $source = !empty($atts['domain']) ?
+            array_filter(array_map('trim', explode(',', $atts['domain']))) :
+            [];
+        if ($source) {
+            $metaQuery[] = [
+                'key' => 'source',
+                'value' => $source,
+                'compare' => 'IN',
+            ];
+        }
+
+        if ($metaQuery) {
+            $postQuery['meta_query'] = array_merge([ // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
+                'relation' => 'AND'
+            ], $metaQuery);
+        }
+
+        $posts = get_posts($postQuery);
+
+        if ($posts) {
+            if ($glossary) {
+                // attribut glossary is given
+                // get all used tags or categories
+                $aUsedTerms = array();
+                $aPostIDs = array();
+                foreach ($posts as $post) {
+                    // get all tags for each post
+                    $aTermIds = array();
+                    $valid_term_ids = array();
+                    if ($glossary == 'category' && $category) {
+                        if (!is_array($category)) {
+                            $aCats = array_map('trim', explode(',', $category));
+                        } else {
+                            $aCats = $category;
+                        }
+                        foreach ($aCats as $slug) {
+                            $filter_term = get_term_by('slug', $slug, $this->cpt['category']);
+                            if ($filter_term) {
+                                $valid_term_ids[] = $filter_term->term_id;
+                            }
+                        }
+                    } elseif ($glossary == 'tag' && $tag) {
+                        if (!is_array($tag)) {
+                            $aTags = array_map('trim', explode(',', $tag));
+                        } else {
+                            $aTags = $tag;
+                        }
+                        foreach ($aTags as $slug) {
+                            $filter_term = get_term_by('slug', $slug, $this->cpt['tag']);
+                            if ($filter_term) {
+                                $valid_term_ids[] = $filter_term->term_id;
+                            }
+                        }
+                    }
+                    $terms = wp_get_post_terms($post->ID, 'faq_' . $glossary);
+                    if ($terms) {
+                        foreach ($terms as $t) {
+                            if ($valid_term_ids && in_array($t->term_id, $valid_term_ids) === false) {
+                                continue;
+                            }
+                            $aTermIds[] = $t->term_id;
+                            $letter = Tools::getLetter($t->name);
+                            $aLetters[$letter] = true;
+                            $aUsedTerms[$t->name] = array('letter' => $letter, 'ID' => $t->term_id);
+                            $aPostIDs[$t->term_id][] = $post->ID;
+                        }
+                    }
+                }
+                ksort($aUsedTerms);
+                $anchor = 'ID';
+                if ($aLetters) {
+                    switch ($glossarystyle) {
+                        case 'a-z':
+                            $content = Tools::createAZ($aLetters);
+                            $anchor = 'letter';
+                            break;
+                        case 'tabs':
+                            $content = Tools::createTabs($aUsedTerms, $aPostIDs);
+                            break;
+                        case 'tagcloud':
+                            $content = Tools::createTagCloud($aUsedTerms, $aPostIDs);
+                            break;
+                    }
+                }
+
+                $last_anchor = '';
+                foreach ($aUsedTerms as $k => $aVal) {
+                    if ($glossarystyle == 'a-z' && $content) {
+                        $content .= ($last_anchor != $aVal[$anchor] ? '<h2 id="' . $anchor . '-' . $aVal[$anchor] . '">' . esc_html($aVal[$anchor]) . '</h2>' : '');
+                    }
+
+                    $term_id_attr = $anchor . '-' . $aVal[$anchor];
+                    $content .= '<section id="' . esc_attr($term_id_attr) . '" class="faq-term' . ($color ? ' color-' . esc_attr($color) : '') . '">';
+                    $content .= '<h3>' . esc_html($k) . '</h3>'; // ersetzt <summary>
+
+                    $content .= '<div class="faq-term-content">';
+
+                    // find the postIDs to this tag
+                    $aIDs = Tools::searchArrayByKey($aVal['ID'], $aPostIDs);
+
+                    foreach ($aIDs as $ID) {
+                        $answer = str_replace(']]>', ']]&gt;', apply_filters('the_content', get_post_field('post_content', $ID)));
+                        if (!isset($answer) || (mb_strlen($answer) < 1)) {
+                            $answer = get_post_meta($ID, 'description', true);
+                        }
+                        $question = get_the_title($ID);
+
+                        $anchorfield = get_post_meta($ID, 'anchorfield', true);
+                        if (empty($anchorfield)) {
+                            $anchorfield = 'innerID-' . $ID;
+                        }
+
+                        $content .= '<details id="' . esc_attr($anchorfield) . '" class="faq-item">';
+                        $content .= '<summary>' . esc_html($question) . '</summary>';
+                        $content .= '<div class="faq-content">' . $answer . '</div>';
+                        $content .= '</details>';
+
+                        $content .= Tools::getSchema($ID, $question, $answer);
+                    }
+
+                    $content .= '</div></section>';
+                    $last_anchor = $aVal[$anchor];
+                }
+            } else {
+                // attribut glossary is not given
+                $last_anchor = '';
+                foreach ($posts as $post) {
+
+                    $question = get_the_title($post->ID);
+                    $letter = Tools::getLetter($question);
+                    $aLetters[$letter] = true;
+
+                    $answer = str_replace(']]>', ']]&gt;', apply_filters('the_content', get_post_field('post_content', $post->ID)));
+                    if (!isset($answer) || (mb_strlen($answer) < 1)) {
+                        $answer = get_post_meta($post->ID, 'description', true);
+                    }
+
+                    if (!$hide_accordion) {
+                        $anchorfield = get_post_meta($post->ID, 'anchorfield', true);
+
+                        if (empty($anchorfield)) {
+                            $anchorfield = 'ID-' . $post->ID;
+                        }
+
+                        if ($glossarystyle == 'a-z' && count($posts) > 1) {
+                            $content .= ($last_anchor != $letter ? '<h2 id="letter-' . $letter . '">' . $letter . '</h2>' : '');
+                        }
+                        $content .= '<details' . ($load_open ? ' open' : '') . ' id="' . esc_attr($anchorfield) . '" class="faq-item' . ($color ? ' color-' . esc_attr($color) : '') . '">';
+                        $content .= '<summary>' . esc_html($question) . '</summary>';
+                        $content .= '<div class="faq-content">' . $answer . '</div>';
+                        $content .= '</details>';
+
+                    } else {
+                        $content .= ($hide_title ? '' : '<h' . $hstart . '>' . $question . '</h' . $hstart . '>') . ($answer ? '<p>' . $answer . '</p>' : '');
+                    }
+                    $content .= Tools::getSchema($post->ID, $question, $answer);
+                    $last_anchor = $letter;
+                }
+
+            }
+        }
+
+        return $content;
+    }
+
+
+    /**
+     * Generate the shortcode output
+     * @param array $atts Shortcode attributes
+     * @param string $content Enclosed content
+     * @return string Return the content
+     */
+    public function shortcodeOutput($atts, $content = null, $shortcode_tag = '')
+    {
+        // Workaround - see: https://github.com/RRZE-Webteam/rrze-faq/issues/132#issuecomment-2839668060
+        if (($skip = Tools::preventGutenbergDoubleBracketBug($shortcode_tag)) !== false) {
+            return $skip;
+        }
+
+        if (empty($atts)) {
+            $atts = array();
+        } else {
+            $atts = array_map('sanitize_text_field', $atts);
+        }
+
+        $this->translateNewAttributes($atts);
 
         // merge given attributes with default ones
         $atts_default = array();
@@ -296,7 +464,6 @@ class Shortcode
         extract($atts);
 
         $content = '';
-        $schema = '';
         $glossarystyle = (isset($glossarystyle) ? $glossarystyle : '');
         $hide_title = (isset($hide_title) ? $hide_title : false);
         $color = (isset($color) ? $color : '');
@@ -305,252 +472,13 @@ class Shortcode
         $gutenberg = (is_array($id) ? true : false);
 
         if ($id && (!$gutenberg || $gutenberg && $id[0])) {
-            // EXPLICIT FAQ(s)
-            if ($gutenberg) {
-                $aIDs = $id;
-            } else {
-                // classic editor
-                $aIDs = explode(',', $id);
-            }
-            $found = false;
-            $accordion = '[collapsibles hstart="' . $hstart . '" ' . $style . ' ' . $expand_all_link . ']';
-            foreach ($aIDs as $id) {
-                $id = trim($id);
-                if ($id) {
-                    $title = get_the_title($id);
-                    $anchorfield = get_post_meta($id, 'anchorfield', true);
-
-                    if (empty($anchorfield)) {
-                        $anchorfield = 'ID-' . $id;
-                    }
-
-                    $description = str_replace(']]>', ']]&gt;', apply_filters('the_content', get_post_field('post_content', $id)));
-                    if (!isset($description) || (mb_strlen($description) < 1)) {
-                        $description = get_post_meta($id, 'description', true);
-                    }
-                    if ($hide_accordion) {
-                        $content .= ($hide_title ? '' : '<h' . $hstart . '>' . $title . '</h' . $hstart . '>') . ($description ? '<p>' . $description . '</p>' : '');
-                    } else {
-                        if ($description) {
-                            $accordion .= '[collapse title="' . $title . '" color="' . $color . '" name="' . $anchorfield . '"' . $load_open . ']' . $description . '[/collapse]';
-                            $schema .= $this->getSchema($id, $title, $description);
-                        }
-                    }
-                    $found = true;
-                }
-            }
-            if ($found && !$hide_accordion) {
-                $accordion .= '[/collapsibles]';
-                $content = do_shortcode($accordion);
-            }
+            $content = $this->renderExplicitFAQs($id, $gutenberg, $hstart, $style, $masonry, $expand_all_link, $hide_accordion, $hide_title, $color, $load_open);
+            echo 'A';
+            exit;
         } else {
-            // attribute category or tag is given or none of them
-
-            $aLetters = array();
-            $aCategory = array();
-            $tax_query = '';
-
-            $postQuery = array('post_type' => 'faq', 'post_status' => 'publish', 'numberposts' => -1, 'suppress_filters' => false);
-            if ($sort == 'sortfield') {
-                $postQuery['orderby'] = array(
-                    'meta_value' => $order,
-                    'title' => $order,
-                );
-                $postQuery['meta_key'] = 'sortfield';
-            } else {
-                $postQuery['orderby'] = $sort;
-                $postQuery['order'] = $order;
-            }
-
-            // filter by category and/or tag and -if given- by domain related to category/tag, too
-            $aTax = [];
-            $aTax['faq_category'] = $this->getTaxBySource($category);
-            $aTax['faq_tag'] = $this->getTaxBySource($tag);
-            $aTax = array_filter($aTax); // delete empty entries
-
-
-            if ($aTax) {
-                $tax_query = $this->getTaxQuery($aTax);
-                if ($tax_query) {
-                    $postQuery['tax_query'] = $tax_query;
-                }
-            }
-
-            $metaQuery = [];
-            $lang = $atts['lang'] ? trim($atts['lang']) : '';
-            if ($lang) {
-                $metaQuery[] = [
-                    'key' => 'lang',
-                    'value' => $lang,
-                    'compare' => '=',
-                ];
-            }
-
-            $source = !empty($atts['domain']) ?
-                array_filter(array_map('trim', explode(',', $atts['domain']))) :
-                [];
-            if ($source) {
-                $metaQuery[] = [
-                    'key' => 'source',
-                    'value' => $source,
-                    'compare' => 'IN',
-                ];
-            }
-
-            if ($metaQuery) {
-                $postQuery['meta_query'] = array_merge([
-                    'relation' => 'AND'
-                ], $metaQuery);
-            }
-            // error_log(print_r($postQuery, true));
-
-            $posts = get_posts($postQuery);
-
-            if ($posts) {
-                if ($glossary) {
-                    // attribut glossary is given
-                    // get all used tags or categories
-                    $aUsedTerms = array();
-                    $aPostIDs = array();
-                    foreach ($posts as $post) {
-                        // get all tags for each post
-                        $aTermIds = array();
-                        $valid_term_ids = array();
-                        if ($glossary == 'category' && $category) {
-                            if (!is_array($category)) {
-                                $aCats = array_map('trim', explode(',', $category));
-                            } else {
-                                $aCats = $category;
-                            }
-                            foreach ($aCats as $slug) {
-                                $filter_term = get_term_by('slug', $slug, 'faq_category');
-                                if ($filter_term) {
-                                    $valid_term_ids[] = $filter_term->term_id;
-                                }
-                            }
-                        } elseif ($glossary == 'tag' && $tag) {
-                            if (!is_array($tag)) {
-                                $aTags = array_map('trim', explode(',', $tag));
-                            } else {
-                                $aTags = $tag;
-                            }
-                            foreach ($aTags as $slug) {
-                                $filter_term = get_term_by('slug', $slug, 'faq_tag');
-                                if ($filter_term) {
-                                    $valid_term_ids[] = $filter_term->term_id;
-                                }
-                            }
-                        }
-                        $terms = wp_get_post_terms($post->ID, 'faq_' . $glossary);
-                        if ($terms) {
-                            foreach ($terms as $t) {
-                                if ($valid_term_ids && in_array($t->term_id, $valid_term_ids) === false) {
-                                    continue;
-                                }
-                                $aTermIds[] = $t->term_id;
-                                $letter = $this->getLetter($t->name);
-                                $aLetters[$letter] = true;
-                                $aUsedTerms[$t->name] = array('letter' => $letter, 'ID' => $t->term_id);
-                                $aPostIDs[$t->term_id][] = $post->ID;
-                            }
-                        }
-                    }
-                    ksort($aUsedTerms);
-                    $anchor = 'ID';
-                    if ($aLetters) {
-                        switch ($glossarystyle) {
-                            case 'a-z':
-                                $content = $this->createAZ($aLetters);
-                                $anchor = 'letter';
-                                break;
-                            case 'tabs':
-                                $content = $this->createTabs($aUsedTerms, $aPostIDs);
-                                break;
-                            case 'tagcloud':
-                                $content = $this->createTagcloud($aUsedTerms, $aPostIDs);
-                                break;
-                        }
-                    }
-                    $accordion = '[collapsibles hstart="' . $hstart . '" ' . $style . ' ' . $expand_all_link . ']';
-                    $last_anchor = '';
-                    foreach ($aUsedTerms as $k => $aVal) {
-                        if ($glossarystyle == 'a-z' && $content) {
-                            $accordion_anchor = '';
-                            $accordion .= ($last_anchor != $aVal[$anchor] ? '<h2 id="' . $anchor . '-' . $aVal[$anchor] . '">' . $aVal[$anchor] . '</h2>' : '');
-                        } else {
-                            $accordion_anchor = 'name="' . $anchor . '-' . $aVal[$anchor] . '"';
-                        }
-                        $accordion .= '[collapse title="' . $k . '" color="' . $color . '" ' . $accordion_anchor . $load_open . ']';
-
-                        // find the postIDs to this tag
-                        $aIDs = $this->searchArrayByKey($aVal['ID'], $aPostIDs);
-
-                        foreach ($aIDs as $ID) {
-                            $tmp = str_replace(']]>', ']]&gt;', apply_filters('the_content', get_post_field('post_content', $ID)));
-                            if (!isset($tmp) || (mb_strlen($tmp) < 1)) {
-                                $tmp = get_post_meta($ID, 'description', true);
-                            }
-                            $title = get_the_title($ID);
-
-                            $anchorfield = get_post_meta($ID, 'anchorfield', true);
-
-                            if (empty($anchorfield)) {
-                                $anchorfield = 'innerID-' . $ID;
-                            }
-
-                            $accordion .= '[accordion][accordion-item title="' . $title . '" name="' . $anchorfield . '"]' . $tmp . '[/accordion-item][/accordion]';
-                            $schema .= $this->getSchema($ID, $title, $tmp);
-                        }
-                        $accordion .= '[/collapse]';
-                        $last_anchor = $aVal[$anchor];
-                    }
-                    $accordion .= '[/collapsibles]';
-                    $content .= do_shortcode($accordion);
-                } else {
-
-                    // attribut glossary is not given
-                    if (!$hide_accordion) {
-                        $accordion = '[collapsibles hstart="' . $hstart . '" ' . $style . ' ' . $expand_all_link . ']';
-                    }
-                    $last_anchor = '';
-                    foreach ($posts as $post) {
-
-                        $title = get_the_title($post->ID);
-                        $letter = $this->getLetter($title);
-                        $aLetters[$letter] = true;
-
-                        $tmp = str_replace(']]>', ']]&gt;', apply_filters('the_content', get_post_field('post_content', $post->ID)));
-                        if (!isset($tmp) || (mb_strlen($tmp) < 1)) {
-                            $tmp = get_post_meta($post->ID, 'description', true);
-                        }
-
-                        if (!$hide_accordion) {
-                            $anchorfield = get_post_meta($post->ID, 'anchorfield', true);
-
-                            if (empty($anchorfield)) {
-                                $anchorfield = 'ID-' . $post->ID;
-                            }
-
-                            if ($glossarystyle == 'a-z' && count($posts) > 1) {
-                                $accordion .= ($last_anchor != $letter ? '<h2 id="letter-' . $letter . '">' . $letter . '</h2>' : '');
-                            }
-                            $accordion .= '[collapse title="' . $title . '" color="' . $color . '" name="' . $anchorfield . '"' . $load_open . ']' . $tmp . '[/collapse]';
-                        } else {
-                            $content .= ($hide_title ? '' : '<h' . $hstart . '>' . $title . '</h' . $hstart . '>') . ($tmp ? '<p>' . $tmp . '</p>' : '');
-                        }
-                        $schema .= $this->getSchema($post->ID, $title, $tmp);
-                        $last_anchor = $letter;
-                    }
-
-                    if (!$hide_accordion) {
-                        $accordion .= '[/collapsibles]';
-                        $content .= do_shortcode($accordion);
-                    }
-                }
-            }
-        }
-        if ($schema) {
-            $content .= RRZE_SCHEMA_START . $schema . RRZE_SCHEMA_END;
+            // echo 'B';
+            // exit;
+            $content = $this->renderFilteredFAQs($atts, $hstart, $style, $expand_all_link, $hide_accordion, $hide_title, $color, $load_open, $sort, $order, $category, $tag, $glossary, $glossarystyle);
         }
 
         // 2020-05-12 THIS IS NOT IN USE because f.e. [faq glossary="category"] led to errors ("TypeError: e.$slides is null slick.min.js" and "TypeError: can't access property "add"" ) as FAQ can have >1 category and so equal sliders would be returned in output which leads to JS errors that avoid accordeons to work properly
@@ -560,19 +488,16 @@ class Shortcode
         //     wp_enqueue_script( 'fau-js-heroslider' );
         // }
 
-        wp_enqueue_style('rrze-faq-style');
+        $postID = get_the_ID();
+        $headerID = (new Tools())->getHeaderID($postID);
 
-        return '<div class="' . ($color ? '' . $color . ' ' : '') . (isset($additional_class) ? $additional_class : '') . '">' . $content . '</div>';
+        wp_enqueue_style('rrze-faq-css');
+
+        $content = Tools::renderFAQWrapper($postID, $content, $headerID, $masonry, $color, $additional_class);
+
+        return $content;
+
     }
-
-    public function sortIt(&$arr)
-    {
-        uasort($arr, function ($a, $b) {
-            return strtolower($a) <=> strtolower($b);
-        });
-    }
-
-
 
     public function setMCEConfig()
     {

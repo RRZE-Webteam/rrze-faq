@@ -6,12 +6,18 @@ defined('ABSPATH') || exit;
 
 require_once ABSPATH . 'wp-includes/class-wp-widget.php';
 
+use RRZE\FAQ\Config;
+
+
 // Creating the widget
 class FAQWidget extends \WP_Widget
 {
+    private $cpt = [];
 
     public function __construct()
     {
+        $this->cpt = Config::getConstants('cpt');
+
         parent::__construct(
             'faq_widget',
             __('FAQ Widget', 'rrze-faq'),
@@ -21,15 +27,17 @@ class FAQWidget extends \WP_Widget
 
     public function getRandomFAQID($catID)
     {
-        $aFaqIDs = get_posts([
+        $aFaqIDs = get_posts([ // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_tax_query
             'posts_per_page' => -1,
-            'post_type' => 'faq',
+            'post_type' => $this->cpt['faq'],
             'fields' => 'ids',
-            'tax_query' => [[
-                'taxonomy' => 'faq_category',
-                'field' => 'term_id',
-                'terms' => $catID,
-            ]],
+            'tax_query' => [ // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_tax_query
+                [
+                    'taxonomy' => $this->cpt['category'],
+                    'field' => 'term_id',
+                    'terms' => $catID,
+                ]
+            ],
         ]);
         if (!empty($aFaqIDs)) {
             return $aFaqIDs[array_rand($aFaqIDs, 1)];
@@ -43,19 +51,19 @@ class FAQWidget extends \WP_Widget
     {
         $start = ($instance['start'] ? wp_date('Y-m-d', strtotime($instance['start'])) : '');
         $end = ($instance['end'] ? wp_date('Y-m-d', strtotime($instance['end'])) : '');
-        
+
         if ($start || $end) {
             $today = wp_date('Y-m-d');
             if (($start && $today < $start) || ($end && $today > $end)) {
                 return;
             }
         }
-        
+
         $id = (isset($instance['id']) ? intval($instance['id']) : 0);
         $catID = (isset($instance['catID']) ? intval($instance['catID']) : 0);
-    
+
         $id = ($id ? $id : ($catID ? $this->getRandomFAQID($catID) : 0));
-    
+
         if ($id) {
             $attributes = (isset($instance['display']) ? intval($instance['display']) : '');
             switch ($attributes) {
@@ -69,18 +77,18 @@ class FAQWidget extends \WP_Widget
                     $attributes = "hide='title'";
                     break;
             }
-    
+
             // Escape before output
             echo wp_kses_post($args['before_widget']); // Escaping HTML
             echo do_shortcode('[faq id="' . esc_attr($id) . '" ' . esc_attr($attributes) . ']'); // Escape the shortcode attributes
             echo wp_kses_post($args['after_widget']); // Escaping HTML
         }
     }
-    
+
     public function dropdownFAQs($selectedID = 0)
     {
         $args = [
-            'post_type' => 'faq',
+            'post_type' => $this->cpt['faq'],
             'pagination' => false,
             'posts_per_page' => -1,
             'post_status' => 'publish',
@@ -89,10 +97,10 @@ class FAQWidget extends \WP_Widget
             'order' => 'ASC',
             'orderby' => 'post_title',
         ];
-    
+
         $posts = get_posts($args);
         $output = '';
-    
+
         if (!empty($posts)) {
             $output = "<p><label for='" . esc_attr($this->get_field_id('id')) . "'>" . esc_html(__('Choose a FAQ', 'rrze-faq')) . ":</label> ";
             $output .= "<select id='" . esc_attr($this->get_field_id('id')) . "' name='" . esc_attr($this->get_field_name('id')) . "' class='widefat'>";
@@ -103,11 +111,11 @@ class FAQWidget extends \WP_Widget
             }
             $output .= "</select></p>";
         }
-    
+
         $html = apply_filters('dropdownFAQs', $output, $args, $posts);
         echo wp_kses_post($html);
     }
-    
+
     public function displaySelect($selectedID = 0)
     {
         $aOptions = [
@@ -124,7 +132,7 @@ class FAQWidget extends \WP_Widget
         $output .= "</select></p>";
         echo wp_kses_post($output);
     }
-    
+
 
     public function dateFields($dates)
     {
@@ -140,7 +148,7 @@ class FAQWidget extends \WP_Widget
         }
         echo wp_kses_post($output);
     }
-    
+
     // Widget Backend
     public function form($instance)
     {
@@ -151,27 +159,27 @@ class FAQWidget extends \WP_Widget
             'end' => (isset($instance['end']) ? esc_attr($instance['end']) : ''),
         ];
         $display = (isset($instance['display']) ? intval($instance['display']) : 0);
-    
+
         $this->dropdownFAQs($id);
-    
+
         $args = [
             'show_option_none' => '---',
             'name' => esc_attr($this->get_field_name('catID')),
-            'taxonomy' => 'faq_category',
+            'taxonomy' => $this->cpt['category'],
             'hide_empty' => 0,
             'orderby' => 'name',
             'selected' => $catID,
             'class' => 'widefat',
         ];
-    
+
         echo "<p><label for='" . esc_attr($this->get_field_name('catID')) . "'>" . esc_html(__('or choose a Category to display a FAQ randomly', 'rrze-faq')) . ":</label>";
         wp_dropdown_categories($args);
         echo '</p>';
-    
+
         $this->dateFields($dates);
         $this->displaySelect($display);
     }
-    
+
     // Updating widget replacing old instances with new
     public function update($new_instance, $old_instance)
     {

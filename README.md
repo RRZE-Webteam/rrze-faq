@@ -1,38 +1,31 @@
-=== RRZE FAQ ===
-Contributors: rrze-webteam
-Plugin URI: https://gitlab.rrze.fau.de/rrze-webteam/rrze-faq
-Tags: faq, shortcode, block, widget, categories
-Requires at least: 6.1
-Tested up to: 6.7
-Requires PHP: 8.0
-Stable tag: 5.3.5
-License: GPLv2 or later
-License URI: http://www.gnu.org/licenses/gpl-2.0.html
-Author: RRZE Webteam
-Author URI: https://blogs.fau.de/webworking/
-Text Domain: rrze-faq
-Domain Path: /languages
+[![Aktuelle Version](https://img.shields.io/github/package-json/v/rrze-webteam/rrze-faq/main?label=Version)](https://github.com/RRZE-Webteam/rrze-faq)
+[![Release Version](https://img.shields.io/github/v/release/rrze-webteam/rrze-faq?label=Release+Version)](https://github.com/rrze-webteam/rrze-faq/releases/)
+[![GitHub License](https://img.shields.io/github/license/rrze-webteam/rrze-faq)](https://github.com/RRZE-Webteam/rrze-faq)
+[![GitHub issues](https://img.shields.io/github/issues/RRZE-Webteam/rrze-faq)](https://github.com/RRZE-Webteam/rrze-faq/issues)
+# RRZE FAQ
 
-Plugin, um FAQ zu erstellen und aus dem FAU-Netzwerk zu synchronisieren. Verwendbar als Shortcode, Block oder Widget.
+Plugin for creating FAQs and synchronizing them with other FAU websites. Usable as a shortcode, block, or widget.
 
-## Allgemeines
+## General Information
 
-Das Plugin kann genutzt werden, um FAQ zu erstellen und FAQ von Websites aus dem FAU-Netzwerk zu synchronisieren. Es kann nach Kategorien und Schlagwörtern gefiltert werden. Das Layout lässt sich derart bestimmen, dass ein A-Z Register, die Kategorien bzw Schlagwörter als Links oder als Links, die sich nach Anzahl der gefundenen Treffer in der Größe unterscheiden ausgebeben werden kann. Kategorien und Schlagwörter werden in Akkordeons gruppiert. Es ist ebenso möglich, einzelne FAQ auszugeben.
-Darüberhinaus wird ein Widget bereitgestellt. Einstellbar sind die Anzeigedauer und ob ein bestimmtes FAQ oder aus einer gewählten Kategorie ein zufälliges FAQ angezeigt werden soll.
+The plugin can be used to create FAQs and to synchronize FAQs from websites within the FAU network.  
+You can filter by categories and tags.  
+The layout can be configured to display an A–Z index, categories or tags as links, or as a tag cloud.  
+Categories and tags are grouped into accordions. It is also possible to output individual FAQs directly.
 
+A widget is also available. You can configure the display duration and whether to show a specific or a random FAQ from a selected category.
 
-## Verwendung des Shortcodes
+## Using the Shortcode
 
 ```html
-[faq id=456, 123"]
-[faq category="kategorie-1, kategorie-1"]
-[faq tag="schlagwort-1, schlagwort-2"]
-[faq category="kategorie-1, kategorie-1"  tag="schlagwort-1, schlagwort-2"]
-[faq category="kategorie-1, kategorie-1"  domain="domain-1, domain-2"]
+[faq id="456, 123"]
+[faq category="category-1, category-2"]
+[faq tag="tag-1, tag-2"]
+[faq category="category-1" tag="tag-1, tag-2"]
+[faq category="category-1" domain="domain-1, domain-2"]
 ```
 
-
-## Alle Attribute des Shortcodes
+## All Shortcode Attributes
 
 ```html
 [faq 
@@ -50,90 +43,104 @@ hstart=".."
 ]
 ```
 
-Alle Attribute sind optional.
+All attributes are optional.
 
+## Explanation and Values for Shortcode Attributes
 
-## Erklärungen und Werte zu den Attributen des Shortcodes
+All attributes are optional.
 
-glossary : bestimmt, wonach gruppiert werden soll. Mögliche Werte für die Gruppierung sind "category" oder "tag". D.h. entweder es wird nach den Kategorien gruppiert oder nach Schlagwörtern. Um gar nicht zu gruppieren, reicht es, das Attribut glossary wegzulassen. Darüberhinaus können Sie das Aussehen des Glossars bestimmen: "a-z" stellt ein alphabetisches Register dar. Mit "tabs" werden die Begriffe ausgegeben und ebenso mit "tagcloud", wobei sie hier abhängig von der Anzahl an gefundenen Treffer unterschiedlich groß dargestellt werden. Voreingestellt ist die Darstellung "a-z".
+**glossary**: Defines how the FAQ items are grouped. Possible values are `"category"` or `"tag"`.  
+If omitted, no grouping is applied. You can also define the visual style of the glossary:  
+- `"a-z"`: Alphabetical index (default)  
+- `"tabs"`: Glossary terms as tabs  
+- `"tagcloud"`: Terms shown with font size proportional to their frequency
 
-category : mit diesem Attribut wird bestimmt, zu welchen Kategorien passende FAQ ausgegeben werden sollen. Es können beliebig viele Kategorien angegeben werden. Nutzen Sie dazu die Titelform der Kategorien, die Sie im Menü unter "FAQ"->"Kategorie" finden und trennen Sie diese voneinander durch Kommata.
-Zur Filterung unter Berücksichtigung der Datenquelle können Sie diese mit angeben. Beispiel: category="rrze:allgemeines, info" filtert nach "allgemeines" mit Datenquelle "rrze" und "info". Bei "info" ist nicht relevant, mit welcher Datenquelle die Kategorie "info" verbunden ist.
+**category**: Specifies the categories for which matching FAQs should be displayed.  
+Multiple categories can be listed using their slugs (as found under `FAQ → Categories`) and separated by commas.  
+You can also filter by data source:  
+Example: `category="rrze:general, info"` filters for the "general" category from the "rrze" source and any "info" category regardless of source.
 
-tag : mit diesem Attribut wird bestimmt, zu welchen Schlagwörtern passende FAQ ausgegeben werden sollen. Es können beliebig viele Schlagwörter angegeben werden. Nutzen Sie dazu die Titelform der Schlagwörter, die Sie im Menü unter "FAQ"->"Schlagwörter" finden und trennen Sie diese voneinander durch Kommata.
-Zur Filterung unter Berücksichtigung der Datenquelle können Sie diese mit angeben. Beispiel: tag="rrze:schlagwort1, schlagwort2" filtert nach "schlagwort1" mit Datenquelle "rrze" und "schlagwort2". Bei "schlagwort2" ist nicht relevant, mit welcher Datenquelle das Schlagwort "schlagwort2" verbunden ist.
+**tag**: Specifies the tags for which matching FAQs should be shown.  
+Use the tag slugs from `FAQ → Tags`, separated by commas.  
+Filtering by source is also possible:  
+Example: `tag="rrze:keyword1, keyword2"` filters for "keyword1" from source "rrze", and "keyword2" from any source.
 
-domain : mit diesem Attribut wird bestimmt, zu welcher Datenquelle passende FAQ ausgegeben werden sollen. Es können beliebig viele Domains angegeben werden. Trennen Sie diese voneinander durch Kommata. 
+**domain**: Filters FAQs by their data source.  
+Multiple domains can be listed, separated by commas.
 
-id : mit diesem Attribut erfolgt die Ausgabe eines oder mehrerer FAQ. Sie finden die ID in der rechten Spalte unter "FAQ"->"Alle FAQ" sowie in der Informationsbox "Einfügen in Seiten und Beiträgen" bei jeder FAQ im Bearbeitungsmodus. Sie können damit auch die Reihenfolge der FAQ in der Ausgabe bestimmen. 
+**id**: Outputs one or more specific FAQs by ID.  
+You can find the ID in the admin panel under `FAQ → All FAQs` or in the "Insert into pages/posts" box when editing an FAQ.  
+The output order follows the order of the IDs listed.
 
-hide : hiermit können Sie bestimmen, welche standardmässige Ausgabe nicht dargestellt werden soll. Mit "accordeon" werden die FAQ nicht in einem Akkordeon, sondern direkt mit Frage und Antwort ausgeben. "title" verbirgt dabei die Ausgabe der Frage und mit dem Wert "glossary" wird das Glossar nicht angezeigt. Voreingestellt ist die Ausgabe als Accordeons.
+**hide**: Controls which default elements should be hidden.  
+- `"accordion"`: Shows FAQs as plain question/answer instead of collapsible panels  
+- `"title"`: Hides the FAQ question  
+- `"glossary"`: Disables the glossary display  
+Default: accordion view is enabled
 
-show : belegen Sie dieses Attribut mit dem Wert "expand-all-link", dann erscheint oberhalb der FAQ - Ausgabe ein Button, um alle Akkordeons mit einem Klick zu öffnen. Mit "load-open" werden die Akkordeons im geöffneten Zustand geladen. Voreingestellt ist die Ausgabe mit beim Laden geschlossenen Akkordeons und ohne "Alle öffnen"-Button.
+**masonry**:  
+- `"true"`: Displays FAQs in a grid (masonry) layout  
+- `"false"`: Displays FAQs in the default stacked layout  
+By default, the grid layout is disabled.
 
-class : hier lässt sich festlegen, in welcher Farbe der linke Rand der Accordeons sein soll. Mögliche Werte sind die "fau" (Standard) sowie die Kennungen der Fakultäten "med", "nat", "rw", "phil" oder "tf". Zusätlich können Sie hier beliebig viele CSS-Klassen durch Leerzeichen getrennt angeben, die als Klassen für das umrahmende DIV dienen.
+**class**: Allows you to set the color of the left border of the accordion.  
+Possible values: `"fau"` (default), or faculty identifiers like `"med"`, `"nat"`, `"rw"`, `"phil"`, or `"tf"`.  
+You can also add additional CSS classes separated by spaces.
 
-sort : die Sortierung der Ausgabe kann hiermit gesteuert werden. Mögliche Werte sind "title", "id" und "sortfield". 
-"sortfield" bezieht sich auf das Sortierfeld, das bei jeder FAQ eingeben werden kann. Bei Verwendung von "sortfield" wird zuerst nach dem Sortierfeld und danach nach dem Titel sortiert. Voreingestellt ist "title", womit alle Fragen in alphabetischer Reihenfolge angezeigt werden.
+**sort**: Controls sorting of the output.  
+- `"title"`: Sort alphabetically by title (default)  
+- `"id"`: Sort by FAQ ID  
+- `"sortfield"`: Sort using the custom field defined per FAQ, then by title
 
-order : legt fest, in welcher Reihenfolge sortiert werden soll. "asc" aufsteigend und "desc" absteigend. Voreingestellt ist "asc".
+**order**: Determines the sort direction.  
+- `"asc"`: Ascending (default)  
+- `"desc"`: Descending
 
-hstart : bestimmt die Überschriftenebene der ersten Überschrift. Voreingestellt ist 2, womit die Überschriften als `<h2>` ausgegeben werden.
+**hstart**: Defines the heading level for the first title.  
+Default is `2`, which renders headings as `<h2>`.
 
+## Examples
 
-## Beispiele
+```html
+[faq glossary="tag tagcloud"]
+[faq category="slug-of-category"]
+[faq category="category" tag="Tag1, Tag2"]
+[faq id="456, 987, 123" hide="glossary"]
+[faq glossary="category tabs" tag="Tag1" show="expand-all-link" order="desc"]
+```
 
+## FAQs from Other Domains
 
-[faq glossary="tag tagcloud"] 
-Oberhalb der Ausgabe aller FAQ wird ein Glossar angezeigt, bei dem die Schlagwörter unterschiedlich groß dargestellt werden. Die FAQ sind nach Schlagwörter gruppiert. Das Glossar verlinkt auf die Schlagwörter
+External domains must be added under  
+**Settings → RRZE FAQ → "Domains" tab**.  
+Synchronization is carried out via the **"Synchronization"** tab.
 
-[faq category="Titelform-der-Kategorie"] 
-Alle FAQ, die zu dieser Kategorie gehören, werden als Akkordeons ausgegeben. Darüber befindet sich das Glossar von A-Z.
+## Using the Widget
 
-[faq category="Titelform-der-Kategorie" tag="Titelform-des-Schlagworts-1, Titelform-des-Schlagworts-2"] 
-Alle FAQ, die zu dieser Kategorie gehören und die beiden Schlagwörter enthalten, werden als Akkordeons ausgegeben. Darüber befindet sich das Glossar von A-Z.
+In `/wp-admin/widgets.php`, the widget is available as **"FAQ Widget"**.  
+You can configure:
 
-[faq id="456, 987, 123" hide="glossary"] 
-Die drei FAQ werden in der angegebene Reihenfolge gezeigt.
+- Display duration
+- A specific or a random FAQ from a category
 
-[faq glossary="category tabs" tag="Titelform-des-Schlagworts-1" show="expand-all-link" order="desc"] 
-Unabhängig von der Kategorie werden alle FAQ, die das Schlagwort enthalten ausgegeben. Sie werden dabei in Kategorien gruppiert. Diese Kategorien sind im Glossar verlinkt. Das Glossar besteht aus den Namen der Kategorien. Die Reihenfolge der FAQ ist bezogen auf die Frage in umgekehrter alphabetischer Richtung.
+## Using the REST API (v2)
 
+**Examples:**
 
-## FAQ von anderer Domain
+- All FAQs:  
+  https://www.anleitungen.rrze.fau.de/wp-json/wp/v2/faq
 
-Hierzu muss die gewünschte Domain über den Menüpunkt "Einstellungen" -> "RRZE FAQ" -> Tab "Domains" hinzugefügt werden.
-Das Synchronisieren kann über den Menüpunkt "Einstellungen" -> "RRZE FAQ" -> Tab "Synchonisierung" vorgenommen werden.
-Synchronisierte FAQ können nun wie selbst erstellte FAQ mit dem Shortcode ausgegeben werden.
+- Filtered by tag:  
+  https://www.anleitungen.rrze.fau.de/wp-json/wp/v2/faq?filter[faq_tag]=Matrix
 
+- Multiple tags:  
+  https://www.anleitungen.rrze.fau.de/wp-json/wp/v2/faq?filter[faq_tag]=Matrix%2BAccounts
 
-## Verwendung als Widget
+- Category:  
+  https://www.anleitungen.rrze.fau.de/wp-json/wp/v2/faq?filter[faq_category]=Dienste
 
-Unter /wp-admin/widgets.php wird das Widget als "FAQ Widget" angeboten. Per drag&drop lässt es sich in einen Bereich wie z.B. der Sidebar einbetten. Einstellbar sind die Anzeigedauer und ob ein bestimmtes FAQ oder aus einer gewählten Kategorie ein zufälliges FAQ angezeigt werden soll.
+- Category + tag:  
+  https://www.anleitungen.rrze.fau.de/wp-json/wp/v2/faq?filter[faq_category]=Dienste&filter[faq_tag]=Sprache
 
-
-## Verwendung via REST API v2
-
-Beispiele:
-
-https://www.anleitungen.rrze.fau.de/wp-json/wp/v2/faq
-
-Filterungen:
-
-Tag:
-https://www.anleitungen.rrze.fau.de/wp-json/wp/v2/faq?filter[faq_tag]=Matrix
-
-Mehrere Tags:
-https://www.anleitungen.rrze.fau.de/wp-json/wp/v2/faq?filter[faq_tag]=Matrix%2BAccounts
-
-Kategorie:
-https://www.anleitungen.rrze.fau.de/wp-json/wp/v2/faq?filter[faq_category]=Dienste
-
-Tags und Kategorien:
-https://www.anleitungen.rrze.fau.de/wp-json/wp/v2/faq?filter[faq_category]=Dienste&filter[faq_tag]=Sprache
-
-Pagination:
-https://developer.wordpress.org/rest-api/using-the-rest-api/pagination/
-
-
-
+- Pagination:  
+  https://developer.wordpress.org/rest-api/using-the-rest-api/pagination/
