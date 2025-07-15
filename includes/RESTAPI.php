@@ -4,16 +4,23 @@ namespace RRZE\FAQ;
 
 defined('ABSPATH') || exit;
 
+use RRZE\FAQ\Config;
+
+
 /**
  * REST API for the 'faq' object type
  */
 class RESTAPI
 {
+        private $cpt = [];
+
     /**
      * Constructor
      */
     public function __construct()
     {
+                $this->cpt = Config::getConstants('cpt');
+
         // Register REST API meta fields
         add_action('rest_api_init', [$this, 'registerPostMetaRestFields']);
         // Register REST API taxonomy fields
@@ -73,23 +80,22 @@ class RESTAPI
      */
     public function registerPostMetaRestFields()
     {
-        // Registers the 'source' meta field for the 'faq' object type
-        register_rest_field('faq', 'source', array(
+        register_rest_field($this->cpt['faq'], 'source', array(
             'get_callback' => [$this, 'getPostSource'],
             'schema' => null,
         ));
-        // Registers the 'lang' meta field for the 'faq' object type
-        register_rest_field('faq', 'lang', array(
+
+        register_rest_field($this->cpt['faq'], 'lang', array(
             'get_callback' => [$this, 'getPostLang'],
             'schema' => null,
         ));
-        // Registers the 'remoteID' meta field for the 'faq' object type
-        register_rest_field('faq', 'remoteID', array(
+
+        register_rest_field($this->cpt['faq'], 'remoteID', array(
             'get_callback' => [$this, 'getPostRemoteID'],
             'schema' => null,
         ));
-        // Registers the 'remoteChanged' meta field for the 'faq' object type
-        register_rest_field('faq', 'remoteChanged', array(
+
+        register_rest_field($this->cpt['faq'], 'remoteChanged', array(
             'get_callback' => [$this, 'getPostRemoteChanged'],
             'schema' => null,
         ));
@@ -101,11 +107,11 @@ class RESTAPI
     public function addRestQueryFilters()
     {
         // Add filter parameters to the object query
-        add_filter('rest_faq_query', [$this, 'addFilterParam'], 10, 2);
+        add_filter('rest_'. $this->cpt['faq'] . '_query', [$this, 'addFilterParam'], 10, 2);
         // Add filter parameters to the categories query
-        add_filter('rest_faq_category_query', [$this, 'addFilterParam'], 10, 2);
+        add_filter('rest_'. $this->cpt['category'] . '_query', [$this, 'addFilterParam'], 10, 2);
         // Add filter parameters to the tags query
-        add_filter('rest_faq_tag_query', [$this, 'addFilterParam'], 10, 2);
+        add_filter('rest_'. $this->cpt['tag'] . '_query', [$this, 'addFilterParam'], 10, 2);
     }
 
     /**
@@ -133,19 +139,19 @@ class RESTAPI
     }
 
     /**
-     * Get the terms names of the 'faq_category' taxonomy
+     * Get the terms names of the $this->cpt['category'] taxonomy
      *
      * @param array $object
      * @return array
      */
     public function getCategories($object)
     {
-        $cats = wp_get_post_terms($object['id'], 'faq_category', array('fields' => 'names'));
+        $cats = wp_get_post_terms($object['id'], $this->cpt['category'], array('fields' => 'names'));
         return $cats;
     }
 
     /**
-     * Get the children terms names of the 'faq_category' taxonomy
+     * Get the children terms names of the $this->cpt['category'] taxonomy
      *
      * @param array $term
      * @return array
@@ -154,7 +160,7 @@ class RESTAPI
     {
         $children = get_terms(
             array(
-                'taxonomy' => 'faq_category',
+                'taxonomy' => $this->cpt['category'],
                 'parent' => $term['id'],
             )
         );
@@ -166,18 +172,18 @@ class RESTAPI
     }
 
     /**
-     * Get the terms names of the 'faq_tag' taxonomy
+     * Get the terms names of the $this->cpt['tag'] taxonomy
      *
      * @param array $object
      * @return array
      */
     public function getTags($object)
     {
-        return wp_get_post_terms($object['id'], 'faq_tag', array('fields' => 'names'));
+        return wp_get_post_terms($object['id'], $this->cpt['tag'], array('fields' => 'names'));
     }
 
     /**
-     * Get the term meta 'source' of a 'faq' object type
+     * Get the term meta 'source' of a $this->cpt['faq'] object type
      *
      * @param array $object
      * @return string
@@ -188,7 +194,7 @@ class RESTAPI
     }
 
     /**
-     * Get the term meta 'lang' of a 'faq' object type
+     * Get the term meta 'lang' of a $this->cpt['faq'] object type
      *
      * @param array $object
      * @return string
@@ -199,32 +205,31 @@ class RESTAPI
     }
 
     /**
-     * Registers the taxonomies fields for the 'faq' object type
+     * Registers the taxonomies fields for the $this->cpt['faq'] object type
      */
     public function registerTaxRestFields()
     {
-        // Registers the 'faq_category' taxonomy field for the 'faq' object type
         register_rest_field(
-            'faq',
-            'faq_category',
+            $this->cpt['faq'],
+            $this->cpt['category'],
             array(
                 'get_callback' => [$this, 'getCategories'],
                 'update_callback' => null,
                 'schema' => null,
             )
         );
-        // Registers the 'faq_tag' taxonomy field for the 'faq' object type
+
         register_rest_field(
-            'faq',
-            'faq_tag',
+            $this->cpt['faq'],
+            $this->cpt['tag'],
             array(
                 'get_callback' => [$this, 'getTags'],
                 'update_callback' => null,
                 'schema' => null,
             )
         );
-        // Registers the 'source' and 'lang' meta fields for the 'faq_category' and 'faq_tag' taxonomies
-        $fields = array('faq_category', 'faq_tag');
+
+        $fields = array($this->cpt['category'], $this->cpt['tag']);
         foreach ($fields as $field) {
             // Registers the 'source' meta field
             register_rest_field($field, 'source', array(
@@ -245,7 +250,7 @@ class RESTAPI
     public function registerTaxChildrenRestField()
     {
         register_rest_field(
-            'faq_category',
+            $this->cpt['category'],
             'children',
             array(
                 'get_callback' => [$this, 'getChildrenCategories'],
