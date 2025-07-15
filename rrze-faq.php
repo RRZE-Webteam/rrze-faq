@@ -134,6 +134,64 @@ function rrze_faq_init() {
     wp_set_script_translations( $script_handle, 'rrze-faq', plugin_dir_path( __FILE__ ) . 'languages' );
 }
 
+
+function rrze_faq_taxonomy_and_posttype_migration() {
+    $option_name = 'rrze_faq_taxonomy_posttype_migration_done';
+
+    if (get_option($option_name)) {
+        return;
+    }
+
+    global $wpdb;
+
+    // 1. Taxonomien durchgehen
+    $taxonomies = get_taxonomies([], 'objects');
+
+    foreach ($taxonomies as $taxonomy) {
+
+        // Nur Taxonomien prüfen, die nicht WordPress-Standard sind
+        if (in_array($taxonomy->name, ['category', 'tag', 'post_tag', 'faq_category', 'faq_tag'])) {
+            continue;
+        }
+
+        // Alle Terms der Taxonomie holen
+        $terms = get_terms([
+            'taxonomy' => $taxonomy->name,
+            'hide_empty' => false,
+        ]);
+
+        foreach ($terms as $term) {
+            $source = get_term_meta($term->term_id, 'source', true);
+
+            if ($source) {
+                $new_taxonomy = $taxonomy->hierarchical ? 'faq_category' : 'faq_tag';
+
+                $wpdb->update(
+                    $wpdb->term_taxonomy,
+                    ['taxonomy' => $new_taxonomy],
+                    [
+                        'term_taxonomy_id' => $term->term_taxonomy_id,
+                    ]
+                );
+            }
+        }
+    }
+
+    // 2. Post Type von rrze_faq zu faq ändern
+    $wpdb->update(
+        $wpdb->posts,
+        ['post_type' => 'faq'],
+        ['post_type' => 'rrze_faq']
+    );
+
+    // 3. Cache & Permalinks aktualisieren
+    wp_cache_flush();
+    flush_rewrite_rules();
+
+    // 4. Migration als erledigt markieren
+    update_option($option_name, 1);
+}
+
 /**
  * Wird durchgeführt, nachdem das WP-Grundsystem hochgefahren
  * und alle Plugins eingebunden wurden.
@@ -156,6 +214,8 @@ function loaded()
         // Hauptklasse (Main) wird instanziiert.
         $main = new Main(__FILE__);
         $main->onLoaded();
+
+        add_action('init', __NAMESPACE__ . '\rrze_faq_taxonomy_and_posttype_migration', 20);
     }
 
 	add_action( 'init', __NAMESPACE__ . '\rrze_faq_init' );
