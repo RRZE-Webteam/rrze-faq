@@ -2,8 +2,25 @@
 /* 
 Template Name: Custom Taxonomy faq_tag Template
 */
+namespace RRZE\FAQ;
 
-include_once('template-parts/archive_head.php');
-$taxonomy = 'faq_tag';
+use RRZE\FAQ\Config;
+
+$cpt = Config::getConstants('cpt');
+
+get_header();
+
+?>
+
+<main id="main" class="site-main rrze-faq tag">
+
+<?php
+
+$taxonomy = $cpt['tag'];
 include_once('template-parts/faq_taxonomy.php');
-include_once('template-parts/foot.php');
+
+?>
+</main>
+
+<?php
+get_footer();
