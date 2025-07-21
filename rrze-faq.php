@@ -4,7 +4,7 @@
 Plugin Name:     RRZE FAQ
 Plugin URI:      https://gitlab.rrze.fau.de/rrze-webteam/rrze-faq
 Description:     Plugin, um FAQ zu erstellen und aus dem FAU-Netzwerk zu synchronisieren. Verwendbar als Shortcode, Block oder Widget. 
-Version:         5.4.7
+Version:         5.4.8
 Requires at least: 6.1
 Requires PHP:      8.2
 Author:          RRZE Webteam
@@ -121,32 +121,32 @@ function deactivation()
     flush_rewrite_rules();
 }
 
-function migrate_faq_post_type_and_taxonomies()
-{
-    $option_name = 'rrze_faq_final_migration_done';
 
-    if (get_option($option_name)) {
+function rrze_faq_cpt_update()
+{
+    global $wpdb;
+
+    if (get_option('rrze_faq_cpt_update_done')) {
         return;
     }
 
-    global $wpdb;
-
+    $wpdb->query("
+        UPDATE {$wpdb->term_taxonomy} tt
+        INNER JOIN {$wpdb->term_relationships} tr ON tr.term_taxonomy_id = tt.term_taxonomy_id
+        INNER JOIN {$wpdb->posts} p ON tr.object_id = p.ID
+        SET tt.taxonomy = 'rrze_faq_category'
+        WHERE p.post_type = 'faq'
+        AND tt.taxonomy = 'faq_category'
+    ");
 
     $wpdb->query("
-    UPDATE {$wpdb->term_taxonomy} tt
-    INNER JOIN {$wpdb->term_relationships} tr ON tr.term_taxonomy_id = tt.term_taxonomy_id
-    INNER JOIN {$wpdb->posts} p ON p.ID = tr.object_id
-    SET tt.taxonomy = 'rrze_faq_category'
-    WHERE tt.taxonomy = 'category' AND p.post_type = 'faq'
-");
-
-    $wpdb->query("
-    UPDATE {$wpdb->term_taxonomy} tt
-    INNER JOIN {$wpdb->term_relationships} tr ON tr.term_taxonomy_id = tt.term_taxonomy_id
-    INNER JOIN {$wpdb->posts} p ON p.ID = tr.object_id
-    SET tt.taxonomy = 'rrze_faq_tag'
-    WHERE tt.taxonomy = 'tag' AND p.post_type = 'faq'
-");
+        UPDATE {$wpdb->term_taxonomy} tt
+        INNER JOIN {$wpdb->term_relationships} tr ON tr.term_taxonomy_id = tt.term_taxonomy_id
+        INNER JOIN {$wpdb->posts} p ON tr.object_id = p.ID
+        SET tt.taxonomy = 'rrze_faq_tag'
+        WHERE p.post_type = 'faq'
+        AND tt.taxonomy = 'faq_tag'
+    ");
 
     $wpdb->update(
         $wpdb->posts,
@@ -157,7 +157,7 @@ function migrate_faq_post_type_and_taxonomies()
     wp_cache_flush();
     flush_rewrite_rules();
 
-    update_option($option_name, 1);
+    update_option('rrze_faq_cpt_update_done', 1);
 }
 
 function rrze_faq_init()
@@ -189,7 +189,7 @@ function loaded()
         // Hauptklasse (Main) wird instanziiert.
         $main = new Main(__FILE__);
         $main->onLoaded();
-        add_action('init', __NAMESPACE__ . '\migrate_faq_post_type_and_taxonomies');
+        add_action('init', __NAMESPACE__ . '\rrze_faq_cpt_update');
     }
 
     add_action('init', __NAMESPACE__ . '\rrze_faq_init');
