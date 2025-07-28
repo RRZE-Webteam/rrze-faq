@@ -192,13 +192,15 @@ class Layout
                 }
             }
 
-            add_meta_box(
-                'shortcode_box',
-                __('Integration in pages and posts', 'rrze-faq'),
-                [$this, 'fillShortcodeBox'],
-                $this->cpt['faq'],
-                'normal'
-            );
+            if (!use_block_editor_for_post($post_id)) {
+                add_meta_box(
+                    'shortcode_box',
+                    __('Integration in pages and posts', 'rrze-faq'),
+                    [$this, 'fillShortcodeBox'],
+                    $this->cpt['faq'],
+                    'normal'
+                );
+            }
         }
 
         add_meta_box('langbox', __('Language', 'rrze-faq'), [$this, 'langboxCallback'], $this->cpt['faq'], 'side');
