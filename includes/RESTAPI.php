@@ -209,25 +209,25 @@ class RESTAPI
      */
     public function registerTaxRestFields()
     {
-        register_rest_field(
-            $this->cpt['faq'],
-            $this->cpt['category'],
-            array(
-                'get_callback' => [$this, 'getCategories'],
-                'update_callback' => null,
-                'schema' => null,
-            )
-        );
+        // register_rest_field(
+        //     $this->cpt['faq'],
+        //     $this->cpt['category'],
+        //     array(
+        //         'get_callback' => [$this, 'getCategories'],
+        //         'update_callback' => null,
+        //         'schema' => null,
+        //     )
+        // );
 
-        register_rest_field(
-            $this->cpt['faq'],
-            $this->cpt['tag'],
-            array(
-                'get_callback' => [$this, 'getTags'],
-                'update_callback' => null,
-                'schema' => null,
-            )
-        );
+        // register_rest_field(
+        //     $this->cpt['faq'],
+        //     $this->cpt['tag'],
+        //     array(
+        //         'get_callback' => [$this, 'getTags'],
+        //         'update_callback' => null,
+        //         'schema' => null,
+        //     )
+        // );
 
         $fields = array($this->cpt['category'], $this->cpt['tag']);
         foreach ($fields as $field) {
