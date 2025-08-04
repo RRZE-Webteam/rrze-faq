@@ -5,4 +5,4 @@ foreach($attributes as $key => $value){
     $atts .= $key . '="' . $value . '" ';
 }
 
-return do_shortcode('[faq ' . $atts . ']');
+echo do_shortcode('[faq ' . $atts . ']');
