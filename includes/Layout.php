@@ -23,7 +23,7 @@ class Layout
         add_filter('pre_get_posts', [$this, 'makeFaqSortable']);
         add_filter('enter_title_here', [$this, 'changeTitleText']);
         // show content in box if not editable ( not editable == source is not "website" - it is sychronized from another website )
-        add_action('admin_menu', [$this, 'toggleEditor']);
+        add_action('add_meta_boxes', [$this, 'toggleEditor']);
 
         // Table "All FAQ"
         add_filter('manage_' . $this->cpt['faq'] . '_posts_columns', [$this, 'addFaqColumns']);
@@ -156,12 +156,17 @@ class Layout
     {
         $post_id = 0;
 
-        if (isset($_GET['post'])) {
-            $post_id = isset($_GET['faq_nonce']) && wp_verify_nonce(sanitize_text_field(wp_unslash($_GET['faq_nonce'])), 'faq_edit_nonce') ? (int) sanitize_text_field(wp_unslash($_GET['post'])) : 0;
-        } elseif (isset($_POST['post_ID'])) {
-            $post_id = isset($_POST['faq_nonce']) && wp_verify_nonce(sanitize_text_field(wp_unslash($_POST['faq_nonce'])), 'faq_edit_nonce') ? (int) sanitize_text_field(wp_unslash($_POST['post_ID'])) : 0;
-        }
+        $post_id = 0;
 
+        $method = $_SERVER['REQUEST_METHOD'] === 'POST' ? INPUT_POST : INPUT_GET;
+
+        $post_raw = filter_input($method, 'post', FILTER_SANITIZE_NUMBER_INT);
+        $nonce_raw = filter_input($method, 'faq_nonce', FILTER_SANITIZE_STRING);
+
+        if ($post_raw && $nonce_raw && wp_verify_nonce($nonce_raw, 'faq_edit_nonce')) {
+            $post_id = (int) $post_raw;
+        }
+        
         if ($post_id) {
             if (get_post_type($post_id) === $this->cpt['faq']) {
                 $source = get_post_meta($post_id, 'source', true);
