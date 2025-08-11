@@ -253,7 +253,7 @@ class Settings
  * @param string $context      KSES context; wp_kses_post() uses 'post'.
  * @return array               Modified allowed tags/attributes.
  */
-function rrze_allow_schema_microdata($allowed_tags, $context)
+function my_custom_allowed_html($allowed_tags, $context)
 {
     // Only alter the 'post' context used by wp_kses_post()
     if ($context !== 'post') {
