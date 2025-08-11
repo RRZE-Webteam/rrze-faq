@@ -54,7 +54,7 @@ class Tools
         return 'header-' . ($postID ?? 'noid') . '-' . $random;
     }
 
-    public static function renderFAQWrapper(?int $postID = null, string &$content, string &$headerID, bool &$masonry, string &$color, string &$additional_class): string
+    public static function renderFAQWrapper(?int $postID = null, string &$content, string &$headerID, bool &$masonry, string &$color, string &$additional_class, bool &$bSchema): string
     {
         $classes = 'rrze-faq';
 
@@ -70,7 +70,7 @@ class Tools
             $classes .= ' ' . trim($additional_class);
         }
 
-        return '<div class="' . esc_attr($classes) . '" aria-labelledby="' . esc_attr($headerID) . '">' . $content . '</div>';
+        return '<div ' . ($bSchema? 'itemscope itemtype="https://schema.org/FAQPage" ' : '') . 'class="' . esc_attr($classes) . '" aria-labelledby="' . esc_attr($headerID) . '">' . $content . '</div>';
     }
 
     public static function getLetter(&$txt)

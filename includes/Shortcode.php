@@ -21,6 +21,7 @@ class Shortcode
     private $settings = '';
     private $pluginname = '';
     private $cpt = [];
+    private $bSchema = false;
 
 
     public function __construct()
@@ -29,6 +30,7 @@ class Shortcode
 
         $this->settings = Config::getShortcodeSettings();
         $this->pluginname = $this->settings['block']['blockname'];
+
         // add_shortcode( 'fau_glossar', [ $this, 'shortcodeOutput' ]); // BK 2020-06-05 Shortcode [fau_glossar ...] is moved to its own plugin rrze-glossary, because for historical reasons incompatible code exists in FAU institutions, which was not known when rrze-faq was rebuilt
         // add_shortcode( 'glossary', [ $this, 'shortcodeOutput' ]); // BK 2020-06-05 Shortcode [glossary ...] is outsourced to its own plugin rrze-glossary, because for historical reasons incompatible code exists in FAU facilities, which was not known when rrze-faq was rebuilt
 
@@ -175,9 +177,9 @@ class Shortcode
                 }
 
                 $description = str_replace(']]>', ']]&gt;', apply_filters('the_content', get_post_field('post_content', $id)));
-                if (!isset($description) || (mb_strlen($description) < 1)) {
-                    $description = get_post_meta($id, 'description', true);
-                }
+                // if (!isset($description) || (mb_strlen($description) < 1)) {
+                //     $description = get_post_meta($id, 'description', true);
+                // }
 
                 if ($hide_accordion) {
                     $content .= ($hide_title ? '' : '<h' . $hstart . '>' . $question . '</h' . $hstart . '>') .
@@ -191,7 +193,7 @@ class Shortcode
                     }
                 }
 
-                $content .= Tools::getSchema($id, $question, $description);
+                // $content .= Tools::getSchema($id, $question, $description);
 
                 $found = true;
             }
@@ -366,11 +368,14 @@ class Shortcode
                     $aIDs = Tools::searchArrayByKey($aVal['ID'], $aPostIDs);
 
                     foreach ($aIDs as $ID) {
-                        $answer = str_replace(']]>', ']]&gt;', apply_filters('the_content', get_post_field('post_content', $ID)));
-                        if (!isset($answer) || (mb_strlen($answer) < 1)) {
-                            $answer = get_post_meta($ID, 'description', true);
-                        }
+                        $source = get_post_meta($ID, "source", true);
                         $question = get_the_title($ID);
+                        $answer = str_replace(']]>', ']]&gt;', apply_filters('the_content', get_post_field('post_content', $ID)));
+
+                        if ($source === 'website') {
+                            $question = $this->schemaHTML['RRZE_SCHEMA_QUESTION_START'] . $question . $this->schemaHTML['RRZE_SCHEMA_QUESTION_END'];
+                            $answer = $this->schemaHTML['RRZE_SCHEMA_ANSWER_START'] . $answer . $this->schemaHTML['RRZE_SCHEMA_ANSWER_END'];
+                        }
 
                         $anchorfield = get_post_meta($ID, 'anchorfield', true);
                         if (empty($anchorfield)) {
@@ -381,8 +386,6 @@ class Shortcode
                         $content .= '<summary>' . esc_html($question) . '</summary>';
                         $content .= '<div class="faq-content">' . $answer . '</div>';
                         $content .= '</details>';
-
-                        $content .= Tools::getSchema($ID, $question, $answer);
                     }
 
                     $content .= '</div></section>';
@@ -393,14 +396,14 @@ class Shortcode
                 $last_anchor = '';
                 foreach ($posts as $post) {
 
+                    // itemscope itemprop="mainEntity" itemtype="https://schema.org/Question"
+                    $source = get_post_meta($post->ID, "source", true);
                     $question = get_the_title($post->ID);
+                    $answer = str_replace(']]>', ']]&gt;', apply_filters('the_content', get_post_field('post_content', $post->ID)));
+
                     $letter = Tools::getLetter($question);
                     $aLetters[$letter] = true;
 
-                    $answer = str_replace(']]>', ']]&gt;', apply_filters('the_content', get_post_field('post_content', $post->ID)));
-                    if (!isset($answer) || (mb_strlen($answer) < 1)) {
-                        $answer = get_post_meta($post->ID, 'description', true);
-                    }
 
                     if (!$hide_accordion) {
                         $anchorfield = get_post_meta($post->ID, 'anchorfield', true);
@@ -412,15 +415,34 @@ class Shortcode
                         if ($glossarystyle == 'a-z' && count($posts) > 1) {
                             $content .= ($last_anchor != $letter ? '<h2 id="letter-' . $letter . '">' . $letter . '</h2>' : '');
                         }
+
+                        if ($source === 'website') {
+                            $this->bSchema = true;
+                            $content .= '<div itemscope itemprop="mainEntity" itemtype="https://schema.org/Question">';
+                        }
+
                         $content .= '<details' . ($load_open ? ' open' : '') . ' id="' . esc_attr($anchorfield) . '" class="faq-item' . ($color ? ' color-' . esc_attr($color) : '') . '">';
-                        $content .= '<summary>' . esc_html($question) . '</summary>';
-                        $content .= '<div class="faq-content">' . $answer . '</div>';
+
+                        if ($source === 'website') {
+                            $content .= '<summary itemprop="name">' . esc_html($question) . '</summary>';
+                            $content .= '<div itemscope itemprop="acceptedAnswer" itemtype="https://schema.org/Answer">';
+                            $content .= '<div class="faq-content" itemprop="text">' . $answer . '</div>';
+                            $content .= '</div>'; // acceptedAnswer
+                        } else {
+                            $content .= '<summary>' . esc_html($question) . '</summary>';
+                            $content .= '<div class="faq-content">' . $answer . '</div>';
+                        }
+
                         $content .= '</details>';
+
+                        if ($source === 'website') {
+                            $content .= '</div>'; // Question
+                        }
+
 
                     } else {
                         $content .= ($hide_title ? '' : '<h' . $hstart . '>' . $question . '</h' . $hstart . '>') . ($answer ? '<p>' . $answer . '</p>' : '');
                     }
-                    $content .= Tools::getSchema($post->ID, $question, $answer);
                     $last_anchor = $letter;
                 }
 
@@ -473,11 +495,7 @@ class Shortcode
 
         if ($id && (!$gutenberg || $gutenberg && $id[0])) {
             $content = $this->renderExplicitFAQs($id, $gutenberg, $hstart, $style, $masonry, $expand_all_link, $hide_accordion, $hide_title, $color, $load_open);
-            echo 'A';
-            exit;
         } else {
-            // echo 'B';
-            // exit;
             $content = $this->renderFilteredFAQs($atts, $hstart, $style, $expand_all_link, $hide_accordion, $hide_title, $color, $load_open, $sort, $order, $category, $tag, $glossary, $glossarystyle);
         }
 
@@ -493,7 +511,7 @@ class Shortcode
 
         wp_enqueue_style('rrze-faq-css');
 
-        $content = Tools::renderFAQWrapper($postID, $content, $headerID, $masonry, $color, $additional_class);
+        $content = Tools::renderFAQWrapper($postID, $content, $headerID, $masonry, $color, $additional_class, $this->bSchema);
 
         return $content;
 
