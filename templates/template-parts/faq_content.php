@@ -24,6 +24,7 @@ $aLinkedPage = $tools->getLinkedPage($postID);
 
 $bSchema = ($source === 'website');
 
+
 $content = '';
 $content .= ($bSchema ? '<div itemscope itemprop="mainEntity" itemtype="https://schema.org/Question">' : '');
 $content .= '<article>';
@@ -68,4 +69,4 @@ $masonry = false;
 $color = '';
 $additional_class = '';
 
-echo wp_kses_post($tools->renderFaqWrapper($postID, $content, $headerID, $masonry, $color, $additional_class, $bSchema));
+echo $tools->renderFaqWrapper($postID, $content, $headerID, $masonry, $color, $additional_class, $bSchema);

@@ -129,10 +129,6 @@ class Shortcode
         $atts['load_open'] = (isset($atts['load_open']) && $atts['load_open'] ? ' load="open"' : '');
     }
 
-
-
-
-
     /**
      * Outputs explicitly requested FAQs as accordion or simple content.
      *
@@ -150,11 +146,10 @@ class Shortcode
      * @param string $load_open Attribute for open state
      * @return string The generated HTML content
      */
-
-
     private function renderExplicitFAQs($id, bool $gutenberg, int $hstart, string $style, bool $masonry, string $expand_all_link, bool $hide_accordion, bool $hide_title, string $color, string $load_open): string
     {
         $content = '';
+        $this->bSchema = false;
 
         // EXPLICIT FAQ(s)
         if ($gutenberg) {
@@ -163,8 +158,6 @@ class Shortcode
             // classic editor
             $aIDs = explode(',', $id);
         }
-
-        $found = false;
 
         foreach ($aIDs as $id) {
             $id = trim($id);
@@ -176,32 +169,23 @@ class Shortcode
                     $anchorfield = 'ID-' . $id;
                 }
 
-                $description = str_replace(']]>', ']]&gt;', apply_filters('the_content', get_post_field('post_content', $id)));
-                // if (!isset($description) || (mb_strlen($description) < 1)) {
-                //     $description = get_post_meta($id, 'description', true);
-                // }
+                $answer = str_replace(']]>', ']]&gt;', apply_filters('the_content', get_post_field('post_content', $id)));
+                $useSchema = (get_post_meta($id, 'source', true) === 'website');
 
-                if ($hide_accordion) {
-                    $content .= ($hide_title ? '' : '<h' . $hstart . '>' . $question . '</h' . $hstart . '>') .
-                        ($description ? '<p>' . $description . '</p>' : '');
-                } else {
-                    if ($description) {
-                        $content .= '<details' . ($load_open ? ' open' : '') . ' id="' . esc_attr($anchorfield) . '" class="faq-item' . ($color ? ' color-' . esc_attr($color) : '') . '">';
-                        $content .= '<summary>' . esc_html($question) . '</summary>';
-                        $content .= '<div class="faq-content">' . $description . '</div>';
-                        $content .= '</details>';
-                    }
+                if ($useSchema){
+                    $this->bSchema = true;
                 }
 
-                // $content .= Tools::getSchema($id, $question, $description);
-
-                $found = true;
+                if ($hide_accordion) {
+                    $content .= Tools::renderFAQItem($question, $answer, $hstart, $useSchema);
+                } else {
+                    $content .= Tools::renderFAQItemAccordion($anchorfield, $question, $answer, $color, $load_open, $useSchema);
+                }
             }
         }
 
         return $content;
     }
-
 
     /**
      * Outputs FAQs based on taxonomies (category/tag) or glossary view.
@@ -227,6 +211,7 @@ class Shortcode
     private function renderFilteredFAQs(array $atts, int $hstart, string $style, string $expand_all_link, bool $hide_accordion, bool $hide_title, string $color, string $load_open, string $sort, string $order, $category, $tag, string $glossary, string $glossarystyle): string
     {
         $content = '';
+        $this->bSchema = false;
 
         // attribute category or tag is given or none of them
         $aLetters = array();
@@ -369,23 +354,21 @@ class Shortcode
 
                     foreach ($aIDs as $ID) {
                         $source = get_post_meta($ID, "source", true);
-                        $question = get_the_title($ID);
-                        $answer = str_replace(']]>', ']]&gt;', apply_filters('the_content', get_post_field('post_content', $ID)));
+                        $useSchema = ($source === 'website');
 
-                        if ($source === 'website') {
-                            $question = $this->schemaHTML['RRZE_SCHEMA_QUESTION_START'] . $question . $this->schemaHTML['RRZE_SCHEMA_QUESTION_END'];
-                            $answer = $this->schemaHTML['RRZE_SCHEMA_ANSWER_START'] . $answer . $this->schemaHTML['RRZE_SCHEMA_ANSWER_END'];
+                        if ($useSchema){
+                            $this->bSchema = true;
                         }
 
+                        $question = get_the_title($ID);
+                        $answer = str_replace(']]>', ']]&gt;', apply_filters('the_content', get_post_field('post_content', $ID)));
                         $anchorfield = get_post_meta($ID, 'anchorfield', true);
+
                         if (empty($anchorfield)) {
                             $anchorfield = 'innerID-' . $ID;
                         }
 
-                        $content .= '<details id="' . esc_attr($anchorfield) . '" class="faq-item">';
-                        $content .= '<summary>' . esc_html($question) . '</summary>';
-                        $content .= '<div class="faq-content">' . $answer . '</div>';
-                        $content .= '</details>';
+                        $content .= Tools::renderFAQItemAccordion($anchorfield, $question, $answer, $color, $load_open, $useSchema);
                     }
 
                     $content .= '</div></section>';
@@ -395,15 +378,18 @@ class Shortcode
                 // attribut glossary is not given
                 $last_anchor = '';
                 foreach ($posts as $post) {
-
-                    // itemscope itemprop="mainEntity" itemtype="https://schema.org/Question"
                     $source = get_post_meta($post->ID, "source", true);
+                    $useSchema = ($source === 'website');
+
+                    if ($useSchema){
+                        $this->bSchema = true;
+                    }
+
                     $question = get_the_title($post->ID);
                     $answer = str_replace(']]>', ']]&gt;', apply_filters('the_content', get_post_field('post_content', $post->ID)));
 
                     $letter = Tools::getLetter($question);
                     $aLetters[$letter] = true;
-
 
                     if (!$hide_accordion) {
                         $anchorfield = get_post_meta($post->ID, 'anchorfield', true);
@@ -416,32 +402,9 @@ class Shortcode
                             $content .= ($last_anchor != $letter ? '<h2 id="letter-' . $letter . '">' . $letter . '</h2>' : '');
                         }
 
-                        if ($source === 'website') {
-                            $this->bSchema = true;
-                            $content .= '<div itemscope itemprop="mainEntity" itemtype="https://schema.org/Question">';
-                        }
-
-                        $content .= '<details' . ($load_open ? ' open' : '') . ' id="' . esc_attr($anchorfield) . '" class="faq-item' . ($color ? ' color-' . esc_attr($color) : '') . '">';
-
-                        if ($source === 'website') {
-                            $content .= '<summary itemprop="name">' . esc_html($question) . '</summary>';
-                            $content .= '<div itemscope itemprop="acceptedAnswer" itemtype="https://schema.org/Answer">';
-                            $content .= '<div class="faq-content" itemprop="text">' . $answer . '</div>';
-                            $content .= '</div>'; // acceptedAnswer
-                        } else {
-                            $content .= '<summary>' . esc_html($question) . '</summary>';
-                            $content .= '<div class="faq-content">' . $answer . '</div>';
-                        }
-
-                        $content .= '</details>';
-
-                        if ($source === 'website') {
-                            $content .= '</div>'; // Question
-                        }
-
-
+                        $content .= Tools::renderFAQItemAccordion($anchorfield, $question, $answer, $color, $load_open, $useSchema);
                     } else {
-                        $content .= ($hide_title ? '' : '<h' . $hstart . '>' . $question . '</h' . $hstart . '>') . ($answer ? '<p>' . $answer . '</p>' : '');
+                        $content .= Tools::renderFAQItem($question, $answer, $hstart, $useSchema);
                     }
                     $last_anchor = $letter;
                 }
