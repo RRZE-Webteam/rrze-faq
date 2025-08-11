@@ -100,6 +100,8 @@ class Settings
      */
     public function onLoaded()
     {
+        add_filter('wp_kses_allowed_html', [$this, 'my_custom_allowed_html'], 10, 2);
+
         add_action('init', [$this, 'regularInit'], 1);
         add_action('admin_init', [$this, 'adminInit']);
 
@@ -247,7 +249,7 @@ class Settings
 
 
 /**
- * Allow Schema.org microdata and details/summary on post content sanitized by wp_kses_post().
+ * Allow needed HTML on post content sanitized by wp_kses_post().
  *
  * @param array  $allowed_tags The current allowed tags/attributes for the given context.
  * @param string $context      KSES context; wp_kses_post() uses 'post'.
@@ -678,8 +680,6 @@ function my_custom_allowed_html($allowed_tags, $context)
      */
     public function adminInit()
     {
-        add_filter('wp_kses_allowed_html', [$this, 'my_custom_allowed_html'], 10, 2);
-
         // Adding setting areas
         foreach ($this->settingsSections as $section) {
             if (isset($section['desc']) && !empty($section['desc'])) {

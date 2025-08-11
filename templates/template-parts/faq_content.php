@@ -69,4 +69,4 @@ $masonry = false;
 $color = '';
 $additional_class = '';
 
-echo $tools->renderFaqWrapper($postID, $content, $headerID, $masonry, $color, $additional_class, $bSchema);
+echo wp_kses_post($tools->renderFaqWrapper($postID, $content, $headerID, $masonry, $color, $additional_class, $bSchema));
