@@ -110,7 +110,7 @@ class Tools
                 . '<div itemscope itemprop="acceptedAnswer" itemtype="https://schema.org/Answer"><div itemprop="text">' . $answer . '</div></div>'
                 . '</div>';
         }
-        
+
         return '<h' . $hstart . '>' . esc_html($question) . '</h' . $hstart . '>' . $answer;
     }
 
@@ -260,7 +260,7 @@ class Tools
             return $result;
         }
 
-        $categories = explode(', ', $input);
+        $categories = preg_split('/\s*,\s*/', $input);
 
         foreach ($categories as $category) {
             list($source, $value) = array_pad(explode(':', $category, 2), 2, '');
