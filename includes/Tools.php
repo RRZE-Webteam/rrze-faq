@@ -210,6 +210,7 @@ class Tools
                     'taxonomy' => $taxfield,
                     'field' => 'slug',
                     'terms' => $aTerms,
+                    'include_children' => false
                 );
 
                 if (count($aTerms) > 1) {
