@@ -34,9 +34,9 @@ class Layout
         add_filter('manage_edit-rrze_faq_category_sortable_columns', [$this, 'addTaxColumns']);
 
         // Table "Tags"
-        add_filter('manage_edit-rrze_faq_tag'] . '_columns', [$this, 'addTaxColumns']);
-        add_filter('manage_rrze_faq_tag'] . '_custom_column', [$this, 'getTaxColumnsValues'], 10, 3);
-        add_filter('manage_edit-rrze_faq_tag'] . '_sortable_columns', [$this, 'addTaxColumns']);
+        add_filter('manage_edit-rrze_faq_tag_columns', [$this, 'addTaxColumns']);
+        add_filter('manage_rrze_faq_tag_custom_column', [$this, 'getTaxColumnsValues'], 10, 3);
+        add_filter('manage_edit-rrze_faq_tag_sortable_columns', [$this, 'addTaxColumns']);
 
         add_action('save_post_rrze_faq', [$this, 'savePostMeta']);
     }
@@ -121,7 +121,7 @@ class Layout
         $ret = '';
         $category = '';
         $tag = '';
-        $fields = array('rrze_faq_category', 'rrze_faq_tag']);
+        $fields = array('rrze_faq_category', 'rrze_faq_tag');
         foreach ($fields as $field) {
             $terms = wp_get_post_terms($post->ID, $field);
             foreach ($terms as $term) {
@@ -175,7 +175,7 @@ class Layout
                     remove_post_type_support('rrze_faq', 'title');
                     remove_post_type_support('rrze_faq', 'editor');
                     remove_meta_box('rrze_faq_categorydiv', 'rrze_faq', 'side');
-                    remove_meta_box('tagsdiv-rrze_faq_tag'], 'rrze_faq', 'side');
+                    remove_meta_box('tagsdiv-rrze_faq_tag', 'rrze_faq', 'side');
 
                     add_meta_box(
                         'read_only_content_box',
@@ -224,7 +224,7 @@ class Layout
     public function addFaqSortableColumns($columns)
     {
         $columns['taxonomy-rrze_faq_category'] = __('Category', 'rrze-faq') .'TEST';
-        $columns['taxonomy-rrze_faq_tag']] = __('Tag', 'rrze-faq');
+        $columns['taxonomy-rrze_faq_tag'] = __('Tag', 'rrze-faq');
         $columns['lang'] = __('Language', 'rrze-faq');
         $columns['sortfield'] = 'sortfield';
 
@@ -245,7 +245,7 @@ class Layout
             return;
         }
 
-        $taxonomies_slugs = ['rrze_faq_category', 'rrze_faq_tag']];
+        $taxonomies_slugs = ['rrze_faq_category', 'rrze_faq_tag'];
         foreach ($taxonomies_slugs as $slug) {
             $taxonomy = get_taxonomy($slug);
             $selected = isset($_GET[$slug]) ? sanitize_text_field(wp_unslash($_GET[$slug])) : '';

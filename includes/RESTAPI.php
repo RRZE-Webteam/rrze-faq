@@ -9,7 +9,6 @@ defined('ABSPATH') || exit;
  */
 class RESTAPI
 {
-        private $cpt = [];
 
     /**
      * Constructor
@@ -106,7 +105,7 @@ class RESTAPI
         // Add filter parameters to the categories query
         add_filter('rest_'. 'rrze_faq_category_query', [$this, 'addFilterParam'], 10, 2);
         // Add filter parameters to the tags query
-        add_filter('rest_'. 'rrze_faq_tag'] . '_query', [$this, 'addFilterParam'], 10, 2);
+        add_filter('rest_'. 'rrze_faq_tag' . '_query', [$this, 'addFilterParam'], 10, 2);
     }
 
     /**
@@ -167,14 +166,14 @@ class RESTAPI
     }
 
     /**
-     * Get the terms names of the 'rrze_faq_tag'] taxonomy
+     * Get the terms names of the 'rrze_faq_tag' taxonomy
      *
      * @param array $object
      * @return array
      */
     public function getTags($object)
     {
-        return wp_get_post_terms($object['id'], 'rrze_faq_tag'], array('fields' => 'names'));
+        return wp_get_post_terms($object['id'], 'rrze_faq_tag', array('fields' => 'names'));
     }
 
     /**
@@ -216,7 +215,7 @@ class RESTAPI
 
         // register_rest_field(
         //     'rrze_faq',
-        //     'rrze_faq_tag'],
+        //     'rrze_faq_tag',
         //     array(
         //         'get_callback' => [$this, 'getTags'],
         //         'update_callback' => null,
@@ -224,7 +223,7 @@ class RESTAPI
         //     )
         // );
 
-        $fields = array('rrze_faq_category', 'rrze_faq_tag']);
+        $fields = array('rrze_faq_category', 'rrze_faq_tag');
         foreach ($fields as $field) {
             // Registers the 'source' meta field
             register_rest_field($field, 'source', array(

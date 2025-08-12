@@ -229,7 +229,7 @@ class Shortcode
         // filter by category and/or tag and -if given- by domain related to category/tag, too
         $aTax = [];
         $aTax['rrze_faq_category'] = Tools::getTaxBySource($category);
-        $aTax['rrze_faq_tag']] = Tools::getTaxBySource($tag);
+        $aTax['rrze_faq_tag'] = Tools::getTaxBySource($tag);
         $aTax = array_filter($aTax); // delete empty entries
 
         if ($aTax) {
@@ -297,7 +297,7 @@ class Shortcode
                             $aTags = $tag;
                         }
                         foreach ($aTags as $slug) {
-                            $filter_term = get_term_by('slug', $slug, 'rrze_faq_tag']);
+                            $filter_term = get_term_by('slug', $slug, 'rrze_faq_tag');
                             if ($filter_term) {
                                 $valid_term_ids[] = $filter_term->term_id;
                             }

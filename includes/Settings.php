@@ -14,7 +14,6 @@ use RRZE\FAQ\API;
  */
 class Settings
 {
-    private $cpt = [];
     /**
      * The complete path and file name of the plugin file.
      * @var string

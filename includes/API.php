@@ -157,7 +157,7 @@ class API
 
     public function deleteTags($source)
     {
-        $this->deleteTaxonomies($source, 'rrze_faq_tag']);
+        $this->deleteTaxonomies($source, 'rrze_faq_tag');
     }
 
     protected function setCategories(&$aCategories, &$shortname)
@@ -367,10 +367,10 @@ class API
                                     'remoteChanged' => $entry['remoteChanged'],
                                 );
                                 $sTag = '';
-                                foreach ($entry['rrze_faq_tag']] as $tag) {
+                                foreach ($entry['rrze_faq_tag'] as $tag) {
                                     $sTag .= $tag . ',';
                                 }
-                                $faqs[$entry['id']]['rrze_faq_tag']] = trim($sTag, ',');
+                                $faqs[$entry['id']]['rrze_faq_tag'] = trim($sTag, ',');
                                 $faqs[$entry['id']]['URLhasSlider'] = ((strpos($content, 'slider') !== false) ? $entry['link'] : false); // we cannot handle sliders, see note in Shortcode.php shortcodeOutput()
                             }
                         }
@@ -392,9 +392,9 @@ class API
                 $aTerms = explode(',', $terms);
                 foreach ($aTerms as $name) {
                     if ($name) {
-                        $term = term_exists($name, 'rrze_faq_tag']);
+                        $term = term_exists($name, 'rrze_faq_tag');
                         if (!$term) {
-                            $term = wp_insert_term($name, 'rrze_faq_tag']);
+                            $term = wp_insert_term($name, 'rrze_faq_tag');
                             update_term_meta($term['term_id'], 'source', $shortname);
                         }
                     }
@@ -444,7 +444,7 @@ class API
 
             // set FAQ
             foreach ($aFaq as $faq) {
-                $this->setTags($faq['rrze_faq_tag']], $shortname);
+                $this->setTags($faq['rrze_faq_tag'], $shortname);
 
                 $aCategoryIDs = array();
                 foreach ($faq['rrze_faq_category'] as $name) {
@@ -470,7 +470,7 @@ class API
                                 ),
                                 'tax_input' => array(
                                     'rrze_faq_category' => $aCategoryIDs,
-                                    'rrze_faq_tag'] => $faq['rrze_faq_tag']],
+                                    'rrze_faq_tag' => $faq['rrze_faq_tag'],
                                 ),
                             ));
                             $iUpdated++;
@@ -495,7 +495,7 @@ class API
                             ),
                             'tax_input' => array(
                                 'rrze_faq_category' => $aCategoryIDs,
-                                'rrze_faq_tag'] => $faq['rrze_faq_tag']],
+                                'rrze_faq_tag' => $faq['rrze_faq_tag'],
                             ),
                         ));
                         $iNew++;

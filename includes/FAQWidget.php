@@ -10,7 +10,6 @@ require_once ABSPATH . 'wp-includes/class-wp-widget.php';
 // Creating the widget
 class FAQWidget extends \WP_Widget
 {
-    private $cpt = [];
 
     public function __construct()
     {

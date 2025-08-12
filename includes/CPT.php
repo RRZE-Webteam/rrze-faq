@@ -21,7 +21,7 @@ class CPT
 
         add_action('publish_rrze_faq', [$this, 'setPostMeta'], 10, 1);
         add_action('create_rrze_faq_category', [$this, 'setTermMeta'], 10, 1);
-        add_action('create_rrze_faq_tag'], [$this, 'setTermMeta'], 10, 1);
+        add_action('create_rrze_faq_tag', [$this, 'setTermMeta'], 10, 1);
 
         add_action('rrze_faq_category_add_form_fields', [$this, 'add_category_page_field'], 10, 1);
         add_action('rrze_faq_category_edit_form_fields', [$this, 'edit_category_page_field'], 10, 1);
@@ -114,10 +114,10 @@ class CPT
                 )
             ],
             [
-                'name' => 'rrze_faq_tag'],
+                'name' => 'rrze_faq_tag',
                 'label' => 'FAQ ' . __('Tags', 'rrze-faq'),
                 'slug' => $slug_tag, // dynamic slug
-                'rest_base' => 'rrze_faq_tag'],
+                'rest_base' => 'rrze_faq_tag',
                 'hierarchical' => FALSE,
                 'labels' => array(
                     'singular_name' => __('Tag', 'rrze-faq'),
@@ -286,7 +286,7 @@ class CPT
     {
         if (is_tax('rrze_faq_category')) {
             $template = plugin_dir_path(__DIR__) . 'templates/faq_category.php';
-        } elseif (is_tax('rrze_faq_tag'])) {
+        } elseif (is_tax('rrze_faq_tag')) {
             $template = plugin_dir_path(__DIR__) . 'templates/faq_tag.php';
         }
         return $template;
