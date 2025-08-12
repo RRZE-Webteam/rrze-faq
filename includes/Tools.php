@@ -284,6 +284,7 @@ class Tools
     public function getLinkedPage(int &$postID): ?array
     {
         $assigned_terms = get_the_terms($postID, 'rrze_faq_category');
+
         if (!$assigned_terms || is_wp_error($assigned_terms)) {
             return null;
         }

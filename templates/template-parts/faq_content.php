@@ -9,7 +9,6 @@
 
 namespace RRZE\FAQ;
 
-use RRZE\FAQ\Config;
 use RRZE\FAQ\Tools;
 
 $postID = get_the_ID();
@@ -56,7 +55,7 @@ if (!empty($aLinkedPage)) {
     $url = isset($aLinkedPage['url']) ? esc_url($aLinkedPage['url']) : '';
     $title = isset($aLinkedPage['title']) ? esc_html($aLinkedPage['title']) : '';
     $linkHTML = sprintf('<a href="%1$s">%2$s</a>', $url, $title);
-    $content .= '<span class="post-meta-context">' . $linkHTML . '</span>';
+    $content .= ' <span class="post-meta-context">' . $linkHTML . '</span>';
 }
 
 $content .= '</p></footer>';
