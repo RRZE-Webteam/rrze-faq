@@ -5,8 +5,6 @@ Template Name: Part of the Custom Taxonomy Templates
 
 namespace RRZE\FAQ;
 
-use RRZE\FAQ\Config;
-
 $cat_slug = get_queried_object()->slug;
 $cat_name = get_queried_object()->name;
 
@@ -25,7 +23,8 @@ $tax_post_args = array(
         array(
             'taxonomy' => $taxonomy,
             'field' => 'slug',
-            'terms' => esc_attr($cat_slug)
+            'terms' => esc_attr($cat_slug),
+            'include_children' => false
         )
     )
 );
