@@ -20,14 +20,11 @@ class Shortcode
      */
     private $settings = '';
     private $pluginname = '';
-    private $cpt = [];
     private $bSchema = false;
 
 
     public function __construct()
     {
-        $this->cpt = Config::getConstants('cpt');
-
         $this->settings = Config::getShortcodeSettings();
         $this->pluginname = $this->settings['block']['blockname'];
 
@@ -217,7 +214,7 @@ class Shortcode
         $aLetters = array();
         $tax_query = '';
 
-        $postQuery = array('post_type' => $this->cpt['faq'], 'post_status' => 'publish', 'numberposts' => -1, 'suppress_filters' => false);
+        $postQuery = array('post_type' => 'rrze_faq', 'post_status' => 'publish', 'numberposts' => -1, 'suppress_filters' => false);
         if ($sort == 'sortfield') {
             $postQuery['orderby'] = array(
                 'meta_value' => $order, // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value
@@ -231,8 +228,8 @@ class Shortcode
 
         // filter by category and/or tag and -if given- by domain related to category/tag, too
         $aTax = [];
-        $aTax[$this->cpt['category']] = Tools::getTaxBySource($category);
-        $aTax[$this->cpt['tag']] = Tools::getTaxBySource($tag);
+        $aTax['rrze_faq_category'] = Tools::getTaxBySource($category);
+        $aTax['rrze_faq_tag']] = Tools::getTaxBySource($tag);
         $aTax = array_filter($aTax); // delete empty entries
 
         if ($aTax) {
@@ -288,7 +285,7 @@ class Shortcode
                             $aCats = $category;
                         }
                         foreach ($aCats as $slug) {
-                            $filter_term = get_term_by('slug', $slug, $this->cpt['category']);
+                            $filter_term = get_term_by('slug', $slug, 'rrze_faq_category');
                             if ($filter_term) {
                                 $valid_term_ids[] = $filter_term->term_id;
                             }
@@ -300,7 +297,7 @@ class Shortcode
                             $aTags = $tag;
                         }
                         foreach ($aTags as $slug) {
-                            $filter_term = get_term_by('slug', $slug, $this->cpt['tag']);
+                            $filter_term = get_term_by('slug', $slug, 'rrze_faq_tag']);
                             if ($filter_term) {
                                 $valid_term_ids[] = $filter_term->term_id;
                             }

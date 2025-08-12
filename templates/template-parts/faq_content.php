@@ -18,7 +18,15 @@ $headerID = $tools->getHeaderID($postID);
 $cpt = Config::getConstants('cpt');
 $source = get_post_meta($postID, "source", true);
 
-$cats = $tools->getTermLinks($postID, $cpt['category']);
+$cats = $tools->getTermLinks($postID, 'rrze_faq_category');
+
+$terms = wp_get_post_terms($postID);
+
+
+echo '<pre>';
+var_dump($terms);
+exit;
+
 $tags = $tools->getTermLinks($postID, $cpt['tag']);
 $aLinkedPage = $tools->getLinkedPage($postID);
 

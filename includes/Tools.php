@@ -5,15 +5,12 @@ namespace RRZE\FAQ;
 defined('ABSPATH') || exit;
 
 use WP_Query;
-use RRZE\FAQ\Config;
 
 class Tools
 {
-    private $cpt = [];
 
     public function __construct()
     {
-        $this->cpt = Config::getConstants('cpt');
     }
 
     public static function preventGutenbergDoubleBracketBug(string $shortcode_tag)
@@ -238,20 +235,6 @@ class Tools
         return $ret;
     }
 
-    public static function getSchema(int &$postID, string &$question, string &$answer): string
-    {
-        $schema = '';
-        $source = get_post_meta($postID, "source", true);
-        $answer = wp_strip_all_tags($answer, true);
-        $schemaHTML = Config::getConstants('schema');
-
-        if ($source === 'website') {
-            $schema = $schemaHTML['RRZE_SCHEMA_QUESTION_START'] . $question . $schemaHTML['RRZE_SCHEMA_QUESTION_END'];
-            $schema .= $schemaHTML['RRZE_SCHEMA_ANSWER_START'] . $answer . $schemaHTML['RRZE_SCHEMA_ANSWER_END'];
-        }
-        return $schema;
-    }
-
     public static function getTaxBySource($input)
     {
         $result = [];
@@ -300,7 +283,7 @@ class Tools
 
     public function getLinkedPage(int &$postID): ?array
     {
-        $assigned_terms = get_the_terms($postID, $this->cpt['category']);
+        $assigned_terms = get_the_terms($postID, 'rrze_faq_category');
         if (!$assigned_terms || is_wp_error($assigned_terms)) {
             return null;
         }
@@ -329,7 +312,7 @@ class Tools
     public function hasSync(): bool
     {
         $query = new WP_Query([
-            'post_type' => $this->cpt['faq'],
+            'post_type' => 'rrze_faq',
             'post_status' => 'publish',
             'posts_per_page' => 1,
             'meta_query' => [
