@@ -241,6 +241,7 @@ class Shortcode
 
         $metaQuery = [];
         $lang = $atts['lang'] ? trim($atts['lang']) : '';
+
         if ($lang) {
             $metaQuery[] = [
                 'key' => 'lang',
