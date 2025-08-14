@@ -81,6 +81,8 @@ class Settings
      */
     protected $optionsPage;
 
+    protected $currentSanitizeKey = null;
+
     /**
      * Assign values to variables.
      * @param string $pluginFile [description]
@@ -246,97 +248,113 @@ class Settings
 
 
 
-/**
- * Allow needed HTML on post content sanitized by wp_kses_post().
- *
- * @param array  $allowed_tags The current allowed tags/attributes for the given context.
- * @param string $context      KSES context; wp_kses_post() uses 'post'.
- * @return array               Modified allowed tags/attributes.
- */
-function my_custom_allowed_html($allowed_tags, $context)
-{
-    // Only alter the 'post' context used by wp_kses_post()
-    if ($context !== 'post') {
+    /**
+     * Allow needed HTML on post content sanitized by wp_kses_post().
+     *
+     * @param array  $allowed_tags The current allowed tags/attributes for the given context.
+     * @param string $context      KSES context; wp_kses_post() uses 'post'.
+     * @return array               Modified allowed tags/attributes.
+     */
+    function my_custom_allowed_html($allowed_tags, $context)
+    {
+        // Only alter the 'post' context used by wp_kses_post()
+        if ($context !== 'post') {
+            return $allowed_tags;
+        }
+
+        // 1) Schema.org microdata attributes we want to allow on various elements
+        $schema_attrs = [
+            'itemscope' => true, // boolean attribute (no value needed)
+            'itemtype' => true, // URL to schema type, e.g. https://schema.org/FAQPage
+            'itemprop' => true, // property name within the item
+            'itemid' => true, // global identifier
+            'itemref' => true, // references other elements by ID
+        ];
+
+        // 2) HTML5 elements that may carry microdata in your templates/shortcodes
+        $tags_to_extend = [
+            'div',
+            'span',
+            'p',
+            'a',
+            'h1',
+            'h2',
+            'h3',
+            'h4',
+            'h5',
+            'h6',
+            'ul',
+            'ol',
+            'li',
+            'section',
+            'article',
+            'header',
+            'footer',
+            'main',
+            'nav',
+            'details',
+            'summary'
+        ];
+
+        // Ensure details/summary exist with common attributes for accordion UI
+        if (!isset($allowed_tags['details'])) {
+            $allowed_tags['details'] = [];
+        }
+        $allowed_tags['details'] = array_merge($allowed_tags['details'], [
+            'id' => true,
+            'class' => true,
+            'open' => true, // render expanded by default
+        ]);
+
+        if (!isset($allowed_tags['summary'])) {
+            $allowed_tags['summary'] = [];
+        }
+        $allowed_tags['summary'] = array_merge($allowed_tags['summary'], [
+            'id' => true,
+            'class' => true,
+        ]);
+
+        // 3) Add Schema.org attributes to the listed tags without removing existing ones
+        foreach ($tags_to_extend as $tag) {
+            if (!isset($allowed_tags[$tag])) {
+                $allowed_tags[$tag] = [];
+            }
+            $allowed_tags[$tag] = array_merge($allowed_tags[$tag], $schema_attrs);
+        }
+
+        // 4) (Optional) keep your form elements if you output any in content
+        $allowed_tags['select'] = array_merge($allowed_tags['select'] ?? [], [
+            'name' => true,
+            'id' => true,
+            'class' => true,
+            'multiple' => true,
+            'size' => true,
+        ]);
+
+        $allowed_tags['option'] = array_merge($allowed_tags['option'] ?? [], [
+            'value' => true,
+            'selected' => true,
+        ]);
+
+        $allowed_tags['input'] = array_merge($allowed_tags['input'] ?? [], [
+            'type' => true,
+            'name' => true,
+            'id' => true,
+            'class' => true,
+            'value' => true,
+            'placeholder' => true,
+            'checked' => true,
+            'disabled' => true,
+            'readonly' => true,
+            'maxlength' => true,
+            'size' => true,
+            'min' => true,
+            'max' => true,
+            'step' => true,
+        ]);
+
         return $allowed_tags;
     }
-
-    // 1) Schema.org microdata attributes we want to allow on various elements
-    $schema_attrs = [
-        'itemscope' => true, // boolean attribute (no value needed)
-        'itemtype'  => true, // URL to schema type, e.g. https://schema.org/FAQPage
-        'itemprop'  => true, // property name within the item
-        'itemid'    => true, // global identifier
-        'itemref'   => true, // references other elements by ID
-    ];
-
-    // 2) HTML5 elements that may carry microdata in your templates/shortcodes
-    $tags_to_extend = [
-        'div','span','p','a',
-        'h1','h2','h3','h4','h5','h6',
-        'ul','ol','li',
-        'section','article','header','footer','main','nav',
-        'details','summary'
-    ];
-
-    // Ensure details/summary exist with common attributes for accordion UI
-    if (!isset($allowed_tags['details'])) {
-        $allowed_tags['details'] = [];
-    }
-    $allowed_tags['details'] = array_merge($allowed_tags['details'], [
-        'id'    => true,
-        'class' => true,
-        'open'  => true, // render expanded by default
-    ]);
-
-    if (!isset($allowed_tags['summary'])) {
-        $allowed_tags['summary'] = [];
-    }
-    $allowed_tags['summary'] = array_merge($allowed_tags['summary'], [
-        'id'    => true,
-        'class' => true,
-    ]);
-
-    // 3) Add Schema.org attributes to the listed tags without removing existing ones
-    foreach ($tags_to_extend as $tag) {
-        if (!isset($allowed_tags[$tag])) {
-            $allowed_tags[$tag] = [];
-        }
-        $allowed_tags[$tag] = array_merge($allowed_tags[$tag], $schema_attrs);
-    }
-
-    // 4) (Optional) keep your form elements if you output any in content
-    $allowed_tags['select'] = array_merge($allowed_tags['select'] ?? [], [
-        'name'     => true,
-        'id'       => true,
-        'class'    => true,
-        'multiple' => true,
-        'size'     => true,
-    ]);
-
-    $allowed_tags['option'] = array_merge($allowed_tags['option'] ?? [], [
-        'value'    => true,
-        'selected' => true,
-    ]);
-
-    $allowed_tags['input'] = array_merge($allowed_tags['input'] ?? [], [
-        'type'        => true,
-        'name'        => true,
-        'id'          => true,
-        'class'       => true,
-        'value'       => true,
-        'placeholder' => true,
-        'checked'     => true,
-        'disabled'    => true,
-        'readonly'    => true,
-        'maxlength'   => true,
-        'size'        => true,
-        'min'         => true,
-        'max'         => true,
-        'step'        => true,
-    ]);
-
-    return $allowed_tags;
-}
 
 
     public function regularInit()
@@ -465,7 +483,10 @@ function my_custom_allowed_html($allowed_tags, $context)
 
         foreach ($options as $key => $value) {
             $this->options[$key] = $value;
+            $this->currentSanitizeKey = $key;
+
             $sanitizeCallback = $this->getSanitizeCallback($key);
+
             if ($sanitizeCallback) {
                 $this->options[$key] = call_user_func($sanitizeCallback, $value);
             }
@@ -498,6 +519,56 @@ function my_custom_allowed_html($allowed_tags, $context)
         return false;
     }
 
+    public function sanitizeSlug($value)
+    {
+        // 1) normalize to a lowercase, dash-separated slug
+        $slug = sanitize_title((string) $value);
+
+        // 2) fallback if it became empty
+        if ($slug === '') {
+            $slug = 'faq';
+        }
+
+        // 3) if this slug is already in use somewhere -> abort (keep previous)
+        if ($this->slug_in_use($slug)) {
+            // Show error in the settings screen
+            add_settings_error(
+                $this->optionName,                // setting (option) name
+                'slug_in_use',                    // error code
+                __('This slug is already in use. The previous value was kept.', 'rrze-faq'),
+                'error'
+            );
+
+            // Return the previously saved value for this key
+            $old = $this->getOptions();          // merged with defaults
+            return $old[$this->currentSanitizeKey] ?? $slug;
+        }
+
+        // 4) okay to save
+        return $slug;
+    }
+
+
+    protected function slug_in_use(string $slug): bool
+    {
+        // a) any public post type with this path/slug
+        $public_types = get_post_types(['public' => true], 'names');
+        if (get_page_by_path($slug, OBJECT, $public_types)) {
+            return true;
+        }
+
+        // b) any public taxonomy term with this slug
+        $public_taxes = get_taxonomies(['public' => true], 'names');
+        foreach ($public_taxes as $tax) {
+            $term = get_term_by('slug', $slug, $tax);
+            if ($term && !is_wp_error($term)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+    
     /**
      * Show settings areas as a tab.
      * Shows all labels of the settings areas as a tab.
