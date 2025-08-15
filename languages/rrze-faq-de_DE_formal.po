@@ -176,7 +176,7 @@ msgstr "täglich"
 
 #: config/config.php:178
 msgid "twicedaily"
-msgstr "Zwei Mal am Schlagwörtern"
+msgstr "Zwei Mal am Tag"
 
 #: config/config.php:217
 #: config/config.php:345
