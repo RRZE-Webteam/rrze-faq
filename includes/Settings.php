@@ -82,6 +82,9 @@ class Settings
     protected $optionsPage;
 
     protected $currentSanitizeKey = null;
+    protected $currentDefault = null;
+    protected $currentFieldLabel = null;
+
 
     /**
      * Assign values to variables.
@@ -139,8 +142,12 @@ class Settings
         }
     }
 
-    public function rrze_faq_get_redirect_page_url($options): string
+    public function rrze_faq_get_redirect_page_url(): string
     {
+        if (empty($this->options) || !is_array($this->options)) {
+            $this->options = $this->getOptions();
+        }
+
         $redirect_id = isset($this->options['website_redirect_archivpage_uri']) ? (int) $this->options['website_redirect_archivpage_uri'] : 0;
         if ($redirect_id > 0) {
             $post = get_post($redirect_id);
@@ -170,7 +177,7 @@ class Settings
             return;
         }
 
-        $target_url = rrze_faq_get_redirect_page_url($this->options);
+        $target_url = $this->rrze_faq_get_redirect_page_url();
         if (!empty($target_url)) {
             wp_redirect(esc_url_raw($target_url), 301);
             exit;
@@ -183,9 +190,9 @@ class Settings
             return;
         }
 
-        $target_url = rrze_faq_get_redirect_page_url($this->options);
+        $target_url = $this->rrze_faq_get_redirect_page_url();
         if (!empty($target_url)) {
-            remove_filter('template_redirect', 'redirect_canonical');
+            remove_action('template_redirect', 'redirect_canonical');
         }
     }
 
@@ -197,7 +204,7 @@ class Settings
         // Nur deaktivieren, wenn eine Weiterleitungsseite gesetzt ist UND exakt der Slug aufgerufen wird
         $redirect_id = (int) ($this->options['website_redirect_archivpage_uri'] ?? 0);
         if ($redirect_id > 0 && self::is_slug_request($slug)) {
-            remove_filter('template_redirect', 'redirect_canonical');
+            remove_action('template_redirect', 'redirect_canonical');
         }
     }
 
@@ -215,10 +222,16 @@ class Settings
     {
         global $wp_query;
 
-        $this->options = $this->getOptions();
-        $slug = !empty($this->options['website_custom_faq_slug']) ? sanitize_title($this->options['website_custom_faq_slug']) : 'faq';
+        // Ensure options are loaded
+        if (empty($this->options) || !is_array($this->options)) {
+            $this->options = $this->getOptions();
+        }
 
-        // CPT-Single 404
+        $slug = !empty($this->options['website_custom_faq_slug'])
+            ? sanitize_title($this->options['website_custom_faq_slug'])
+            : 'faq';
+
+        // CPT single requested but not found -> render custom 404
         if (
             isset($wp_query->query_vars['post_type']) &&
             $wp_query->query_vars['post_type'] === 'rrze_faq' &&
@@ -228,25 +241,16 @@ class Settings
             return;
         }
 
-        // Archiv-Slug direkt aufgerufen?
+        // Archive slug directly requested? -> try redirect via helper
         if (self::is_slug_request($slug)) {
-            $redirect_id = (int) ($this->options['website_redirect_archivpage_uri'] ?? 0);
-
-            if ($redirect_id > 0) {
-                $post = get_post($redirect_id);
-                if ($post && get_post_status($post) === 'publish') {
-                    wp_redirect(esc_url_raw(get_permalink($post)), 301);
-                    exit;
-                }
+            $target_url = $this->rrze_faq_get_redirect_page_url();
+            if ($target_url !== '') {
+                wp_redirect(esc_url_raw($target_url), 301);
+                exit;
             }
-            // Andernfalls keine Weiterleitung, Archiv anzeigen lassen
+            // else: no redirect page set/published -> show archive normally
         }
     }
-
-
-
-
-
 
     /**
      * Allow needed HTML on post content sanitized by wp_kses_post().
@@ -472,6 +476,26 @@ class Settings
     }
 
     /**
+     * Return field meta (label, default, section, name) for a given full option key.
+     */
+    protected function getFieldMetaByKey(string $key): array
+    {
+        foreach ($this->settingsFields as $section => $options) {
+            foreach ($options as $option) {
+                if ($section . '_' . $option['name'] === $key) {
+                    return [
+                        'label' => $option['label'] ?? '',
+                        'default' => $option['default'] ?? '',
+                        'section' => $section,
+                        'name' => $option['name'],
+                    ];
+                }
+            }
+        }
+        return [];
+    }
+
+    /**
      * Sanitize callback for the options.
      * @return mixed
      */
@@ -485,8 +509,11 @@ class Settings
             $this->options[$key] = $value;
             $this->currentSanitizeKey = $key;
 
-            $sanitizeCallback = $this->getSanitizeCallback($key);
+            $meta = $this->getFieldMetaByKey($key);
+            $this->currentDefault = $meta['default'] ?? null;
+            $this->currentFieldLabel = $meta['label'] ?? $key;
 
+            $sanitizeCallback = $this->getSanitizeCallback($key);
             if ($sanitizeCallback) {
                 $this->options[$key] = call_user_func($sanitizeCallback, $value);
             }
@@ -519,32 +546,94 @@ class Settings
         return false;
     }
 
+    /**
+     * Sanitize callback for slug-like settings fields.
+     *
+     * Behavior:
+     * - Normalizes the input via sanitize_title() to a lowercase, URL-safe slug.
+     * - If the normalized input is identical to the value already stored in the DB,
+     *   the previous value is kept and NO admin notice is shown.
+     * - If the input is empty, the field's default is used; if no default is defined,
+     *   it falls back to "faq".
+     * - On collision (slug_in_use()), either the previously saved value is kept (if it exists)
+     *   or the default is stored. In that case, an admin error with the field label is added
+     *   via add_settings_error().
+     *
+     * Prerequisites:
+     * - $this->currentSanitizeKey, $this->currentDefault, and $this->currentFieldLabel are set
+     *   per field in sanitizeOptions() (see getFieldMetaByKey()).
+     * - slug_in_use(string $slug): bool checks global collisions (posts/pages, taxonomies,
+     *   reserved slugs, rewrite bases/rules).
+     *
+     * Side effects:
+     * - add_settings_error() is only called when the entered slug collides and we must revert
+     *   to the previous value or the default.
+     *
+     * @param mixed $value Raw user input from the settings field.
+     * @return string      The stored (sanitized) slug: either the input, the previous value, or the default.
+     */
+
     public function sanitizeSlug($value)
     {
-        // 1) normalize to a lowercase, dash-separated slug
-        $slug = sanitize_title((string) $value);
+        // 1) Normalize user input to a slug
+        $input_slug = sanitize_title((string) $value);
 
-        // 2) fallback if it became empty
-        if ($slug === '') {
-            $slug = 'faq';
+        // 2) Short-circuit: if the sanitized input equals the previously saved (DB) value,
+        //    keep it and DO NOT show any message. We only compare against the raw DB option,
+        //    not the defaults merged via getOptions().
+        $raw_old_options = (array) get_option($this->optionName, []);
+        if (array_key_exists($this->currentSanitizeKey, $raw_old_options)) {
+            $prev_raw = (string) $raw_old_options[$this->currentSanitizeKey];
+            $prev_slug = sanitize_title($prev_raw);
+
+            if ($prev_slug !== '' && $prev_slug === $input_slug) {
+                // Value unchanged -> considered valid already, no notice
+                return $prev_raw; // return exactly what's stored
+            }
         }
 
-        // 3) if this slug is already in use somewhere -> abort (keep previous)
+        // 3) Compute sanitized default fallback
+        $default = sanitize_title((string) ($this->currentDefault ?? ''));
+        if ($default === '') {
+            // last-resort fallback if no default is defined
+            $default = 'faq';
+        }
+
+        // 4) If input became empty, immediately use default
+        $slug = ($input_slug === '') ? $default : $input_slug;
+
+        // 5) Collision check only for changed values
         if ($this->slug_in_use($slug)) {
-            // Show error in the settings screen
-            add_settings_error(
-                $this->optionName,                // setting (option) name
-                'slug_in_use',                    // error code
-                __('This slug is already in use. The previous value was kept.', 'rrze-faq'),
-                'error'
-            );
+            // Fallback: keep previous if it exists, otherwise use default
+            $has_prev = array_key_exists($this->currentSanitizeKey, $raw_old_options)
+                && $raw_old_options[$this->currentSanitizeKey] !== '';
+            $result = $has_prev ? $raw_old_options[$this->currentSanitizeKey] : $default;
 
-            // Return the previously saved value for this key
-            $old = $this->getOptions();          // merged with defaults
-            return $old[$this->currentSanitizeKey] ?? $slug;
+            // Build a user-facing error with the field title (label)
+            $label = $this->currentFieldLabel ?: $this->currentSanitizeKey;
+            $code = 'slug_in_use_' . $this->currentSanitizeKey;
+
+            $msg = $has_prev
+                ? sprintf(
+                    /* translators: 1: field label, 2: attempted slug, 3: previous value */
+                    __('%1$s: This slug "%2$s" is already in use. Kept previous value "%3$s".', 'rrze-faq'),
+                    esc_html($label),
+                    esc_html($slug),
+                    esc_html($result)
+                )
+                : sprintf(
+                    /* translators: 1: field label, 2: attempted slug, 3: default value */
+                    __('%1$s: This slug "%2$s" is already in use. Restored default "%3$s".', 'rrze-faq'),
+                    esc_html($label),
+                    esc_html($slug),
+                    esc_html($result)
+                );
+
+            add_settings_error($this->optionName, $code, $msg, 'error');
+            return $result;
         }
 
-        // 4) okay to save
+        // 6) OK to save
         return $slug;
     }
 
