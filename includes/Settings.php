@@ -549,15 +549,51 @@ class Settings
     }
 
 
-    protected function slug_in_use(string $slug): bool
+    /**
+     * Check if a slug/path is already taken anywhere in the public frontend namespace.
+     * Covers:
+     *  - Posts/Pages: any public post type (all statuses)
+     *  - Terms: any public taxonomy
+     *  - Reserved slugs: core routes, post type/taxonomy names and their rewrite bases
+     *  - First literal segments from existing rewrite rules
+     */
+    function slug_in_use(string $slug): bool
     {
-        // a) any public post type with this path/slug
-        $public_types = get_post_types(['public' => true], 'names');
-        if (get_page_by_path($slug, OBJECT, $public_types)) {
+        global $wp_rewrite;
+
+        // Normalize input: trim slashes/whitespace and sanitize to a slug
+        $slug = sanitize_title(trim($slug, "/ \t\n\r\0\x0B"));
+        if ($slug === '') {
+            // Empty slugs are effectively "taken" (invalid)
             return true;
         }
 
-        // b) any public taxonomy term with this slug
+        // 1) Any public post type (posts, pages, CPTs)
+        $public_types = get_post_types(['public' => true], 'names');
+
+        if (strpos($slug, '/') !== false) {
+            // Hierarchical path (e.g., "parent/child")
+            if (get_page_by_path($slug, OBJECT, $public_types)) {
+                return true;
+            }
+        } else {
+            // Exact post_name across all public post types, any post status
+            $q = new \WP_Query([
+                'name' => $slug,
+                'post_type' => $public_types,
+                'post_status' => 'any',
+                'posts_per_page' => 1,
+                'fields' => 'ids',
+                'no_found_rows' => true,
+                'update_post_term_cache' => false,
+                'update_post_meta_cache' => false,
+            ]);
+            if ($q->have_posts()) {
+                return true;
+            }
+        }
+
+        // 2) Any term in any public taxonomy
         $public_taxes = get_taxonomies(['public' => true], 'names');
         foreach ($public_taxes as $tax) {
             $term = get_term_by('slug', $slug, $tax);
@@ -566,9 +602,77 @@ class Settings
             }
         }
 
+        // 3) Reserved slugs and bases (core + configured rewrite bases)
+        $reserved = [
+            // Common core endpoints and files
+            'page',
+            'attachment',
+            'category',
+            'tag',
+            'author',
+            'feed',
+            'embed',
+            'comments',
+            'search',
+            'json',
+            'wp-admin',
+            'wp-content',
+            'wp-includes',
+            'robots.txt',
+            'favicon.ico',
+        ];
+
+        if (isset($wp_rewrite)) {
+            // Add configured bases (fall back to defaults if empty)
+            $reserved[] = trim($wp_rewrite->category_base ?: 'category', '/');
+            $reserved[] = trim($wp_rewrite->tag_base ?: 'tag', '/');
+            $reserved[] = trim($wp_rewrite->author_base ?: 'author', '/');
+        }
+
+        // Post type and taxonomy names + their rewrite slugs (top-level collisions)
+        $pt_objs = get_post_types([], 'objects');
+        foreach ($pt_objs as $obj) {
+            if (!empty($obj->rewrite['slug'])) {
+                $reserved[] = trim($obj->rewrite['slug'], '/');
+            }
+            $reserved[] = $obj->name;
+        }
+        $tx_objs = get_taxonomies([], 'objects');
+        foreach ($tx_objs as $obj) {
+            if (!empty($obj->rewrite['slug'])) {
+                $reserved[] = trim($obj->rewrite['slug'], '/');
+            }
+            $reserved[] = $obj->name;
+        }
+
+        // Deduplicate and compare
+        $reserved = array_filter(array_unique(array_map(
+            static fn($s) => trim((string) $s, '/'),
+            $reserved
+        )));
+        if (in_array($slug, $reserved, true)) {
+            return true;
+        }
+
+        // 4) Check the first literal segment of existing rewrite rules
+        if (isset($wp_rewrite)) {
+            $rules = $wp_rewrite->rewrite_rules();
+            if (is_array($rules)) {
+                foreach (array_keys($rules) as $regex) {
+                    // Match first literal token before any regex meta
+                    if (preg_match('#^([^/^$()]+)#', $regex, $m)) {
+                        if (trim($m[1], '/') === $slug) {
+                            return true;
+                        }
+                    }
+                }
+            }
+        }
+
+        // If none of the checks matched, the slug appears to be available
         return false;
     }
-    
+
     /**
      * Show settings areas as a tab.
      * Shows all labels of the settings areas as a tab.
