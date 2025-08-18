@@ -12,11 +12,9 @@ use RRZE\FAQ\Config;
 class API
 {
     private $aAllCats = array();
-    private $cpt = [];
 
     public function __construct()
     {
-        $this->cpt = Config::getConstants('cpt');
     }
 
     public function setDomain($shortname, $url, $domains)
@@ -154,12 +152,12 @@ class API
 
     public function deleteCategories($source)
     {
-        $this->deleteTaxonomies($source, $this->cpt['category']);
+        $this->deleteTaxonomies($source, 'rrze_faq_category');
     }
 
     public function deleteTags($source)
     {
-        $this->deleteTaxonomies($source, $this->cpt['tag']);
+        $this->deleteTaxonomies($source, 'rrze_faq_tag');
     }
 
     protected function setCategories(&$aCategories, &$shortname)
@@ -167,15 +165,15 @@ class API
         try {
             $aTmp = $aCategories;
             foreach ($aTmp as $name => $aDetails) {
-                $term = term_exists($name, $this->cpt['category']);
+                $term = term_exists($name, 'rrze_faq_category');
                 if (!$term) {
-                    $term = wp_insert_term($name, $this->cpt['category']);
+                    $term = wp_insert_term($name, 'rrze_faq_category');
                 }
                 update_term_meta($term['term_id'], 'source', $shortname);
                 foreach ($aDetails as $childname => $tmp) {
-                    $childterm = term_exists($childname, $this->cpt['category']);
+                    $childterm = term_exists($childname, 'rrze_faq_category');
                     if (!$childterm) {
-                        $childterm = wp_insert_term($childname, $this->cpt['category'], array('parent' => $term['term_id']));
+                        $childterm = wp_insert_term($childname, 'rrze_faq_category', array('parent' => $term['term_id']));
                         update_term_meta($childterm['term_id'], 'source', $shortname);
                     }
                 }
@@ -255,10 +253,10 @@ class API
     public function getCategories($url, $shortname, $categories = '')
     {
         $aRet = array();
-        $aCategories = $this->getTaxonomies($url, $this->cpt['category'], $categories);
+        $aCategories = $this->getTaxonomies($url, 'rrze_faq_category', $categories);
         $this->setCategories($aCategories, $shortname);
         $categories = get_terms(array(
-            'taxonomy' => $this->cpt['category'],
+            'taxonomy' => 'rrze_faq_category',
             'meta_query' => array( // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
                 array(
                     'key' => 'source',
@@ -278,7 +276,7 @@ class API
     {
         // deletes all FAQ by source
         $iDel = 0;
-        $allFAQ = get_posts(array('post_type' => $this->cpt['faq'], 'meta_key' => 'source', 'meta_value' => $source, 'numberposts' => -1)); // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key, WordPress.DB.SlowDBQuery.slow_db_query_meta_value
+        $allFAQ = get_posts(array('post_type' => 'rrze_faq', 'meta_key' => 'source', 'meta_value' => $source, 'numberposts' => -1)); // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key, WordPress.DB.SlowDBQuery.slow_db_query_meta_value
 
         foreach ($allFAQ as $faq) {
             wp_delete_post($faq->ID, true);
@@ -364,15 +362,15 @@ class API
                                     'title' => $entry['title']['rendered'],
                                     'content' => $content,
                                     'lang' => $entry['lang'],
-                                    $this->cpt['category'] => $entry[$this->cpt['category']],
+                                    'rrze_faq_category' => $entry['rrze_faq_category'],
                                     'remoteID' => $entry['remoteID'],
                                     'remoteChanged' => $entry['remoteChanged'],
                                 );
                                 $sTag = '';
-                                foreach ($entry[$this->cpt['tag']] as $tag) {
+                                foreach ($entry['rrze_faq_tag'] as $tag) {
                                     $sTag .= $tag . ',';
                                 }
-                                $faqs[$entry['id']][$this->cpt['tag']] = trim($sTag, ',');
+                                $faqs[$entry['id']]['rrze_faq_tag'] = trim($sTag, ',');
                                 $faqs[$entry['id']]['URLhasSlider'] = ((strpos($content, 'slider') !== false) ? $entry['link'] : false); // we cannot handle sliders, see note in Shortcode.php shortcodeOutput()
                             }
                         }
@@ -394,9 +392,9 @@ class API
                 $aTerms = explode(',', $terms);
                 foreach ($aTerms as $name) {
                     if ($name) {
-                        $term = term_exists($name, $this->cpt['tag']);
+                        $term = term_exists($name, 'rrze_faq_tag');
                         if (!$term) {
-                            $term = wp_insert_term($name, $this->cpt['tag']);
+                            $term = wp_insert_term($name, 'rrze_faq_tag');
                             update_term_meta($term['term_id'], 'source', $shortname);
                         }
                     }
@@ -411,7 +409,7 @@ class API
     {
         try {
             $aRet = array();
-            $allFAQ = get_posts(array('post_type' => $this->cpt['faq'], 'meta_key' => 'source', 'meta_value' => $source, 'fields' => 'ids', 'numberposts' => -1));// phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key, WordPress.DB.SlowDBQuery.slow_db_query_meta_value
+            $allFAQ = get_posts(array('post_type' => 'rrze_faq', 'meta_key' => 'source', 'meta_value' => $source, 'fields' => 'ids', 'numberposts' => -1));// phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key, WordPress.DB.SlowDBQuery.slow_db_query_meta_value
             foreach ($allFAQ as $postID) {
                 $remoteID = get_post_meta($postID, 'remoteID', true);
                 $remoteChanged = get_post_meta($postID, 'remoteChanged', true);
@@ -446,11 +444,11 @@ class API
 
             // set FAQ
             foreach ($aFaq as $faq) {
-                $this->setTags($faq[$this->cpt['tag']], $shortname);
+                $this->setTags($faq['rrze_faq_tag'], $shortname);
 
                 $aCategoryIDs = array();
-                foreach ($faq[$this->cpt['category']] as $name) {
-                    $term = get_term_by('name', $name, $this->cpt['category']);
+                foreach ($faq['rrze_faq_category'] as $name) {
+                    $term = get_term_by('name', $name, 'rrze_faq_category');
                     $aCategoryIDs[] = $term->term_id;
                 }
 
@@ -471,8 +469,8 @@ class API
                                     'remoteID' => $faq['remoteID'],
                                 ),
                                 'tax_input' => array(
-                                    $this->cpt['category'] => $aCategoryIDs,
-                                    $this->cpt['tag'] => $faq[$this->cpt['tag']],
+                                    'rrze_faq_category' => $aCategoryIDs,
+                                    'rrze_faq_tag' => $faq['rrze_faq_tag'],
                                 ),
                             ));
                             $iUpdated++;
@@ -481,7 +479,7 @@ class API
                     } else {
                         // insert FAQ
                         $post_id = wp_insert_post(array(
-                            'post_type' => $this->cpt['faq'],
+                            'post_type' => 'rrze_faq',
                             'post_name' => sanitize_title($faq['title']),
                             'post_title' => $faq['title'],
                             'post_content' => $faq['content'],
@@ -496,8 +494,8 @@ class API
                                 'sortfield' => '',
                             ),
                             'tax_input' => array(
-                                $this->cpt['category'] => $aCategoryIDs,
-                                $this->cpt['tag'] => $faq[$this->cpt['tag']],
+                                'rrze_faq_category' => $aCategoryIDs,
+                                'rrze_faq_tag' => $faq['rrze_faq_tag'],
                             ),
                         ));
                         $iNew++;

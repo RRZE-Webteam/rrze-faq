@@ -3,7 +3,6 @@
 namespace RRZE\FAQ;
 
 defined('ABSPATH') || exit;
-use RRZE\FAQ\Config;
 
 /**
  * Custom Post Type "faq"
@@ -12,24 +11,22 @@ class CPT
 {
 
     private $lang = '';
-    private $cpt = [];
 
     public function __construct()
     {
-        $this->cpt = Config::getConstants('cpt');
         $this->lang = substr(get_locale(), 0, 2);
 
         add_action('init', [$this, 'registerFaq'], 0);
         add_action('init', [$this, 'registerFaqTaxonomy'], 0);
 
-        add_action('publish_' . $this->cpt['faq'], [$this, 'setPostMeta'], 10, 1);
-        add_action('create_' . $this->cpt['category'], [$this, 'setTermMeta'], 10, 1);
-        add_action('create_' . $this->cpt['tag'], [$this, 'setTermMeta'], 10, 1);
+        add_action('publish_rrze_faq', [$this, 'setPostMeta'], 10, 1);
+        add_action('create_rrze_faq_category', [$this, 'setTermMeta'], 10, 1);
+        add_action('create_rrze_faq_tag', [$this, 'setTermMeta'], 10, 1);
 
-        add_action($this->cpt['category'] . '_add_form_fields', [$this, 'add_category_page_field'], 10, 1);
-        add_action($this->cpt['category'] . '_edit_form_fields', [$this, 'edit_category_page_field'], 10, 1);
-        add_action('created_' . $this->cpt['category'], [$this, 'save_category_page_field'], 10, 1);
-        add_action('edited_' . $this->cpt['category'], [$this, 'save_category_page_field'], 10, 1);
+        add_action('rrze_faq_category_add_form_fields', [$this, 'add_category_page_field'], 10, 1);
+        add_action('rrze_faq_category_edit_form_fields', [$this, 'edit_category_page_field'], 10, 1);
+        add_action('created_rrze_faq_category', [$this, 'save_category_page_field'], 10, 1);
+        add_action('edited_rrze_faq_category', [$this, 'save_category_page_field'], 10, 1);
 
         add_filter('single_template', [$this, 'filter_single_template']);
         add_filter('archive_template', [$this, 'filter_archive_template']);
@@ -82,7 +79,7 @@ class CPT
             'rest_base' => 'faq',
             'rest_controller_class' => 'WP_REST_Posts_Controller',
         );
-        register_post_type($this->cpt['faq'], $args);
+        register_post_type('rrze_faq', $args);
     }
 
     public function registerFaqTaxonomy()
@@ -95,10 +92,10 @@ class CPT
 
         $tax = [
             [
-                'name' => $this->cpt['category'],
+                'name' => 'rrze_faq_category',
                 'label' => 'FAQ ' . __('Categories', 'rrze-faq'),
                 'slug' => $slug_category, // Dynamic slug
-                'rest_base' => $this->cpt['category'],
+                'rest_base' => 'rrze_faq_category',
                 'hierarchical' => TRUE,
                 'labels' => array(
                     'singular_name' => __('Category', 'rrze-faq'),
@@ -117,10 +114,10 @@ class CPT
                 )
             ],
             [
-                'name' => $this->cpt['tag'],
+                'name' => 'rrze_faq_tag',
                 'label' => 'FAQ ' . __('Tags', 'rrze-faq'),
                 'slug' => $slug_tag, // dynamic slug
-                'rest_base' => $this->cpt['tag'],
+                'rest_base' => 'rrze_faq_tag',
                 'hierarchical' => FALSE,
                 'labels' => array(
                     'singular_name' => __('Tag', 'rrze-faq'),
@@ -143,7 +140,7 @@ class CPT
         foreach ($tax as $t) {
             $ret = register_taxonomy(
                 $t['name'],
-                $this->cpt['faq'],
+                'rrze_faq',
                 array(
                     'hierarchical' => $t['hierarchical'],
                     'label' => $t['label'],
@@ -268,7 +265,7 @@ class CPT
     public function filter_single_template($template)
     {
         global $post;
-        if ($this->cpt['faq'] === $post->post_type) {
+        if ('rrze_faq' === $post->post_type) {
             $template = plugin_dir_path(__DIR__) . 'templates/single-faq.php';
         }
         return $template;
@@ -278,7 +275,7 @@ class CPT
 
     public function filter_archive_template($template)
     {
-        if (is_post_type_archive($this->cpt['faq'])) {
+        if (is_post_type_archive('rrze_faq')) {
             $template = plugin_dir_path(__DIR__) . 'templates/archive-faq.php';
         }
         return $template;
@@ -287,9 +284,9 @@ class CPT
 
     public function filter_taxonomy_template($template)
     {
-        if (is_tax($this->cpt['category'])) {
+        if (is_tax('rrze_faq_category')) {
             $template = plugin_dir_path(__DIR__) . 'templates/faq_category.php';
-        } elseif (is_tax($this->cpt['tag'])) {
+        } elseif (is_tax('rrze_faq_tag')) {
             $template = plugin_dir_path(__DIR__) . 'templates/faq_tag.php';
         }
         return $template;

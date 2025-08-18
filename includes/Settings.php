@@ -14,8 +14,7 @@ use RRZE\FAQ\API;
  */
 class Settings
 {
-     private $cpt = [];
-   /**
+    /**
      * The complete path and file name of the plugin file.
      * @var string
      */
@@ -82,6 +81,11 @@ class Settings
      */
     protected $optionsPage;
 
+    protected $currentSanitizeKey = null;
+    protected $currentDefault = null;
+    protected $currentFieldLabel = null;
+
+
     /**
      * Assign values to variables.
      * @param string $pluginFile [description]
@@ -91,8 +95,7 @@ class Settings
     public function __construct($pluginFile)
     {
         $this->pluginFile = $pluginFile;
-         $this->cpt = Config::getConstants('cpt');
-   }
+    }
 
     /**
      * It is executed as soon as the class is instantiated.
@@ -100,6 +103,8 @@ class Settings
      */
     public function onLoaded()
     {
+        add_filter('wp_kses_allowed_html', [$this, 'my_custom_allowed_html'], 10, 2);
+
         add_action('init', [$this, 'regularInit'], 1);
         add_action('admin_init', [$this, 'adminInit']);
 
@@ -137,8 +142,12 @@ class Settings
         }
     }
 
-    public function rrze_faq_get_redirect_page_url($options): string
+    public function rrze_faq_get_redirect_page_url(): string
     {
+        if (empty($this->options) || !is_array($this->options)) {
+            $this->options = $this->getOptions();
+        }
+
         $redirect_id = isset($this->options['website_redirect_archivpage_uri']) ? (int) $this->options['website_redirect_archivpage_uri'] : 0;
         if ($redirect_id > 0) {
             $post = get_post($redirect_id);
@@ -168,7 +177,7 @@ class Settings
             return;
         }
 
-        $target_url = rrze_faq_get_redirect_page_url($this->options);
+        $target_url = $this->rrze_faq_get_redirect_page_url();
         if (!empty($target_url)) {
             wp_redirect(esc_url_raw($target_url), 301);
             exit;
@@ -181,9 +190,9 @@ class Settings
             return;
         }
 
-        $target_url = rrze_faq_get_redirect_page_url($this->options);
+        $target_url = $this->rrze_faq_get_redirect_page_url();
         if (!empty($target_url)) {
-            remove_filter('template_redirect', 'redirect_canonical');
+            remove_action('template_redirect', 'redirect_canonical');
         }
     }
 
@@ -195,7 +204,7 @@ class Settings
         // Nur deaktivieren, wenn eine Weiterleitungsseite gesetzt ist UND exakt der Slug aufgerufen wird
         $redirect_id = (int) ($this->options['website_redirect_archivpage_uri'] ?? 0);
         if ($redirect_id > 0 && self::is_slug_request($slug)) {
-            remove_filter('template_redirect', 'redirect_canonical');
+            remove_action('template_redirect', 'redirect_canonical');
         }
     }
 
@@ -213,74 +222,140 @@ class Settings
     {
         global $wp_query;
 
-        $this->options = $this->getOptions();
-        $slug = !empty($this->options['website_custom_faq_slug']) ? sanitize_title($this->options['website_custom_faq_slug']) : 'faq';
+        // Ensure options are loaded
+        if (empty($this->options) || !is_array($this->options)) {
+            $this->options = $this->getOptions();
+        }
 
-        // CPT-Single 404
+        $slug = !empty($this->options['website_custom_faq_slug'])
+            ? sanitize_title($this->options['website_custom_faq_slug'])
+            : 'faq';
+
+        // CPT single requested but not found -> render custom 404
         if (
             isset($wp_query->query_vars['post_type']) &&
-            $wp_query->query_vars['post_type'] === $this->cpt['faq'] &&
+            $wp_query->query_vars['post_type'] === 'rrze_faq' &&
             empty($wp_query->post)
         ) {
             self::render_custom_404();
             return;
         }
 
-        // Archiv-Slug direkt aufgerufen?
+        // Archive slug directly requested? -> try redirect via helper
         if (self::is_slug_request($slug)) {
-            $redirect_id = (int) ($this->options['website_redirect_archivpage_uri'] ?? 0);
-
-            if ($redirect_id > 0) {
-                $post = get_post($redirect_id);
-                if ($post && get_post_status($post) === 'publish') {
-                    wp_redirect(esc_url_raw(get_permalink($post)), 301);
-                    exit;
-                }
+            $target_url = $this->rrze_faq_get_redirect_page_url();
+            if ($target_url !== '') {
+                wp_redirect(esc_url_raw($target_url), 301);
+                exit;
             }
-            // Andernfalls keine Weiterleitung, Archiv anzeigen lassen
+            // else: no redirect page set/published -> show archive normally
         }
     }
 
-
-
-
-
-    public function my_custom_allowed_html($allowed_tags, $context)
+    /**
+     * Allow needed HTML on post content sanitized by wp_kses_post().
+     *
+     * @param array  $allowed_tags The current allowed tags/attributes for the given context.
+     * @param string $context      KSES context; wp_kses_post() uses 'post'.
+     * @return array               Modified allowed tags/attributes.
+     */
+    function my_custom_allowed_html($allowed_tags, $context)
     {
-        if ('post' === $context) {
-            // Add the <select> tag and its attributes
-            $allowed_tags['select'] = array(
-                'name' => true,
-                'id' => true,
-                'class' => true,
-                'multiple' => true,
-                'size' => true,
-            );
-
-            // Add the <option> tag and its attributes
-            $allowed_tags['option'] = array(
-                'value' => true,
-                'selected' => true,
-            );
-
-            // Add the <input> tag and its attributes
-            $allowed_tags['input'] = array(
-                'type' => true,
-                'name' => true,
-                'id' => true,
-                'class' => true,
-                'value' => true,
-                'placeholder' => true,
-                'checked' => true,
-                'disabled' => true,
-                'readonly' => true,
-                'maxlength' => true,
-                'size' => true,
-                'min' => true,
-                'max' => true,
-                'step' => true,
-            );
+        // Only alter the 'post' context used by wp_kses_post()
+        if ($context !== 'post') {
+            return $allowed_tags;
         }
+
+        // 1) Schema.org microdata attributes we want to allow on various elements
+        $schema_attrs = [
+            'itemscope' => true, // boolean attribute (no value needed)
+            'itemtype' => true, // URL to schema type, e.g. https://schema.org/FAQPage
+            'itemprop' => true, // property name within the item
+            'itemid' => true, // global identifier
+            'itemref' => true, // references other elements by ID
+        ];
+
+        // 2) HTML5 elements that may carry microdata in your templates/shortcodes
+        $tags_to_extend = [
+            'div',
+            'span',
+            'p',
+            'a',
+            'h1',
+            'h2',
+            'h3',
+            'h4',
+            'h5',
+            'h6',
+            'ul',
+            'ol',
+            'li',
+            'section',
+            'article',
+            'header',
+            'footer',
+            'main',
+            'nav',
+            'details',
+            'summary'
+        ];
+
+        // Ensure details/summary exist with common attributes for accordion UI
+        if (!isset($allowed_tags['details'])) {
+            $allowed_tags['details'] = [];
+        }
+        $allowed_tags['details'] = array_merge($allowed_tags['details'], [
+            'id' => true,
+            'class' => true,
+            'open' => true, // render expanded by default
+        ]);
+
+        if (!isset($allowed_tags['summary'])) {
+            $allowed_tags['summary'] = [];
+        }
+        $allowed_tags['summary'] = array_merge($allowed_tags['summary'], [
+            'id' => true,
+            'class' => true,
+        ]);
+
+        // 3) Add Schema.org attributes to the listed tags without removing existing ones
+        foreach ($tags_to_extend as $tag) {
+            if (!isset($allowed_tags[$tag])) {
+                $allowed_tags[$tag] = [];
+            }
+            $allowed_tags[$tag] = array_merge($allowed_tags[$tag], $schema_attrs);
+        }
+
+        // 4) (Optional) keep your form elements if you output any in content
+        $allowed_tags['select'] = array_merge($allowed_tags['select'] ?? [], [
+            'name' => true,
+            'id' => true,
+            'class' => true,
+            'multiple' => true,
+            'size' => true,
+        ]);
+
+        $allowed_tags['option'] = array_merge($allowed_tags['option'] ?? [], [
+            'value' => true,
+            'selected' => true,
+        ]);
+
+        $allowed_tags['input'] = array_merge($allowed_tags['input'] ?? [], [
+            'type' => true,
+            'name' => true,
+            'id' => true,
+            'class' => true,
+            'value' => true,
+            'placeholder' => true,
+            'checked' => true,
+            'disabled' => true,
+            'readonly' => true,
+            'maxlength' => true,
+            'size' => true,
+            'min' => true,
+            'max' => true,
+            'step' => true,
+        ]);
 
         return $allowed_tags;
     }
@@ -401,6 +476,26 @@ class Settings
     }
 
     /**
+     * Return field meta (label, default, section, name) for a given full option key.
+     */
+    protected function getFieldMetaByKey(string $key): array
+    {
+        foreach ($this->settingsFields as $section => $options) {
+            foreach ($options as $option) {
+                if ($section . '_' . $option['name'] === $key) {
+                    return [
+                        'label' => $option['label'] ?? '',
+                        'default' => $option['default'] ?? '',
+                        'section' => $section,
+                        'name' => $option['name'],
+                    ];
+                }
+            }
+        }
+        return [];
+    }
+
+    /**
      * Sanitize callback for the options.
      * @return mixed
      */
@@ -412,6 +507,12 @@ class Settings
 
         foreach ($options as $key => $value) {
             $this->options[$key] = $value;
+            $this->currentSanitizeKey = $key;
+
+            $meta = $this->getFieldMetaByKey($key);
+            $this->currentDefault = $meta['default'] ?? null;
+            $this->currentFieldLabel = $meta['label'] ?? $key;
+
             $sanitizeCallback = $this->getSanitizeCallback($key);
             if ($sanitizeCallback) {
                 $this->options[$key] = call_user_func($sanitizeCallback, $value);
@@ -442,6 +543,222 @@ class Settings
             }
         }
 
+        return false;
+    }
+
+    /**
+     * Sanitize callback for slug-like settings fields.
+     *
+     * Behavior:
+     * - Normalizes the input via sanitize_title() to a lowercase, URL-safe slug.
+     * - If the normalized input is identical to the value already stored in the DB,
+     *   the previous value is kept and NO admin notice is shown.
+     * - If the input is empty, the field's default is used; if no default is defined,
+     *   it falls back to "faq".
+     * - On collision (slug_in_use()), either the previously saved value is kept (if it exists)
+     *   or the default is stored. In that case, an admin error with the field label is added
+     *   via add_settings_error().
+     *
+     * Prerequisites:
+     * - $this->currentSanitizeKey, $this->currentDefault, and $this->currentFieldLabel are set
+     *   per field in sanitizeOptions() (see getFieldMetaByKey()).
+     * - slug_in_use(string $slug): bool checks global collisions (posts/pages, taxonomies,
+     *   reserved slugs, rewrite bases/rules).
+     *
+     * Side effects:
+     * - add_settings_error() is only called when the entered slug collides and we must revert
+     *   to the previous value or the default.
+     *
+     * @param mixed $value Raw user input from the settings field.
+     * @return string      The stored (sanitized) slug: either the input, the previous value, or the default.
+     */
+
+    public function sanitizeSlug($value)
+    {
+        // 1) Normalize user input to a slug
+        $input_slug = sanitize_title((string) $value);
+
+        // 2) Short-circuit: if the sanitized input equals the previously saved (DB) value,
+        //    keep it and DO NOT show any message. We only compare against the raw DB option,
+        //    not the defaults merged via getOptions().
+        $raw_old_options = (array) get_option($this->optionName, []);
+        if (array_key_exists($this->currentSanitizeKey, $raw_old_options)) {
+            $prev_raw = (string) $raw_old_options[$this->currentSanitizeKey];
+            $prev_slug = sanitize_title($prev_raw);
+
+            if ($prev_slug !== '' && $prev_slug === $input_slug) {
+                // Value unchanged -> considered valid already, no notice
+                return $prev_raw; // return exactly what's stored
+            }
+        }
+
+        // 3) Compute sanitized default fallback
+        $default = sanitize_title((string) ($this->currentDefault ?? ''));
+        if ($default === '') {
+            // last-resort fallback if no default is defined
+            $default = 'faq';
+        }
+
+        // 4) If input became empty, immediately use default
+        $slug = ($input_slug === '') ? $default : $input_slug;
+
+        // 5) Collision check only for changed values
+        if ($this->slug_in_use($slug)) {
+            // Fallback: keep previous if it exists, otherwise use default
+            $has_prev = array_key_exists($this->currentSanitizeKey, $raw_old_options)
+                && $raw_old_options[$this->currentSanitizeKey] !== '';
+            $result = $has_prev ? $raw_old_options[$this->currentSanitizeKey] : $default;
+
+            // Build a user-facing error with the field title (label)
+            $label = $this->currentFieldLabel ?: $this->currentSanitizeKey;
+            $code = 'slug_in_use_' . $this->currentSanitizeKey;
+
+            $msg = $has_prev
+                ? sprintf(
+                    /* translators: 1: field label, 2: attempted slug, 3: previous value */
+                    __('%1$s: This slug "%2$s" is already in use. Kept previous value "%3$s".', 'rrze-faq'),
+                    esc_html($label),
+                    esc_html($slug),
+                    esc_html($result)
+                )
+                : sprintf(
+                    /* translators: 1: field label, 2: attempted slug, 3: default value */
+                    __('%1$s: This slug "%2$s" is already in use. Restored default "%3$s".', 'rrze-faq'),
+                    esc_html($label),
+                    esc_html($slug),
+                    esc_html($result)
+                );
+
+            add_settings_error($this->optionName, $code, $msg, 'error');
+            return $result;
+        }
+
+        // 6) OK to save
+        return $slug;
+    }
+
+
+    /**
+     * Check if a slug/path is already taken anywhere in the public frontend namespace.
+     * Covers:
+     *  - Posts/Pages: any public post type (all statuses)
+     *  - Terms: any public taxonomy
+     *  - Reserved slugs: core routes, post type/taxonomy names and their rewrite bases
+     *  - First literal segments from existing rewrite rules
+     */
+    function slug_in_use(string $slug): bool
+    {
+        global $wp_rewrite;
+
+        // Normalize input: trim slashes/whitespace and sanitize to a slug
+        $slug = sanitize_title(trim($slug, "/ \t\n\r\0\x0B"));
+        if ($slug === '') {
+            // Empty slugs are effectively "taken" (invalid)
+            return true;
+        }
+
+        // 1) Any public post type (posts, pages, CPTs)
+        $public_types = get_post_types(['public' => true], 'names');
+
+        if (strpos($slug, '/') !== false) {
+            // Hierarchical path (e.g., "parent/child")
+            if (get_page_by_path($slug, OBJECT, $public_types)) {
+                return true;
+            }
+        } else {
+            // Exact post_name across all public post types, any post status
+            $q = new \WP_Query([
+                'name' => $slug,
+                'post_type' => $public_types,
+                'post_status' => 'any',
+                'posts_per_page' => 1,
+                'fields' => 'ids',
+                'no_found_rows' => true,
+                'update_post_term_cache' => false,
+                'update_post_meta_cache' => false,
+            ]);
+            if ($q->have_posts()) {
+                return true;
+            }
+        }
+
+        // 2) Any term in any public taxonomy
+        $public_taxes = get_taxonomies(['public' => true], 'names');
+        foreach ($public_taxes as $tax) {
+            $term = get_term_by('slug', $slug, $tax);
+            if ($term && !is_wp_error($term)) {
+                return true;
+            }
+        }
+
+        // 3) Reserved slugs and bases (core + configured rewrite bases)
+        $reserved = [
+            // Common core endpoints and files
+            'page',
+            'attachment',
+            'category',
+            'tag',
+            'author',
+            'feed',
+            'embed',
+            'comments',
+            'search',
+            'json',
+            'wp-admin',
+            'wp-content',
+            'wp-includes',
+            'robots.txt',
+            'favicon.ico',
+        ];
+
+        if (isset($wp_rewrite)) {
+            // Add configured bases (fall back to defaults if empty)
+            $reserved[] = trim($wp_rewrite->category_base ?: 'category', '/');
+            $reserved[] = trim($wp_rewrite->tag_base ?: 'tag', '/');
+            $reserved[] = trim($wp_rewrite->author_base ?: 'author', '/');
+        }
+
+        // Post type and taxonomy names + their rewrite slugs (top-level collisions)
+        $pt_objs = get_post_types([], 'objects');
+        foreach ($pt_objs as $obj) {
+            if (!empty($obj->rewrite['slug'])) {
+                $reserved[] = trim($obj->rewrite['slug'], '/');
+            }
+            $reserved[] = $obj->name;
+        }
+        $tx_objs = get_taxonomies([], 'objects');
+        foreach ($tx_objs as $obj) {
+            if (!empty($obj->rewrite['slug'])) {
+                $reserved[] = trim($obj->rewrite['slug'], '/');
+            }
+            $reserved[] = $obj->name;
+        }
+
+        // Deduplicate and compare
+        $reserved = array_filter(array_unique(array_map(
+            static fn($s) => trim((string) $s, '/'),
+            $reserved
+        )));
+        if (in_array($slug, $reserved, true)) {
+            return true;
+        }
+
+        // 4) Check the first literal segment of existing rewrite rules
+        if (isset($wp_rewrite)) {
+            $rules = $wp_rewrite->rewrite_rules();
+            if (is_array($rules)) {
+                foreach (array_keys($rules) as $regex) {
+                    // Match first literal token before any regex meta
+                    if (preg_match('#^([^/^$()]+)#', $regex, $m)) {
+                        if (trim($m[1], '/') === $slug) {
+                            return true;
+                        }
+                    }
+                }
+            }
+        }
+
+        // If none of the checks matched, the slug appears to be available
         return false;
     }
 
@@ -625,8 +942,6 @@ class Settings
      */
     public function adminInit()
     {
-        add_filter('wp_kses_allowed_html', [$this, 'my_custom_allowed_html'], 10, 2);
-
         // Adding setting areas
         foreach ($this->settingsSections as $section) {
             if (isset($section['desc']) && !empty($section['desc'])) {

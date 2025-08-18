@@ -5,15 +5,12 @@ namespace RRZE\FAQ;
 defined('ABSPATH') || exit;
 
 use WP_Query;
-use RRZE\FAQ\Config;
 
 class Tools
 {
-    private $cpt = [];
 
     public function __construct()
     {
-        $this->cpt = Config::getConstants('cpt');
     }
 
     public static function preventGutenbergDoubleBracketBug(string $shortcode_tag)
@@ -54,7 +51,69 @@ class Tools
         return 'header-' . ($postID ?? 'noid') . '-' . $random;
     }
 
-    public static function renderFAQWrapper(?int $postID = null, string &$content, string &$headerID, bool &$masonry, string &$color, string &$additional_class): string
+
+        /**
+     * Renders a single FAQ entry in an accordion (<details>/<summary>) format.
+     * 
+     * Optionally wraps the output in Schema.org FAQPage microdata if $useSchema is true.
+     * The markup remains fully accessible and keeps the existing HTML structure intact.
+     * 
+     * @param string $anchor      HTML ID for the <details> element.
+     * @param string $question    The FAQ question text.
+     * @param string $answer      The FAQ answer HTML content.
+     * @param string $color       Optional color class suffix for styling.
+     * @param string $load_open   If non-empty, sets the <details> element to be open by default.
+     * @param bool   $useSchema   Whether to output Schema.org Question/Answer markup.
+     * @return string             The complete HTML string for the FAQ item.
+     */
+    public static function renderFAQItemAccordion(string $anchor, string $question, string $answer, string $color, string $load_open, bool $useSchema): string
+    {
+        $out = $useSchema ? '<div itemscope itemprop="mainEntity" itemtype="https://schema.org/Question">' : '';
+        $out .= '<details' . ($load_open ? ' open' : '') . ' id="' . esc_attr($anchor) . '" class="faq-item' . ($color ? ' color-' . esc_attr($color) : '') . '">';
+
+        if ($useSchema) {
+            $out .= '<summary itemprop="name">' . esc_html($question) . '</summary>';
+            $out .= '<div itemscope itemprop="acceptedAnswer" itemtype="https://schema.org/Answer">';
+            $out .= '<div class="faq-content" itemprop="text">' . $answer . '</div>';
+            $out .= '</div>'; // acceptedAnswer
+        } else {
+            $out .= '<summary>' . esc_html($question) . '</summary>';
+            $out .= '<div class="faq-content">' . $answer . '</div>';
+        }
+
+        $out .= '</details>';
+        $out .= $useSchema ? '</div>' : '';
+
+        return $out;
+    }
+
+    /**
+     * Renders a single FAQ entry as a heading and answer block (non-accordion format).
+     * 
+     * If $useSchema is true, wraps the output in Schema.org Question/Answer microdata.
+     * This format is intended for simple lists without collapsible behavior.
+     * 
+     * @param string $question  The FAQ question text.
+     * @param string $answer    The FAQ answer HTML content.
+     * @param int    $hstart    The heading level (1–6) for the question.
+     * @param bool   $useSchema Whether to output Schema.org Question/Answer markup.
+     * @return string           The complete HTML string for the FAQ item.
+     */
+    public static function renderFAQItem(string $question, string $answer, int $hstart, bool $useSchema): string
+    {
+        if ($useSchema) {
+            return '<div itemscope itemprop="mainEntity" itemtype="https://schema.org/Question">'
+                . '<h' . $hstart . ' itemprop="name">' . esc_html($question) . '</h' . $hstart . '>'
+                . '<div itemscope itemprop="acceptedAnswer" itemtype="https://schema.org/Answer"><div itemprop="text">' . $answer . '</div></div>'
+                . '</div>';
+        }
+
+        return '<h' . $hstart . '>' . esc_html($question) . '</h' . $hstart . '>' . $answer;
+    }
+
+
+
+    public static function renderFAQWrapper(?int $postID = null, string &$content, string &$headerID, bool &$masonry, string &$color, string &$additional_class, bool &$bSchema): string
     {
         $classes = 'rrze-faq';
 
@@ -70,7 +129,7 @@ class Tools
             $classes .= ' ' . trim($additional_class);
         }
 
-        return '<div class="' . esc_attr($classes) . '" aria-labelledby="' . esc_attr($headerID) . '">' . $content . '</div>';
+        return '<div ' . ($bSchema? 'itemscope itemtype="https://schema.org/FAQPage" ' : '') . 'class="' . esc_attr($classes) . '" aria-labelledby="' . esc_attr($headerID) . '">' . $content . '</div>';
     }
 
     public static function getLetter(&$txt)
@@ -151,6 +210,7 @@ class Tools
                     'taxonomy' => $taxfield,
                     'field' => 'slug',
                     'terms' => $aTerms,
+                    'include_children' => false
                 );
 
                 if (count($aTerms) > 1) {
@@ -176,20 +236,6 @@ class Tools
         return $ret;
     }
 
-    public static function getSchema(int &$postID, string &$question, string &$answer): string
-    {
-        $schema = '';
-        $source = get_post_meta($postID, "source", true);
-        $answer = wp_strip_all_tags($answer, true);
-        $schemaHTML = Config::getConstants('schema');
-
-        if ($source === 'website') {
-            $schema = $schemaHTML['RRZE_SCHEMA_QUESTION_START'] . $question . $schemaHTML['RRZE_SCHEMA_QUESTION_END'];
-            $schema .= $schemaHTML['RRZE_SCHEMA_ANSWER_START'] . $answer . $schemaHTML['RRZE_SCHEMA_ANSWER_END'];
-        }
-        return $schema;
-    }
-
     public static function getTaxBySource($input)
     {
         $result = [];
@@ -198,7 +244,7 @@ class Tools
             return $result;
         }
 
-        $categories = explode(', ', $input);
+        $categories = preg_split('/\s*,\s*/', $input);
 
         foreach ($categories as $category) {
             list($source, $value) = array_pad(explode(':', $category, 2), 2, '');
@@ -238,7 +284,8 @@ class Tools
 
     public function getLinkedPage(int &$postID): ?array
     {
-        $assigned_terms = get_the_terms($postID, $this->cpt['category']);
+        $assigned_terms = get_the_terms($postID, 'rrze_faq_category');
+
         if (!$assigned_terms || is_wp_error($assigned_terms)) {
             return null;
         }
@@ -267,7 +314,7 @@ class Tools
     public function hasSync(): bool
     {
         $query = new WP_Query([
-            'post_type' => $this->cpt['faq'],
+            'post_type' => 'rrze_faq',
             'post_status' => 'publish',
             'posts_per_page' => 1,
             'meta_query' => [

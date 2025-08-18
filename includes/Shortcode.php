@@ -20,15 +20,14 @@ class Shortcode
      */
     private $settings = '';
     private $pluginname = '';
-    private $cpt = [];
+    private $bSchema = false;
 
 
     public function __construct()
     {
-        $this->cpt = Config::getConstants('cpt');
-
         $this->settings = Config::getShortcodeSettings();
         $this->pluginname = $this->settings['block']['blockname'];
+
         // add_shortcode( 'fau_glossar', [ $this, 'shortcodeOutput' ]); // BK 2020-06-05 Shortcode [fau_glossar ...] is moved to its own plugin rrze-glossary, because for historical reasons incompatible code exists in FAU institutions, which was not known when rrze-faq was rebuilt
         // add_shortcode( 'glossary', [ $this, 'shortcodeOutput' ]); // BK 2020-06-05 Shortcode [glossary ...] is outsourced to its own plugin rrze-glossary, because for historical reasons incompatible code exists in FAU facilities, which was not known when rrze-faq was rebuilt
 
@@ -127,10 +126,6 @@ class Shortcode
         $atts['load_open'] = (isset($atts['load_open']) && $atts['load_open'] ? ' load="open"' : '');
     }
 
-
-
-
-
     /**
      * Outputs explicitly requested FAQs as accordion or simple content.
      *
@@ -148,11 +143,10 @@ class Shortcode
      * @param string $load_open Attribute for open state
      * @return string The generated HTML content
      */
-
-
     private function renderExplicitFAQs($id, bool $gutenberg, int $hstart, string $style, bool $masonry, string $expand_all_link, bool $hide_accordion, bool $hide_title, string $color, string $load_open): string
     {
         $content = '';
+        $this->bSchema = false;
 
         // EXPLICIT FAQ(s)
         if ($gutenberg) {
@@ -161,8 +155,6 @@ class Shortcode
             // classic editor
             $aIDs = explode(',', $id);
         }
-
-        $found = false;
 
         foreach ($aIDs as $id) {
             $id = trim($id);
@@ -174,32 +166,23 @@ class Shortcode
                     $anchorfield = 'ID-' . $id;
                 }
 
-                $description = str_replace(']]>', ']]&gt;', apply_filters('the_content', get_post_field('post_content', $id)));
-                if (!isset($description) || (mb_strlen($description) < 1)) {
-                    $description = get_post_meta($id, 'description', true);
+                $answer = str_replace(']]>', ']]&gt;', apply_filters('the_content', get_post_field('post_content', $id)));
+                $useSchema = (get_post_meta($id, 'source', true) === 'website');
+
+                if ($useSchema){
+                    $this->bSchema = true;
                 }
 
                 if ($hide_accordion) {
-                    $content .= ($hide_title ? '' : '<h' . $hstart . '>' . $question . '</h' . $hstart . '>') .
-                        ($description ? '<p>' . $description . '</p>' : '');
+                    $content .= Tools::renderFAQItem($question, $answer, $hstart, $useSchema);
                 } else {
-                    if ($description) {
-                        $content .= '<details' . ($load_open ? ' open' : '') . ' id="' . esc_attr($anchorfield) . '" class="faq-item' . ($color ? ' color-' . esc_attr($color) : '') . '">';
-                        $content .= '<summary>' . esc_html($question) . '</summary>';
-                        $content .= '<div class="faq-content">' . $description . '</div>';
-                        $content .= '</details>';
-                    }
+                    $content .= Tools::renderFAQItemAccordion($anchorfield, $question, $answer, $color, $load_open, $useSchema);
                 }
-
-                $content .= Tools::getSchema($id, $question, $description);
-
-                $found = true;
             }
         }
 
         return $content;
     }
-
 
     /**
      * Outputs FAQs based on taxonomies (category/tag) or glossary view.
@@ -225,12 +208,13 @@ class Shortcode
     private function renderFilteredFAQs(array $atts, int $hstart, string $style, string $expand_all_link, bool $hide_accordion, bool $hide_title, string $color, string $load_open, string $sort, string $order, $category, $tag, string $glossary, string $glossarystyle): string
     {
         $content = '';
+        $this->bSchema = false;
 
         // attribute category or tag is given or none of them
         $aLetters = array();
         $tax_query = '';
 
-        $postQuery = array('post_type' => $this->cpt['faq'], 'post_status' => 'publish', 'numberposts' => -1, 'suppress_filters' => false);
+        $postQuery = array('post_type' => 'rrze_faq', 'post_status' => 'publish', 'numberposts' => -1, 'suppress_filters' => false);
         if ($sort == 'sortfield') {
             $postQuery['orderby'] = array(
                 'meta_value' => $order, // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value
@@ -244,8 +228,8 @@ class Shortcode
 
         // filter by category and/or tag and -if given- by domain related to category/tag, too
         $aTax = [];
-        $aTax[$this->cpt['category']] = Tools::getTaxBySource($category);
-        $aTax[$this->cpt['tag']] = Tools::getTaxBySource($tag);
+        $aTax['rrze_faq_category'] = Tools::getTaxBySource($category);
+        $aTax['rrze_faq_tag'] = Tools::getTaxBySource($tag);
         $aTax = array_filter($aTax); // delete empty entries
 
         if ($aTax) {
@@ -257,6 +241,7 @@ class Shortcode
 
         $metaQuery = [];
         $lang = $atts['lang'] ? trim($atts['lang']) : '';
+
         if ($lang) {
             $metaQuery[] = [
                 'key' => 'lang',
@@ -301,7 +286,7 @@ class Shortcode
                             $aCats = $category;
                         }
                         foreach ($aCats as $slug) {
-                            $filter_term = get_term_by('slug', $slug, $this->cpt['category']);
+                            $filter_term = get_term_by('slug', $slug, 'rrze_faq_category');
                             if ($filter_term) {
                                 $valid_term_ids[] = $filter_term->term_id;
                             }
@@ -313,7 +298,7 @@ class Shortcode
                             $aTags = $tag;
                         }
                         foreach ($aTags as $slug) {
-                            $filter_term = get_term_by('slug', $slug, $this->cpt['tag']);
+                            $filter_term = get_term_by('slug', $slug, 'rrze_faq_tag');
                             if ($filter_term) {
                                 $valid_term_ids[] = $filter_term->term_id;
                             }
@@ -366,23 +351,22 @@ class Shortcode
                     $aIDs = Tools::searchArrayByKey($aVal['ID'], $aPostIDs);
 
                     foreach ($aIDs as $ID) {
-                        $answer = str_replace(']]>', ']]&gt;', apply_filters('the_content', get_post_field('post_content', $ID)));
-                        if (!isset($answer) || (mb_strlen($answer) < 1)) {
-                            $answer = get_post_meta($ID, 'description', true);
-                        }
-                        $question = get_the_title($ID);
+                        $source = get_post_meta($ID, "source", true);
+                        $useSchema = ($source === 'website');
 
+                        if ($useSchema){
+                            $this->bSchema = true;
+                        }
+
+                        $question = get_the_title($ID);
+                        $answer = str_replace(']]>', ']]&gt;', apply_filters('the_content', get_post_field('post_content', $ID)));
                         $anchorfield = get_post_meta($ID, 'anchorfield', true);
+
                         if (empty($anchorfield)) {
                             $anchorfield = 'innerID-' . $ID;
                         }
 
-                        $content .= '<details id="' . esc_attr($anchorfield) . '" class="faq-item">';
-                        $content .= '<summary>' . esc_html($question) . '</summary>';
-                        $content .= '<div class="faq-content">' . $answer . '</div>';
-                        $content .= '</details>';
-
-                        $content .= Tools::getSchema($ID, $question, $answer);
+                        $content .= Tools::renderFAQItemAccordion($anchorfield, $question, $answer, $color, $load_open, $useSchema);
                     }
 
                     $content .= '</div></section>';
@@ -392,15 +376,18 @@ class Shortcode
                 // attribut glossary is not given
                 $last_anchor = '';
                 foreach ($posts as $post) {
+                    $source = get_post_meta($post->ID, "source", true);
+                    $useSchema = ($source === 'website');
+
+                    if ($useSchema){
+                        $this->bSchema = true;
+                    }
 
                     $question = get_the_title($post->ID);
+                    $answer = str_replace(']]>', ']]&gt;', apply_filters('the_content', get_post_field('post_content', $post->ID)));
+
                     $letter = Tools::getLetter($question);
                     $aLetters[$letter] = true;
-
-                    $answer = str_replace(']]>', ']]&gt;', apply_filters('the_content', get_post_field('post_content', $post->ID)));
-                    if (!isset($answer) || (mb_strlen($answer) < 1)) {
-                        $answer = get_post_meta($post->ID, 'description', true);
-                    }
 
                     if (!$hide_accordion) {
                         $anchorfield = get_post_meta($post->ID, 'anchorfield', true);
@@ -412,15 +399,11 @@ class Shortcode
                         if ($glossarystyle == 'a-z' && count($posts) > 1) {
                             $content .= ($last_anchor != $letter ? '<h2 id="letter-' . $letter . '">' . $letter . '</h2>' : '');
                         }
-                        $content .= '<details' . ($load_open ? ' open' : '') . ' id="' . esc_attr($anchorfield) . '" class="faq-item' . ($color ? ' color-' . esc_attr($color) : '') . '">';
-                        $content .= '<summary>' . esc_html($question) . '</summary>';
-                        $content .= '<div class="faq-content">' . $answer . '</div>';
-                        $content .= '</details>';
 
+                        $content .= Tools::renderFAQItemAccordion($anchorfield, $question, $answer, $color, $load_open, $useSchema);
                     } else {
-                        $content .= ($hide_title ? '' : '<h' . $hstart . '>' . $question . '</h' . $hstart . '>') . ($answer ? '<p>' . $answer . '</p>' : '');
+                        $content .= Tools::renderFAQItem($question, $answer, $hstart, $useSchema);
                     }
-                    $content .= Tools::getSchema($post->ID, $question, $answer);
                     $last_anchor = $letter;
                 }
 
@@ -473,11 +456,7 @@ class Shortcode
 
         if ($id && (!$gutenberg || $gutenberg && $id[0])) {
             $content = $this->renderExplicitFAQs($id, $gutenberg, $hstart, $style, $masonry, $expand_all_link, $hide_accordion, $hide_title, $color, $load_open);
-            echo 'A';
-            exit;
         } else {
-            // echo 'B';
-            // exit;
             $content = $this->renderFilteredFAQs($atts, $hstart, $style, $expand_all_link, $hide_accordion, $hide_title, $color, $load_open, $sort, $order, $category, $tag, $glossary, $glossarystyle);
         }
 
@@ -493,7 +472,7 @@ class Shortcode
 
         wp_enqueue_style('rrze-faq-css');
 
-        $content = Tools::renderFAQWrapper($postID, $content, $headerID, $masonry, $color, $additional_class);
+        $content = Tools::renderFAQWrapper($postID, $content, $headerID, $masonry, $color, $additional_class, $this->bSchema);
 
         return $content;
 
