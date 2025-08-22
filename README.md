@@ -1,3 +1,12 @@
+**⚠️ Important Notice (Code Freeze)**
+> 
+> Starting with version **5.4.32**, this plugin is no longer maintained.  
+> All functionality has been merged into the new WordPress plugin **RRZE-Answers**.  
+> Please submit any new issues related to RRZE-FAQ v5.4.32 in the [RRZE-Answers repository](https://github.com/RRZE-Webteam/rrze-answers/issues/)).
+>
+> 
+
+
 [![Aktuelle Version](https://img.shields.io/github/package-json/v/rrze-webteam/rrze-faq/main?label=Version)](https://github.com/RRZE-Webteam/rrze-faq)
 [![Release Version](https://img.shields.io/github/v/release/rrze-webteam/rrze-faq?label=Release+Version)](https://github.com/rrze-webteam/rrze-faq/releases/)
 [![GitHub License](https://img.shields.io/github/license/rrze-webteam/rrze-faq)](https://github.com/RRZE-Webteam/rrze-faq)
