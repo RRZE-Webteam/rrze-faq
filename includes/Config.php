@@ -162,7 +162,7 @@ class Config
 					'default' => 'daily',
 					'options' => [
 						'daily' => __('daily', 'rrze-faq'),
-						'twicedaily' => __('twicedaily', 'rrze-faq')
+						'twicedaily' => __('twice daily', 'rrze-faq')
 					],
 					'type' => 'select'
 				],

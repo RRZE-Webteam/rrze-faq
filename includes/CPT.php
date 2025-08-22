@@ -232,7 +232,7 @@ class CPT
         $selected = get_term_meta($term->term_id, 'linked_page', true);
 
         echo '<tr class="form-field term-linked-page-wrap">';
-        echo '<th><label for="linked_page">' . esc_html__('Verlinkte Seite', 'rrze-faq') . '</label></th>';
+        echo '<th><label for="linked_page">' . esc_html__('Linked Page', 'rrze-faq') . '</label></th>';
         echo '<td><select name="linked_page">';
         echo '<option value="">' . esc_html__('None', 'rrze-faq') . '</option>';
         foreach ($pages as $page) {

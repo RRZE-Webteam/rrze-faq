@@ -304,7 +304,7 @@ class Shortcode
                             }
                         }
                     }
-                    $terms = wp_get_post_terms($post->ID, 'faq_' . $glossary);
+                    $terms = wp_get_post_terms($post->ID, 'rrze_faq_' . $glossary);
                     if ($terms) {
                         foreach ($terms as $t) {
                             if ($valid_term_ids && in_array($t->term_id, $valid_term_ids) === false) {
