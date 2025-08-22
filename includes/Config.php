@@ -332,27 +332,27 @@ class Config
 				'values' => [
 					[
 						'id' => 'fau',
-						'val' => 'fau'
+						'val' => 'fau',
 					],
 					[
 						'id' => 'med',
-						'val' => 'med'
+						'val' => 'med',
 					],
 					[
 						'id' => 'nat',
-						'val' => 'nat'
+						'val' => 'nat',
 					],
 					[
 						'id' => 'phil',
-						'val' => 'phil'
+						'val' => 'phil',
 					],
 					[
 						'id' => 'rw',
-						'val' => 'rw'
+						'val' => 'rw',
 					],
 					[
 						'id' => 'tf',
-						'val' => 'tf'
+						'val' => 'tf',
 					],
 				],
 				'default' => 'fau',
