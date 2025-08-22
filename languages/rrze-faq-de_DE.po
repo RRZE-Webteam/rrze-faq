@@ -8,7 +8,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "POT-Creation-Date: 2025-02-27T09:48:14+00:00\n"
-"PO-Revision-Date: 2025-08-15 11:28+0000\n"
+"PO-Revision-Date: 2025-08-22 10:06+0000\n"
 "Language: de_DE\n"
 "X-Generator: Loco https://localise.biz/\n"
 "X-Poedit-Basepath: ..\n"
@@ -44,11 +44,11 @@ msgstr ""
 msgid "%1$s: This slug \"%2$s\" is already in use. Restored default \"%3$s\"."
 msgstr ""
 
-#: includes/Config.php:257 src/edit.js:230
+#: includes/Config.php:259 src/edit.js:230
 msgid "-- hidden --"
 msgstr "-- versteckt --"
 
-#: includes/Config.php:261 src/edit.js:218
+#: includes/Config.php:263 src/edit.js:218
 msgid "A - Z"
 msgstr "A - Z"
 
@@ -66,7 +66,7 @@ msgstr "Akkordeon mit Schlagwort"
 
 #: src/edit.js:428
 msgid "Accordion-Style"
-msgstr ""
+msgstr "Akkordeon-Stil"
 
 #: includes/Settings.php:813
 msgid "Add domain"
@@ -88,13 +88,13 @@ msgstr "Neue FAQ anlegen"
 msgid "Add new tag"
 msgstr "Schlagwort (Tag) hinzufügen"
 
-#: includes/Config.php:391
+#: includes/Config.php:393
 msgid "Additonal CSS-class(es) for sourrounding DIV"
 msgstr "Zusätzliche CSS-Klasse(n) für das umgebende DIV"
 
 #: src/edit.js:97 src/edit.js:128 src/edit.js:154 src/edit.js:172
 msgid "all"
-msgstr ""
+msgstr "alle"
 
 #: includes/CPT.php:109
 msgid "All categories"
@@ -104,7 +104,7 @@ msgstr "Alle Kategorien"
 msgid "All FAQ"
 msgstr "Alle FAQ"
 
-#: includes/Config.php:146 includes/Config.php:148
+#: includes/Config.php:148 includes/Config.php:150
 msgid ""
 "All FAQ that match to the selected categories will be updated or inserted. "
 "Already synchronized FAQ that refer to categories which are not selected "
@@ -116,7 +116,7 @@ msgstr ""
 "beziehen, die nicht ausgewählt sind, werden gelöscht. FAQ, die auf der "
 "entfernten Website gelöscht wurden, werden auch auf dieser Website gelöscht."
 
-#: includes/Config.php:447
+#: includes/Config.php:449
 msgid "All languages"
 msgstr "Alle Sprachen"
 
@@ -149,9 +149,9 @@ msgstr "und"
 
 #: src/edit.js:393 src/edit.js:394
 msgid "Appearance"
-msgstr ""
+msgstr "Aussehen"
 
-#: includes/Config.php:424 src/edit.js:294
+#: includes/Config.php:426 src/edit.js:294
 msgid "ASC"
 msgstr "Aufsteigend"
 
@@ -165,8 +165,8 @@ msgctxt "block title"
 msgid "FAQ RRZE"
 msgstr "FAQ RRZE"
 
-#: includes/CPT.php:96 includes/Config.php:126 includes/Config.php:241
-#: includes/Config.php:280 templates/template-parts/faq_content.php:48
+#: includes/CPT.php:96 includes/Config.php:128 includes/Config.php:243
+#: includes/Config.php:282 templates/template-parts/faq_content.php:48
 #: src/edit.js:207 src/edit.js:335
 msgid "Categories"
 msgstr "Kategorien"
@@ -185,7 +185,7 @@ msgstr "Wähle eine FAQ"
 
 #: includes/Settings.php:1377
 msgid "Choose File"
-msgstr ""
+msgstr "Datei wählen"
 
 #: includes/CPT.php:111
 msgid "Choose from the most used categories"
@@ -195,7 +195,7 @@ msgstr "Aus den meist verwendeten Kategorien wählen"
 msgid "Choose from the most used tags"
 msgstr "Wählen Sie aus den am häufigsten verwendeten Schlagwörtern"
 
-#: includes/Config.php:358 src/edit.js:438
+#: includes/Config.php:360 src/edit.js:438
 msgid "Color"
 msgstr "Farbe"
 
@@ -203,29 +203,29 @@ msgstr "Farbe"
 msgid "Criterion for sorting the output of the shortcode"
 msgstr "Kriterium für die Sortierung der Ausgabe des Shortcodes"
 
-#: includes/Config.php:171
+#: includes/Config.php:173
 msgid "Custom archive page"
-msgstr ""
+msgstr "Benutzerdefinierte Archivseite"
 
-#: includes/Config.php:188
+#: includes/Config.php:190
 msgid "Custom FAQ Category Slug"
-msgstr ""
+msgstr "Benutzerdefinierter FAQ-Kategorien Slug"
 
-#: includes/Config.php:179
+#: includes/Config.php:181
 msgid "Custom FAQ Slug"
-msgstr ""
+msgstr "Benutzerdefinierter FAQ Slug"
 
-#: includes/Config.php:198
+#: includes/Config.php:200
 msgid "Custom FAQ Tag Slug"
-msgstr ""
+msgstr "Benutzerdefinierter FAQ-Tags Slug"
 
-#: includes/Config.php:162
+#: includes/Config.php:164
 msgid "daily"
 msgstr "täglich"
 
-#: includes/Config.php:80
+#: includes/Config.php:82
 msgid "Default archive"
-msgstr ""
+msgstr "Standardarchiv"
 
 #: includes/Settings.php:817
 msgid "Delete logfile"
@@ -239,7 +239,7 @@ msgstr "Ausgewählte Domains löschen"
 msgid "deleted"
 msgstr "gelöscht"
 
-#: includes/Config.php:428 src/edit.js:298
+#: includes/Config.php:430 src/edit.js:298
 msgid "DESC"
 msgstr "Absteigend"
 
@@ -251,15 +251,15 @@ msgstr "Anzeigeoptionen:"
 msgid "Displays a FAQ"
 msgstr "Zeigt eine FAQ an"
 
-#: includes/Config.php:134
+#: includes/Config.php:136
 msgid "Do not synchronize"
 msgstr "Nicht synchronisieren"
 
-#: includes/Config.php:292 includes/Sync.php:32 includes/Sync.php:40
+#: includes/Config.php:294 includes/Sync.php:32 includes/Sync.php:40
 msgid "Domain"
 msgstr "Domain"
 
-#: includes/Config.php:65
+#: includes/Config.php:67
 msgid "Domains"
 msgstr "Domains"
 
@@ -287,7 +287,7 @@ msgstr "Ende"
 msgid "English"
 msgstr "Englisch"
 
-#: includes/Config.php:99
+#: includes/Config.php:101
 msgid "Enter a short name for this domain."
 msgstr "Gib eine Abkürzung für diese Domain ein."
 
@@ -295,7 +295,7 @@ msgstr "Gib eine Abkürzung für diese Domain ein."
 msgid "Enter question here"
 msgstr "Frage hier eingeben"
 
-#: includes/Config.php:105
+#: includes/Config.php:107
 msgid "Enter the domain's URL you want to receive FAQ from."
 msgstr "Gib die URL der Domain ein, von der du das FAQ erhalten möchtest."
 
@@ -343,7 +343,7 @@ msgstr ""
 msgid "Error in sortCats()."
 msgstr ""
 
-#: includes/CPT.php:42 includes/CPT.php:61 includes/Config.php:298
+#: includes/CPT.php:42 includes/CPT.php:61 includes/Config.php:300
 msgid "FAQ"
 msgstr "FAQ"
 
@@ -362,13 +362,13 @@ msgstr "FAQ"
 
 #: src/edit.js:331
 msgid "Filter options"
-msgstr ""
+msgstr "Filter Optionen"
 
 #: src/edit.js:332
 msgid "Filter the FAQ-entries."
-msgstr ""
+msgstr "Filtere die FAQ Einträge."
 
-#: includes/Config.php:56
+#: includes/Config.php:57
 msgid "For more information"
 msgstr "Für mehr Informationen"
 
@@ -376,7 +376,7 @@ msgstr "Für mehr Informationen"
 msgid "French"
 msgstr "Französisch"
 
-#: includes/Config.php:158
+#: includes/Config.php:160
 msgid "Frequency"
 msgstr "Häufigkeit"
 
@@ -384,47 +384,47 @@ msgstr "Häufigkeit"
 msgid "German"
 msgstr "Deutsch"
 
-#: includes/Config.php:250
+#: includes/Config.php:252
 msgid "Glossary content"
 msgstr "Inhalt des Glossars"
 
-#: includes/Config.php:274 src/edit.js:399
+#: includes/Config.php:276 src/edit.js:399
 msgid "Glossary style"
 msgstr "Glossar Stil"
 
-#: includes/Config.php:383 src/edit.js:420
+#: includes/Config.php:385 src/edit.js:420
 msgid "Grid"
-msgstr ""
+msgstr "Gitter"
 
 #: src/edit.js:381
 msgid "Group FAQ-entries by categories or tags."
-msgstr ""
+msgstr "Gruppiere FAQ-Einträge nach Kategorien oder Tags."
 
 #: src/edit.js:380
 msgid "Group Glossary Content by"
-msgstr ""
+msgstr "Gruppiere den Glossar Inhalt nach "
 
-#: includes/Config.php:439
+#: includes/Config.php:441
 msgid "Heading level of the first heading"
 msgstr "Überschriftsebene der ersten Überschrift"
 
-#: includes/Config.php:52
+#: includes/Config.php:53
 msgid "Here comes the Context Help content."
 msgstr "Hier kommt der Inhalt der Kontexthilfe."
 
-#: includes/Config.php:303
+#: includes/Config.php:305
 msgid "Hide accordeon"
 msgstr "Akkordeon ausblenden"
 
 #: src/edit.js:409
 msgid "Hide accordion"
-msgstr ""
+msgstr "Akkordeon ausblenden"
 
 #: includes/FAQWidget.php:119
 msgid "hide question"
 msgstr "frage verbergen"
 
-#: includes/Config.php:310 src/edit.js:448
+#: includes/Config.php:312 src/edit.js:448
 msgid "Hide title"
 msgstr "Titel ausblenden"
 
@@ -436,7 +436,7 @@ msgstr "https://blogs.fau.de/webworking/"
 msgid "https://gitlab.rrze.fau.de/rrze-webteam/rrze-faq"
 msgstr "https://gitlab.rrze.fau.de/rrze-webteam/rrze-faq"
 
-#: includes/Config.php:408 src/edit.js:283
+#: includes/Config.php:410 src/edit.js:283
 msgid "ID"
 msgstr "ID"
 
@@ -450,7 +450,7 @@ msgstr ""
 "Wenn mehr als ein Schlagwort aufgelistet ist, verwende mindestens eines von "
 "ihnen."
 
-#: includes/Config.php:145
+#: includes/Config.php:147
 msgid "Info"
 msgstr "Info"
 
@@ -458,7 +458,7 @@ msgstr "Info"
 msgid "Integration in pages and posts"
 msgstr "Integration in Seiten und Beiträge"
 
-#: includes/Config.php:397 includes/Layout.php:207 includes/Layout.php:214
+#: includes/Config.php:399 includes/Layout.php:207 includes/Layout.php:214
 #: includes/Layout.php:228 includes/Layout.php:336 src/edit.js:368
 msgid "Language"
 msgstr "Sprache"
@@ -467,15 +467,15 @@ msgstr "Sprache"
 msgid "Language of this FAQ"
 msgstr "Sprache dieser FAQ"
 
-#: includes/CPT.php:218
+#: includes/CPT.php:218 includes/CPT.php:235
 msgid "Linked Page"
-msgstr ""
+msgstr "Verlinkte Seite"
 
-#: includes/Config.php:324
+#: includes/Config.php:326
 msgid "Load website with opened accordeons"
 msgstr "Website mit geöffneten Accordions laden"
 
-#: includes/Config.php:68
+#: includes/Config.php:70
 msgid "Logfile"
 msgstr "Logfile"
 
@@ -483,7 +483,7 @@ msgstr "Logfile"
 msgid "Logfile is empty."
 msgstr "Das Logfile ist leer."
 
-#: includes/Config.php:152
+#: includes/Config.php:154
 msgid "Mode"
 msgstr "Modus"
 
@@ -517,42 +517,42 @@ msgstr "Kein Schlagwort gefunden"
 
 #: src/edit.js:164
 msgid "No title"
-msgstr ""
+msgstr "Kein Titel"
 
 #: includes/CPT.php:220 includes/CPT.php:237
 msgid "None"
-msgstr ""
+msgstr "Keine"
 
-#: includes/Config.php:237 includes/Config.php:365 src/edit.js:203
+#: includes/Config.php:239 includes/Config.php:367 src/edit.js:203
 #: src/edit.js:264
 msgid "none"
 msgstr "keine"
 
 #: src/edit.js:369
 msgid "Only show FAQ-entries in this language."
-msgstr ""
+msgstr "Zeige nur die FAQ Einträge in dieser Sprache."
 
 #: src/edit.js:336
 msgid "Only show FAQ-entries with these selected categories."
-msgstr ""
+msgstr "Zeige nur die FAQ Einträge mit den ausgewählten Kategorien."
 
 #: src/edit.js:347
 msgid "Only show FAQ-entries with these selected tags."
-msgstr ""
+msgstr "Zeige nur die FAQ Einträge mit den ausgewählten Tags."
 
 #: src/edit.js:358
 msgid "Only show these FAQ-entries."
-msgstr ""
+msgstr "Zeige nur diese FAQ Einträge"
 
 #: includes/FAQWidget.php:170
 msgid "or choose a Category to display a FAQ randomly"
 msgstr "oder wähle eine Kategorie, um zufällig eine FAQ anzuzeigen"
 
-#: includes/Config.php:433 src/edit.js:468
+#: includes/Config.php:435 src/edit.js:468
 msgid "Order"
 msgstr "Bestellung"
 
-#: includes/Config.php:53
+#: includes/Config.php:54
 msgid "Overview"
 msgstr "Übersicht"
 
@@ -564,7 +564,7 @@ msgstr ""
 "Bitte beachte: \"Ausgewählte Domains löschen\" löscht alle FAQ auf dieser "
 "Website, die von den ausgewählten Domains abgerufen wurden."
 
-#: includes/Config.php:127
+#: includes/Config.php:129
 msgid "Please select the categories you'd like to fetch FAQ to."
 msgstr "Bitte wähle die Kategorien aus, in denen du die FAQ abrufen möchtest."
 
@@ -582,7 +582,7 @@ msgstr "Benötigte Zeit:"
 
 #: includes/Main.php:235
 msgid "RRZE"
-msgstr ""
+msgstr "RRZE"
 
 #. Name of the plugin
 #: includes/Config.php:40 includes/Config.php:41
@@ -597,7 +597,7 @@ msgstr "RRZE FAQ Einstellungen"
 msgid "RRZE Webteam"
 msgstr "RRZE Webteam"
 
-#: includes/Config.php:57
+#: includes/Config.php:58
 msgid "RRZE Webteam on Github"
 msgstr "RRZE Webteam auf Github"
 
@@ -633,11 +633,11 @@ msgstr "Schlagwörter mit Komma trennen"
 msgid "Settings updated"
 msgstr "Einstellungen aktualisiert"
 
-#: includes/Config.php:98 includes/Config.php:112
+#: includes/Config.php:100 includes/Config.php:114
 msgid "Short name"
 msgstr "Kurzbezeichnung"
 
-#: includes/Config.php:317
+#: includes/Config.php:319
 msgid "Show \"expand all\" button"
 msgstr "Schaltfläche \"Alles erweitern\" anzeigen"
 
@@ -676,9 +676,9 @@ msgstr "FAQ"
 
 #: src/edit.js:357
 msgid "Single FAQ-Entries"
-msgstr ""
+msgstr "Einzelne FAQ Einträge"
 
-#: includes/Config.php:417 includes/Layout.php:208 src/edit.js:461
+#: includes/Config.php:419 includes/Layout.php:208 src/edit.js:461
 msgid "Sort"
 msgstr "Sortieren"
 
@@ -686,13 +686,13 @@ msgstr "Sortieren"
 msgid "Sort criterion"
 msgstr "Sortierkriterium"
 
-#: includes/Config.php:412 src/edit.js:287
+#: includes/Config.php:414 src/edit.js:287
 msgid "Sort field"
 msgstr "Sortierfeld"
 
 #: src/edit.js:459
 msgid "Sorting options"
-msgstr ""
+msgstr "Sortier Optionen"
 
 #: includes/Layout.php:218 includes/Layout.php:232 includes/Layout.php:339
 msgid "Source"
@@ -706,7 +706,7 @@ msgstr "Spanisch"
 msgid "Start"
 msgstr "Start"
 
-#: includes/Config.php:378
+#: includes/Config.php:380
 msgid "Style"
 msgstr "Aussehen"
 
@@ -722,15 +722,15 @@ msgstr ""
 "Synchronisationsfehler. Diese FAQ enthält Slider ([Galerie]) und kann nicht "
 "synchronisiert werden:"
 
-#: includes/Config.php:66 includes/Config.php:133
+#: includes/Config.php:68 includes/Config.php:135
 msgid "Synchronize"
 msgstr "Synchronisieren"
 
-#: includes/Config.php:153
+#: includes/Config.php:155
 msgid "Synchronize automatically"
 msgstr "Automatisch synchronisieren"
 
-#: includes/Config.php:269 src/edit.js:226
+#: includes/Config.php:271 src/edit.js:226
 msgid "Tabs"
 msgstr "Tabs"
 
@@ -738,11 +738,11 @@ msgstr "Tabs"
 msgid "Tag"
 msgstr "Schlagwort"
 
-#: includes/Config.php:265 src/edit.js:222
+#: includes/Config.php:267 src/edit.js:222
 msgid "Tagcloud"
 msgstr "Schlagwörterwolke"
 
-#: includes/CPT.php:118 includes/Config.php:245 includes/Config.php:286
+#: includes/CPT.php:118 includes/Config.php:247 includes/Config.php:288
 #: templates/template-parts/faq_content.php:51 src/edit.js:211 src/edit.js:346
 msgid "Tags"
 msgstr "Schlagwörter"
@@ -767,12 +767,13 @@ msgstr ""
 msgid "This FAQ cannot be edited because it is synchronized"
 msgstr "Diese FAQ kann nicht bearbeitet werden, da sie synchronisiert ist"
 
-#: includes/Config.php:404 src/edit.js:279
+#: includes/Config.php:406 src/edit.js:279
 msgid "Title"
 msgstr "Titel"
 
-#: includes/Config.php:163
-msgid "twicedaily"
+#: includes/Config.php:165
+#| msgid "twicedaily"
+msgid "twice daily"
 msgstr "Zweimal täglich"
 
 #: includes/CPT.php:113
@@ -787,21 +788,17 @@ msgstr "Schlagwort aktualisieren"
 msgid "updated"
 msgstr "aktualisiert"
 
-#: includes/Config.php:104 includes/Config.php:119
+#: includes/Config.php:106 includes/Config.php:121
 msgid "URL"
 msgstr "URL"
 
-#: includes/Config.php:113
+#: includes/Config.php:115
 msgid "Use this name as attribute 'domain' in shortcode [faq]"
 msgstr "Verwende diesen Namen als Attribut 'domain' im Shortcode [faq]"
 
-#: includes/CPT.php:235
-msgid "Verlinkte Seite"
-msgstr ""
-
-#: includes/Config.php:67
+#: includes/Config.php:69
 msgid "Website"
-msgstr ""
+msgstr "Website"
 
 #: includes/Layout.php:186
 msgid "You can edit it at the source"

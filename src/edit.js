@@ -103,16 +103,6 @@ export default function Edit({ attributes, setAttributes }) {
 		categoryoptions.push(...buildCategoryOptions(categories));
 	}
 
-
-	// if ( !! categories ) {
-	// 	Object.values( categories ).forEach( ( category ) => {
-	// 		categoryoptions.push( {
-	// 			label: category.name,
-	// 			value: category.slug,
-	// 		} );
-	// 	} );
-	// }
-
 	const tags = useSelect((select) => {
 		return select('core').getEntityRecords('taxonomy', 'rrze_faq_tag', {
 			per_page: -1,
@@ -397,12 +387,11 @@ export default function Edit({ attributes, setAttributes }) {
 				>
 					<SelectControl
 						label={__('Glossary style', 'rrze-faq')}
+						value={glossarystyle || 'a-z'}
 						options={glossarystyleoptions}
-						onChange={(value) =>
-							setAttributes({ glossarystyle: value })
-						}
-					/>
-					{(!glossary || glossary === 'none') && (
+						onChange={(value) => setAttributes({ glossarystyle: value || 'a-z' })}
+					/>					
+					{!glossary && (
 						<>
 							<ToggleControl
 								checked={!!hide_accordion}
