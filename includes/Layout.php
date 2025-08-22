@@ -104,8 +104,29 @@ class Layout
 
     public function langboxCallback($meta_id)
     {
-        $output = '<input type="text" name="lang" id="lang" class="lang" value="' . esc_attr(get_post_meta($meta_id->ID, 'lang', true)) . '">';
-        $output .= '<p class="description">' . __('Language of this FAQ', 'rrze-faq') . '</p>';
+        $current = get_post_meta($meta_id->ID, 'lang', true);
+        if (empty($current)) {
+            $current = substr(get_locale(), 0, 2);
+        }
+
+        $langs = \RRZE\FAQ\Config::getConstants('langcodes'); // ['de' => 'German', …]
+        if (!is_array($langs)) {
+            $langs = [];
+        }
+
+        $output = '<select name="lang" id="lang" class="lang">';
+        foreach ($langs as $code => $label) {
+            $selected = selected($current, $code, false);
+            $output .= sprintf(
+                '<option value="%s" %s>%s</option>',
+                esc_attr($code),
+                $selected,
+                esc_html($label)
+            );
+        }
+        $output .= '</select>';
+        $output .= '<p class="description">' . esc_html__('Language of this FAQ', 'rrze-faq') . '</p>';
+
         echo wp_kses_post($output);
     }
 
@@ -152,8 +173,6 @@ class Layout
     {
         $post_id = 0;
 
-        $post_id = 0;
-
         $method = $_SERVER['REQUEST_METHOD'] === 'POST' ? INPUT_POST : INPUT_GET;
 
         $post_raw = filter_input($method, 'post', FILTER_SANITIZE_NUMBER_INT);
@@ -162,7 +181,8 @@ class Layout
         if ($post_raw && $nonce_raw && wp_verify_nonce($nonce_raw, 'faq_edit_nonce')) {
             $post_id = (int) $post_raw;
         }
-        
+
+
         if ($post_id) {
             if (get_post_type($post_id) === 'rrze_faq') {
                 $source = get_post_meta($post_id, 'source', true);
@@ -223,7 +243,7 @@ class Layout
 
     public function addFaqSortableColumns($columns)
     {
-        $columns['taxonomy-rrze_faq_category'] = __('Category', 'rrze-faq') .'TEST';
+        $columns['taxonomy-rrze_faq_category'] = __('Category', 'rrze-faq') . 'TEST';
         $columns['taxonomy-rrze_faq_tag'] = __('Tag', 'rrze-faq');
         $columns['lang'] = __('Language', 'rrze-faq');
         $columns['sortfield'] = 'sortfield';
