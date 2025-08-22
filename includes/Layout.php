@@ -74,7 +74,7 @@ class Layout
         // Ensure slashes are unslashed and input is sanitized
         $source = (empty($_POST['source']) ? 'website' : sanitize_text_field(wp_unslash($_POST['source'])));
         update_post_meta($postID, 'source', $source);
-        update_post_meta($postID, 'lang', substr(get_locale(), 0, 2));
+        update_post_meta($postID, 'lang', sanitize_text_field(wp_unslash($_POST['lang'])));
         update_post_meta($postID, 'remoteID', $postID);
         update_post_meta($postID, 'remoteChanged', get_post_timestamp($postID, 'modified'));
 

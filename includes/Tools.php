@@ -52,7 +52,16 @@ class Tools
     }
 
 
-        /**
+    public static function getThemeColor(string $color)
+    {
+        if (!$color) {
+            return '';
+        }
+
+        return 'has-' . $color . '-background-color has-' . $color . '-border-color has-contrast-color';
+    }
+
+    /**
      * Renders a single FAQ entry in an accordion (<details>/<summary>) format.
      * 
      * Optionally wraps the output in Schema.org FAQPage microdata if $useSchema is true.
@@ -68,8 +77,9 @@ class Tools
      */
     public static function renderFAQItemAccordion(string $anchor, string $question, string $answer, string $color, string $load_open, bool $useSchema): string
     {
+        $themeColor = self::getThemeColor($color);
         $out = $useSchema ? '<div itemscope itemprop="mainEntity" itemtype="https://schema.org/Question">' : '';
-        $out .= '<details' . ($load_open ? ' open' : '') . ' id="' . esc_attr($anchor) . '" class="faq-item' . ($color ? ' color-' . esc_attr($color) : '') . '">';
+        $out .= '<details' . ($load_open ? ' open' : '') . ' id="' . esc_attr($anchor) . '" class="faq-item' . ($themeColor ? ' ' . esc_attr($themeColor) : '') . '">';
 
         if ($useSchema) {
             $out .= '<summary itemprop="name">' . esc_html($question) . '</summary>';
@@ -129,7 +139,7 @@ class Tools
             $classes .= ' ' . trim($additional_class);
         }
 
-        return '<div ' . ($bSchema? 'itemscope itemtype="https://schema.org/FAQPage" ' : '') . 'class="' . esc_attr($classes) . '" aria-labelledby="' . esc_attr($headerID) . '">' . $content . '</div>';
+        return '<div ' . ($bSchema ? 'itemscope itemtype="https://schema.org/FAQPage" ' : '') . 'class="' . esc_attr($classes) . '" aria-labelledby="' . esc_attr($headerID) . '">' . $content . '</div>';
     }
 
     public static function getLetter(&$txt)
