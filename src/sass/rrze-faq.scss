@@ -10,6 +10,14 @@ $faq-color-text-filled: #036;
 $faq-letter-size: 2rem;
 $faq-font-size: 0.875rem;
 
+$default-fau: #CED9E7;
+$default-med: #18b4f1;
+$default-nat: #7bb725;
+$default-phil: #fdb735;
+$default-rw: #c50f3c;
+$default-tf: #8C9FB1;
+
+
 
 .faq-content {
 	margin-top: 0.5em;
@@ -94,50 +102,102 @@ details.faq-item summary {
 		}
 	}
 
-	details.faq-item {
-		border: 1px solid var(--wp--preset--color--primary, #ccc);
-		border-radius: 4px;
-		margin-bottom: 1.5rem;
-		background-color: var(--wp--preset--color--heller, #f9f9f9);
-		overflow: hidden;
+	.faq-item {
+		--faq-accent: var(--color-primary-ci-hell, $default-fau);
+		--faq-contrast: var(--color-primary-ci-hell-kontrast, #fff);
+	}
 
-		summary {
-			display: flex;
-			align-items: center;
-			padding: 0.75rem 1rem 0.75rem 2rem;
-			font-weight: 700;
-			font-size: 1rem;
-			line-height: 1.25;
-			// color: var(--wp--preset--color--base, #222);
-			// background-color: var(--wp--preset--color--heller, #f9f9f9);
-			border-bottom: 1px solid var(--wp--preset--color--primary, #ccc);
-			cursor: pointer;
+	.faq-item.is-fau {
+		--faq-accent: var(--color-zentral-ci-hell, $default-fau);
+		--faq-contrast: var(--color-zentral-ci-hell-kontrast, #fff);
+	}
+
+	.faq-item.is-phil {
+		--faq-accent: var(--color-phil-ci-hell, $default-phil);
+		--faq-contrast: var(--color-phil-ci-hell-kontrast, #000);
+	}
+
+	.faq-item.is-rw {
+		--faq-accent: var(--color-rw-ci-hell, $default-rw);
+		--faq-contrast: var(--color-rw-ci-hell-kontrast, #fff);
+	}
+
+	.faq-item.is-med {
+		--faq-accent: var(--color-med-ci-hell, $default-med);
+		--faq-contrast: var(--color-med-ci-hell-kontrast, #000);
+	}
+
+	.faq-item.is-nat {
+		--faq-accent: var(--color-nat-ci-hell, $default-nat);
+		--faq-contrast: var(--color-nat-ci-hell-kontrast, #000);
+	}
+
+	.faq-item.is-tf {
+		--faq-accent: var(--color-tf-ci-hell, $default-tf);
+		--faq-contrast: var(--color-tf-ci-hell-kontrast, #000);
+	}
+
+
+	details.faq-item {
+		border: 1px solid var(--color-content-borders, #dfe6ec);
+		margin-bottom: 1.5rem;
+
+		>summary {
+			display: block;
 			position: relative;
-			transition: background-color 0.2s ease;
 			list-style: none;
+			margin: 0;
+			padding: 8px 35px 8px 10px;
+			font-size: 1rem;
+			text-align: left;
+			cursor: pointer;
+
+			background: transparent;
+			color: #000;
+			border: 0;
+			border-left: 10px solid var(--faq-accent);
+			transition: background-color .15s ease, color .15s ease, border-color .15s ease;
 
 			&::marker {
 				content: "";
 			}
 
-			&::before {
-				content: "▶";
+			&::after {
+				content: "▾";
 				position: absolute;
-				left: 1rem;
-				font-size: 0.75rem;
+				top: 12px;
+				right: 10px;
+				font-size: 1em;
 				line-height: 1;
-				transform: translateY(0);
-				transition: transform 0.2s ease;
 			}
 
-			&:hover {
-				background-color: var(--wp--preset--color--heller, #eee);
+			/* hover: Rand + Hintergrund farbig, Text weiß */
+			&:hover,
+			&:focus {
+				background-color: var(--faq-accent);
+				color: #fff;
+				outline: none;
 			}
 		}
 
-		&[open] > summary::before {
-			transform: rotate(90deg);
-		}
+		/* klick (open): Rand + Hintergrund farbig, Text weiß */
+		&[open]>summary {
+			background-color: var(--faq-accent);
+			color: #fff;
 
+			&::after {
+				content: "▴";
+			}
+		}
+	}
+
+	/* --- Inhalt: immer Rahmen 1px, kein Hintergrund, schwarzer Text --- */
+	[itemprop="acceptedAnswer"] {
+		color: #000;
+		padding: 15px 20px;
+	}
+
+	[itemprop="acceptedAnswer"] * {
+		color: #000;
 	}
 }

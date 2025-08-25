@@ -51,20 +51,6 @@ class Tools
         return 'header-' . ($postID ?? 'noid') . '-' . $random;
     }
 
-
-    public static function getThemeColor(string $color)
-    {
-        if (!$color) {
-            return '';
-        }
-
-        return [
-            'details' => 'faq-item has-' . $color . '-background-color has-' . $color . '-dunkler-border-color has-contrast-color',
-            'summary' => 'has-contrast-color',
-            'content' => 'faq-term-content has-contrast-color'
-        ];
-    }
-
     /**
      * Renders a single FAQ entry in an accordion (<details>/<summary>) format.
      * 
@@ -81,18 +67,17 @@ class Tools
      */
     public static function renderFAQItemAccordion(string $anchor, string $question, string $answer, string $color, string $load_open, bool $useSchema): string
     {
-        $aColor = self::getThemeColor($color);
         $out = $useSchema ? '<div itemscope itemprop="mainEntity" itemtype="https://schema.org/Question">' : '';
-        $out .= '<details' . ($load_open ? ' open' : '') . ' id="' . esc_attr($anchor) . '" class="' . $aColor['details'] . '">';
+        $out .= '<details' . ($load_open ? ' open' : '') . ' id="' . esc_attr($anchor) . '" class="faq-item is-' . $color . '">';
 
         if ($useSchema) {
-            $out .= '<summary itemprop="name" class="' . $aColor['summary'] . '">' . esc_html($question) . '</summary>';
+            $out .= '<summary itemprop="name">' . esc_html($question) . '</summary>';
             $out .= '<div itemscope itemprop="acceptedAnswer" itemtype="https://schema.org/Answer">';
-            $out .= '<div class="' . $aColor['content'] . '" itemprop="text">' . $answer . '</div>';
+            $out .= '<div itemprop="text">' . $answer . '</div>';
             $out .= '</div>'; // acceptedAnswer
         } else {
             $out .= '<summary>' . esc_html($question) . '</summary>';
-            $out .= '<div class="faq-content">' . $answer . '</div>';
+            $out .= '<div>' . $answer . '</div>';
         }
 
         $out .= '</details>';

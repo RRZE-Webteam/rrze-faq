@@ -342,8 +342,7 @@ class Shortcode
                     }
 
                     $term_id_attr = $anchor . '-' . $aVal[$anchor];
-                    $aColor = Tools::getThemeColor($color);
-                    $content .= '<section id="' . esc_attr($term_id_attr) . '" class="' . $aColor['details'] . '">';
+                    $content .= '<section id="' . esc_attr($term_id_attr) . '" class="faq-item is-' . $color . '">';
                     $content .= '<h3>' . esc_html($k) . '</h3>'; // ersetzt <summary>
 
                     $content .= '<div class="' . $aColor['content']. '">';
