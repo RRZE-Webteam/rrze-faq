@@ -58,7 +58,11 @@ class Tools
             return '';
         }
 
-        return 'has-' . $color . '-background-color has-' . $color . '-border-color has-contrast-color';
+        return [
+            'details' => 'faq-item has-' . $color . '-background-color has-' . $color . '-dunkler-border-color has-contrast-color',
+            'summary' => 'has-contrast-color',
+            'content' => 'faq-term-content has-contrast-color'
+        ];
     }
 
     /**
@@ -77,14 +81,14 @@ class Tools
      */
     public static function renderFAQItemAccordion(string $anchor, string $question, string $answer, string $color, string $load_open, bool $useSchema): string
     {
-        $themeColor = self::getThemeColor($color);
+        $aColor = self::getThemeColor($color);
         $out = $useSchema ? '<div itemscope itemprop="mainEntity" itemtype="https://schema.org/Question">' : '';
-        $out .= '<details' . ($load_open ? ' open' : '') . ' id="' . esc_attr($anchor) . '" class="faq-item' . ($themeColor ? ' ' . esc_attr($themeColor) : '') . '">';
+        $out .= '<details' . ($load_open ? ' open' : '') . ' id="' . esc_attr($anchor) . '" class="' . $aColor['details'] . '">';
 
         if ($useSchema) {
-            $out .= '<summary itemprop="name">' . esc_html($question) . '</summary>';
+            $out .= '<summary itemprop="name" class="' . $aColor['summary'] . '">' . esc_html($question) . '</summary>';
             $out .= '<div itemscope itemprop="acceptedAnswer" itemtype="https://schema.org/Answer">';
-            $out .= '<div class="faq-content" itemprop="text">' . $answer . '</div>';
+            $out .= '<div class="' . $aColor['content'] . '" itemprop="text">' . $answer . '</div>';
             $out .= '</div>'; // acceptedAnswer
         } else {
             $out .= '<summary>' . esc_html($question) . '</summary>';
@@ -129,10 +133,6 @@ class Tools
 
         if ($masonry) {
             $classes .= ' faq-masonry';
-        }
-
-        if (!empty($color)) {
-            $classes .= ' ' . trim($color);
         }
 
         if (!empty($additional_class)) {

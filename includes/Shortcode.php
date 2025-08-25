@@ -342,11 +342,11 @@ class Shortcode
                     }
 
                     $term_id_attr = $anchor . '-' . $aVal[$anchor];
-                    $themeColor = Tools::getThemeColor($color);
-                    $content .= '<section id="' . esc_attr($term_id_attr) . '" class="faq-term' . ($themeColor ? ' ' . esc_attr($themeColor) : '') . '">';
+                    $aColor = Tools::getThemeColor($color);
+                    $content .= '<section id="' . esc_attr($term_id_attr) . '" class="' . $aColor['details'] . '">';
                     $content .= '<h3>' . esc_html($k) . '</h3>'; // ersetzt <summary>
 
-                    $content .= '<div class="faq-term-content">';
+                    $content .= '<div class="' . $aColor['content']. '">';
 
                     // find the postIDs to this tag
                     $aIDs = Tools::searchArrayByKey($aVal['ID'], $aPostIDs);
