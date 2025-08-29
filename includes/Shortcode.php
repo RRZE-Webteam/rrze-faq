@@ -343,9 +343,9 @@ class Shortcode
 
                     $term_id_attr = $anchor . '-' . $aVal[$anchor];
                     $content .= '<section id="' . esc_attr($term_id_attr) . '" class="faq-item is-' . $color . '">';
-                    $content .= '<h3>' . esc_html($k) . '</h3>'; // ersetzt <summary>
+                    $content .= '<h3>' . esc_html($k) . '</h3>';
 
-                    $content .= '<div class="' . $aColor['content']. '">';
+                    $content .= '<div class="faq-term-content">';
 
                     // find the postIDs to this tag
                     $aIDs = Tools::searchArrayByKey($aVal['ID'], $aPostIDs);
