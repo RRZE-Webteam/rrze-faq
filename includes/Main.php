@@ -87,6 +87,14 @@ class Main
             [],
             filemtime(plugin_dir_path($this->pluginFile) . 'build/css/rrze-faq.css')
         );
+
+        wp_register_script(
+            'rrze-faq-accordion',
+            plugins_url('build/rrze-faq-accordion.js', $this->pluginFile),
+            array('jquery'),
+            filemtime(plugin_dir_path($this->pluginFile) . 'build/rrze-faq-accordion.js'),
+            true
+        );
     }
 
 

@@ -106,11 +106,11 @@ class Shortcode
             foreach ($parts as $part) {
                 $part = trim($part);
                 switch ($part) {
+                    case 'tf':
                     case 'med':
                     case 'nat':
                     case 'phil':
                     case 'rw':
-                    case 'tk':
                         $atts['color'] = $part;
                         break;
                     default:
@@ -342,9 +342,8 @@ class Shortcode
                     }
 
                     $term_id_attr = $anchor . '-' . $aVal[$anchor];
-                    $themeColor = Tools::getThemeColor($color);
-                    $content .= '<section id="' . esc_attr($term_id_attr) . '" class="faq-term' . ($themeColor ? ' ' . esc_attr($themeColor) : '') . '">';
-                    $content .= '<h3>' . esc_html($k) . '</h3>'; // ersetzt <summary>
+                    $content .= '<section id="' . esc_attr($term_id_attr) . '" class="faq-item is-' . $color . '">';
+                    $content .= '<h3>' . esc_html($k) . '</h3>';
 
                     $content .= '<div class="faq-term-content">';
 
@@ -471,6 +470,7 @@ class Shortcode
         $postID = get_the_ID();
         $headerID = (new Tools())->getHeaderID($postID);
 
+        wp_enqueue_script('rrze-faq-accordion');
         wp_enqueue_style('rrze-faq-css');
 
         $content = Tools::renderFAQWrapper($postID, $content, $headerID, $masonry, $color, $additional_class, $this->bSchema);

@@ -51,16 +51,6 @@ class Tools
         return 'header-' . ($postID ?? 'noid') . '-' . $random;
     }
 
-
-    public static function getThemeColor(string $color)
-    {
-        if (!$color) {
-            return '';
-        }
-
-        return 'has-' . $color . '-background-color has-' . $color . '-border-color has-contrast-color';
-    }
-
     /**
      * Renders a single FAQ entry in an accordion (<details>/<summary>) format.
      * 
@@ -75,17 +65,17 @@ class Tools
      * @param bool   $useSchema   Whether to output Schema.org Question/Answer markup.
      * @return string             The complete HTML string for the FAQ item.
      */
+
     public static function renderFAQItemAccordion(string $anchor, string $question, string $answer, string $color, string $load_open, bool $useSchema): string
     {
-        $themeColor = self::getThemeColor($color);
         $out = $useSchema ? '<div itemscope itemprop="mainEntity" itemtype="https://schema.org/Question">' : '';
-        $out .= '<details' . ($load_open ? ' open' : '') . ' id="' . esc_attr($anchor) . '" class="faq-item' . ($themeColor ? ' ' . esc_attr($themeColor) : '') . '">';
+        $out .= '<details' . ($load_open ? ' open' : '') . ' id="' . esc_attr($anchor) . '" class="faq-item is-' . $color . '">';
 
         if ($useSchema) {
             $out .= '<summary itemprop="name">' . esc_html($question) . '</summary>';
             $out .= '<div itemscope itemprop="acceptedAnswer" itemtype="https://schema.org/Answer">';
             $out .= '<div class="faq-content" itemprop="text">' . $answer . '</div>';
-            $out .= '</div>'; // acceptedAnswer
+            $out .= '</div>';
         } else {
             $out .= '<summary>' . esc_html($question) . '</summary>';
             $out .= '<div class="faq-content">' . $answer . '</div>';
@@ -122,25 +112,27 @@ class Tools
     }
 
 
-
     public static function renderFAQWrapper(?int $postID = null, string &$content, string &$headerID, bool &$masonry, string &$color, string &$additional_class, bool &$bSchema): string
     {
         $classes = 'rrze-faq';
-
         if ($masonry) {
             $classes .= ' faq-masonry';
         }
-
-        if (!empty($color)) {
-            $classes .= ' ' . trim($color);
-        }
-
         if (!empty($additional_class)) {
             $classes .= ' ' . trim($additional_class);
         }
 
-        return '<div ' . ($bSchema ? 'itemscope itemtype="https://schema.org/FAQPage" ' : '') . 'class="' . esc_attr($classes) . '" aria-labelledby="' . esc_attr($headerID) . '">' . $content . '</div>';
+        return '<div ' . ($bSchema ? 'itemscope itemtype="https://schema.org/FAQPage" ' : '')
+            . 'class="' . esc_attr($classes) . '" role="region" aria-labelledby="' . esc_attr($headerID) . '"'
+            . ' data-accordion="single"'
+            . ' data-scroll-offset="96"'
+            . '>'
+            . '<h2 id="' . esc_attr($headerID) . '" class="screen-reader-text">' . esc_html(get_the_title($postID) ?: __('FAQ', 'rrze-faq')) . '</h2>'
+            . $content
+            . '</div>';
     }
+
+
 
     public static function getLetter(&$txt)
     {
