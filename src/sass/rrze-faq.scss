@@ -105,6 +105,8 @@ details.faq-item summary {
 	.faq-item {
 		--faq-accent: var(--color-primary-ci-hell, $default-fau);
 		--faq-contrast: var(--color-primary-ci-hell-kontrast, #fff);
+		--faq-surface: green;
+  		--faq-surface-hover: orange;
 	}
 
 	.faq-item.is-fau {
@@ -152,7 +154,6 @@ details.faq-item summary {
 			text-align: left;
 			cursor: pointer;
 
-			background: transparent;
 			color: #000;
 			border: 0;
 			border-left: 10px solid var(--faq-accent);
@@ -191,10 +192,14 @@ details.faq-item summary {
 
 	[itemprop="acceptedAnswer"] {
 		color: #000;
-		padding: 15px 20px;
+		background-color: var(--faq-surface);
+		padding: 0;
 	}
 
 	[itemprop="acceptedAnswer"] * {
 		color: #000;
 	}
+
+	[id] { scroll-margin-top: 6rem; }
+
 }

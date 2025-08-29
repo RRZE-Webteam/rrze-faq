@@ -106,11 +106,11 @@ class Shortcode
             foreach ($parts as $part) {
                 $part = trim($part);
                 switch ($part) {
+                    case 'tf':
                     case 'med':
                     case 'nat':
                     case 'phil':
                     case 'rw':
-                    case 'tk':
                         $atts['color'] = $part;
                         break;
                     default:

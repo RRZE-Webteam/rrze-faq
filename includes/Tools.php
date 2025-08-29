@@ -65,6 +65,7 @@ class Tools
      * @param bool   $useSchema   Whether to output Schema.org Question/Answer markup.
      * @return string             The complete HTML string for the FAQ item.
      */
+
     public static function renderFAQItemAccordion(string $anchor, string $question, string $answer, string $color, string $load_open, bool $useSchema): string
     {
         $out = $useSchema ? '<div itemscope itemprop="mainEntity" itemtype="https://schema.org/Question">' : '';
@@ -73,11 +74,11 @@ class Tools
         if ($useSchema) {
             $out .= '<summary itemprop="name">' . esc_html($question) . '</summary>';
             $out .= '<div itemscope itemprop="acceptedAnswer" itemtype="https://schema.org/Answer">';
-            $out .= '<div itemprop="text">' . $answer . '</div>';
-            $out .= '</div>'; // acceptedAnswer
+            $out .= '<div class="faq-content" itemprop="text">' . $answer . '</div>';
+            $out .= '</div>';
         } else {
             $out .= '<summary>' . esc_html($question) . '</summary>';
-            $out .= '<div>' . $answer . '</div>';
+            $out .= '<div class="faq-content">' . $answer . '</div>';
         }
 
         $out .= '</details>';
@@ -111,21 +112,29 @@ class Tools
     }
 
 
-
     public static function renderFAQWrapper(?int $postID = null, string &$content, string &$headerID, bool &$masonry, string &$color, string &$additional_class, bool &$bSchema): string
     {
         $classes = 'rrze-faq';
-
         if ($masonry) {
             $classes .= ' faq-masonry';
         }
-
         if (!empty($additional_class)) {
             $classes .= ' ' . trim($additional_class);
         }
 
-        return '<div ' . ($bSchema ? 'itemscope itemtype="https://schema.org/FAQPage" ' : '') . 'class="' . esc_attr($classes) . '" aria-labelledby="' . esc_attr($headerID) . '">' . $content . '</div>';
+        $label = $postID ? get_the_title($postID) : '';
+        if (!$label) {
+            $label = __('FAQ', 'rrze-faq');
+        }
+
+        $heading = '<h2 id="' . esc_attr($headerID) . '" class="screen-reader-text">' . esc_html($label) . '</h2>';
+
+        return '<div ' . ($bSchema ? 'itemscope itemtype="https://schema.org/FAQPage" ' : '') .
+            'class="' . esc_attr($classes) . '" role="region" aria-labelledby="' . esc_attr($headerID) . '">' .
+            $heading . $content . '</div>';
     }
+
+
 
     public static function getLetter(&$txt)
     {
