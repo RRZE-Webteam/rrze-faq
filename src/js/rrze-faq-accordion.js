@@ -1,3 +1,18 @@
+
+
+
+// fix for theme RRZE-2019 which has an overlay with the menue
+function setHeaderVar() {
+  const h = document.getElementById('site-navigation')?.getBoundingClientRect().height || 0;
+  document.documentElement.style.setProperty('--header-height', `${Math.ceil(h)}px`);
+}
+
+setHeaderVar();
+window.addEventListener('resize', setHeaderVar);
+// falls der Header-Inhalt dynamisch ist (z.B. Fonts nachladen)
+window.addEventListener('load', setHeaderVar);
+
+
 /* RRZE FAQ accordion: single-open + open-by-hash */
 (function ($) {
   'use strict';
