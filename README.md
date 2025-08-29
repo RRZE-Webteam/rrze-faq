@@ -1,8 +1,8 @@
 **⚠️ Important Notice (Code Freeze)**
 > 
-> Starting with version **5.4.32**, this plugin is no longer maintained.  
+> Starting with version **5.4.38**, this plugin is no longer maintained.  
 > All functionality has been merged into the new WordPress plugin **RRZE-Answers**.  
-> Please submit any new issues related to RRZE-FAQ v5.4.32 in the [RRZE-Answers repository](https://github.com/RRZE-Webteam/rrze-answers/issues/)).
+> Please submit any new issues related to RRZE-FAQ in the [RRZE-Answers repository](https://github.com/RRZE-Webteam/rrze-answers/issues/)).
 >
 > 
 
