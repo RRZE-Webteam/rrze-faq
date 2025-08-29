@@ -1,3 +1,9 @@
+/*!
+ * FAQ Accordion (details/summary) with RRZE look & feel
+ * Paths adjusted to "../../assets/img/"
+ */
+
+/* Globals for letter bar */
 $faq-color-bg-empty: transparent;
 $faq-color-border-empty: #e9edf2;
 $faq-color-text-empty: #e9edf2;
@@ -10,196 +16,323 @@ $faq-color-text-filled: #036;
 $faq-letter-size: 2rem;
 $faq-font-size: 0.875rem;
 
-$default-fau: #CED9E7;
-$default-med: #18b4f1;
-$default-nat: #7bb725;
+/* Faculty fallback colors (light) */
+$default-fau:  #CED9E7;
+$default-med:  #18b4f1;
+$default-nat:  #7bb725;
 $default-phil: #fdb735;
-$default-rw: #c50f3c;
-$default-tf: #8C9FB1;
+$default-rw:   #c50f3c;
+$default-tf:   #8C9FB1;
 
-
-
+/* Base content panel */
 .faq-content {
-	margin-top: 0.5em;
-	background-color: #fff;
-	padding: 1rem 1rem 0.5rem;
+  background-color:#f5f7f9;
+  padding: 1rem 1rem 0.5rem;
 }
 
-.faq-term-content {
-	margin-left: 1em;
-}
+.faq-term-content { margin-left: 1em; }
 
-
+/* Masonry columns for tiles */
 .faq-masonry {
-	column-count: 1;
-	column-gap: 1.5rem;
+  column-count: 1;
+  column-gap: 1.5rem;
 
-	.faq-item {
-		break-inside: avoid;
-		margin-bottom: 1.5rem;
-	}
+  .faq-item {
+    break-inside: avoid;
+    margin-bottom: 1.5rem;
+  }
 
-	@media (min-width: 600px) {
-		column-count: 2;
-	}
-
-	@media (min-width: 900px) {
-		column-count: 3;
-	}
+  @media (min-width: 600px) { column-count: 2; }
+  @media (min-width: 900px) { column-count: 3; }
 }
 
+/* Summary basics */
 details.faq-term summary,
 details.faq-item summary {
-	cursor: pointer;
-	font-weight: 700;
-	margin-top: 0.5em;
-	outline: none;
+  cursor: pointer;
+  font-weight: 700;
+  margin-top: 0.5em;
+  outline: none;
 }
 
+/* RRZE look & feel */
 .rrze-faq {
+  /* Neutral surface and border (collapsed) */
+  --faq-surface: var(--color-ContentBorders, #d2ddeb);
+  --faq-surface-text: var(--color-Text, #444);
+  --faq-border: var(--color-content-borders, #dfe6ec);
 
-	ul.letters {
-		margin: 1.25rem 0 0.75rem;
-		padding: 0;
-		list-style: none;
-	}
+  /* Default accent (overridden per faculty) */
+  .faq-item {
+    --faq-accent:        var(--color-primary-ci-hell, #CED9E7);
+    --faq-contrast:      var(--color-primary-ci-hell-kontrast, #fff);
+    --faq-accent-dark:   var(--color-primary-dunkler, var(--faq-accent));
+    --faq-contrast-dark: var(--color-primary-dunkler-kontrast, var(--faq-contrast));
+  }
 
-	.letters {
+  /* Faculty mappings */
+  .faq-item.is-fau  {
+    --faq-accent:        var(--color-zentral-ci-hell,       $default-fau);
+    --faq-contrast:      var(--color-zentral-ci-hell-kontrast, #fff);
+    --faq-accent-dark:   var(--color-zentral-dunkler,       var(--faq-accent));
+    --faq-contrast-dark: var(--color-zentral-dunkler-kontrast, var(--faq-contrast));
+  }
+  .faq-item.is-phil {
+    --faq-accent:        var(--color-phil-ci-hell,          $default-phil);
+    --faq-contrast:      var(--color-phil-ci-hell-kontrast, #000);
+    --faq-accent-dark:   var(--color-phil-dunkler,          var(--faq-accent));
+    --faq-contrast-dark: var(--color-phil-dunkler-kontrast, var(--faq-contrast));
+  }
+  .faq-item.is-rw   {
+    --faq-accent:        var(--color-rw-ci-hell,            $default-rw);
+    --faq-contrast:      var(--color-rw-ci-hell-kontrast,   #fff);
+    --faq-accent-dark:   var(--color-rw-dunkler,            var(--faq-accent));
+    --faq-contrast-dark: var(--color-rw-dunkler-kontrast,   var(--faq-contrast));
+  }
+  .faq-item.is-med  {
+    --faq-accent:        var(--color-med-ci-hell,           $default-med);
+    --faq-contrast:      var(--color-med-ci-hell-kontrast,  #000);
+    --faq-accent-dark:   var(--color-med-dunkler,           var(--faq-accent));
+    --faq-contrast-dark: var(--color-med-dunkler-kontrast,  var(--faq-contrast));
+  }
+  .faq-item.is-nat  {
+    --faq-accent:        var(--color-nat-ci-hell,           $default-nat);
+    --faq-contrast:      var(--color-nat-ci-hell-kontrast,  #000);
+    --faq-accent-dark:   var(--color-nat-dunkler,           var(--faq-accent));
+    --faq-contrast-dark: var(--color-nat-dunkler-kontrast,  var(--faq-contrast));
+  }
+  .faq-item.is-tf   {
+    --faq-accent:        var(--color-tf-ci-hell,            $default-tf);
+    --faq-contrast:      var(--color-tf-ci-hell-kontrast,   #000);
+    --faq-accent-dark:   var(--color-tf-dunkler,            var(--faq-accent));
+    --faq-contrast-dark: var(--color-tf-dunkler-kontrast,   var(--faq-contrast));
+  }
 
-		li {
-			display: inline-flex;
-			align-items: center;
-			justify-content: center;
-			width: $faq-letter-size;
-			height: $faq-letter-size;
-			margin: 2px;
-			border: 1px solid $faq-color-border-empty;
-			color: $faq-color-text-empty;
-			background: $faq-color-bg-empty;
-			border-radius: 4px;
-			background-clip: padding-box;
-			font-size: $faq-font-size;
-			line-height: 1;
-			transition: background-color 0.2s ease;
+  /* A–Z index */
+  ul.letters { margin: 1.25rem 0 0.75rem; padding: 0; list-style: none; }
+  .letters {
+    li {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: $faq-letter-size;
+      height: $faq-letter-size;
+      margin: 2px;
+      border: 1px solid $faq-color-border-empty;
+      color: $faq-color-text-empty;
+      background: $faq-color-bg-empty;
+      border-radius: 4px;
+      background-clip: padding-box;
+      font-size: $faq-font-size;
+      line-height: 1;
+      transition: background-color .2s ease;
 
-			&.filled {
-				border-color: $faq-color-border-filled;
-				background-color: $faq-color-bg-filled;
-				color: $faq-color-text-filled;
+      &.filled {
+        border-color: $faq-color-border-filled;
+        background-color: $faq-color-bg-filled;
+        color: $faq-color-text-filled;
 
-				&:hover {
-					background-color: $faq-color-bg-hover;
-				}
-			}
-		}
+        &:hover { background-color: $faq-color-bg-hover; }
+      }
+    }
 
-		a {
-			text-decoration: none;
-			color: inherit;
-			display: block;
-			width: 100%;
-			height: 100%;
-		}
-	}
+    a {
+      text-decoration: none;
+      color: inherit;
+      display: block;
+      width: 100%;
+      height: 100%;
+    }
+  }
 
-	.faq-item {
-		--faq-accent: var(--color-primary-ci-hell, $default-fau);
-		--faq-contrast: var(--color-primary-ci-hell-kontrast, #fff);
-		--faq-surface: green;
-  		--faq-surface-hover: orange;
-	}
+  /* Accordion */
+  details.faq-item {
+    border: 1px solid var(--faq-border);
+    margin-bottom: 5px;
 
-	.faq-item.is-fau {
-		--faq-accent: var(--color-zentral-ci-hell, $default-fau);
-		--faq-contrast: var(--color-zentral-ci-hell-kontrast, #fff);
-	}
+    > summary {
+      display: block;
+      position: relative;
+      list-style: none;
+      margin: 0;
+      padding: 8px 35px 8px 10px;
+      font-size: 1rem;
+      text-align: left;
+      cursor: pointer;
 
-	.faq-item.is-phil {
-		--faq-accent: var(--color-phil-ci-hell, $default-phil);
-		--faq-contrast: var(--color-phil-ci-hell-kontrast, #000);
-	}
+      background: var(--faq-surface);
+      color: var(--faq-surface-text);
 
-	.faq-item.is-rw {
-		--faq-accent: var(--color-rw-ci-hell, $default-rw);
-		--faq-contrast: var(--color-rw-ci-hell-kontrast, #fff);
-	}
+      border: 0;
+      border-left: 10px solid var(--faq-accent);
+      transition: background-color .15s ease, color .15s ease, border-color .15s ease;
 
-	.faq-item.is-med {
-		--faq-accent: var(--color-med-ci-hell, $default-med);
-		--faq-contrast: var(--color-med-ci-hell-kontrast, #000);
-	}
+      &::marker { content: ""; }
 
-	.faq-item.is-nat {
-		--faq-accent: var(--color-nat-ci-hell, $default-nat);
-		--faq-contrast: var(--color-nat-ci-hell-kontrast, #000);
-	}
+      /* Caret (down) via CSS mask */
+      &::before {
+        content: '';
+        width: 1em;
+        height: 1em;
+        position: absolute;
+        top: 12px;
+        right: 10px;
+        mask: url("../../assets/img/caret-down.svg") no-repeat center / contain;
+        -webkit-mask: url("../../assets/img/caret-down.svg") no-repeat center / contain;
+        background-color: var(--faq-surface-text);
+      }
 
-	.faq-item.is-tf {
-		--faq-accent: var(--color-tf-ci-hell, $default-tf);
-		--faq-contrast: var(--color-tf-ci-hell-kontrast, #000);
-	}
+      /* Closed + hover/focus (maps to .accordion-toggle:hover/.active) */
+      &:hover,
+      &:focus {
+        text-decoration: none;
+        background-color: var(--faq-accent-dark);
+        color: var(--faq-contrast-dark);
+        cursor: pointer;
+        outline: none;
+        border-left-color: var(--faq-accent-dark);
 
+        &::before {
+          mask: url("../../assets/img/caret-down.svg") no-repeat center / contain;
+          -webkit-mask: url("../../assets/img/caret-down.svg") no-repeat center / contain;
+          background-color: var(--faq-contrast-dark);
+        }
+      }
 
-	details.faq-item {
-		border: 1px solid var(--color-content-borders, #dfe6ec);
-		margin-bottom: 1.5rem;
+      /* Optional icon spacing for inline SVGs inside the summary text */
+      svg.rrze-elements-icon { margin-right: 3px; }
+    }
 
-		>summary {
-			display: block;
-			position: relative;
-			list-style: none;
-			margin: 0;
-			padding: 8px 35px 8px 10px;
-			font-size: 1rem;
-			text-align: left;
-			cursor: pointer;
+    /* Open (maps to .accordion-toggle.active) */
+    &[open] > summary {
+      background-color: var(--faq-accent);
+      color: var(--faq-contrast);
 
-			color: #000;
-			border: 0;
-			border-left: 10px solid var(--faq-accent);
-			transition: background-color .15s ease, color .15s ease, border-color .15s ease;
+      &::before {
+        mask: url("../../assets/img/caret-up.svg") no-repeat center / contain;
+        -webkit-mask: url("../../assets/img/caret-up.svg") no-repeat center / contain;
+        background-color: var(--faq-contrast-dark);
+      }
+    }
 
-			&::marker {
-				content: "";
-			}
+    /* Open + hover/focus (maps to .accordion-toggle.active:hover/.active:focus) */
+    &[open] > summary:hover,
+    &[open] > summary:focus {
+      border-left-color: var(--faq-accent);
+      background-color: var(--faq-accent);
+      color: var(--faq-contrast);
 
-			&::after {
-				content: "▾";
-				position: absolute;
-				top: 12px;
-				right: 10px;
-				font-size: 1em;
-				line-height: 1;
-			}
+      &::before {
+        mask: url("../../assets/img/caret-up.svg") no-repeat center / contain;
+        -webkit-mask: url("../../assets/img/caret-up.svg") no-repeat center / contain;
+        background-color: var(--faq-contrast-dark);
+      }
+    }
+  }
 
-			&:hover,
-			&:focus {
-				background-color: var(--faq-accent);
-				color: #fff;
-				outline: none;
-			}
-		}
+  /* Optional: color handling when inside .alert.font-light containers */
+  .alert.font-light {
+    details.faq-item > summary {
+      color: var(--color-Text, #444);
 
-		&[open]>summary {
-			background-color: var(--faq-accent);
-			color: #fff;
+      * { color: var(--color-Text, #444); }
 
-			&::after {
-				content: "▴";
-			}
-		}
-	}
+      &:hover,
+      &:focus {
+        color: var(--faq-contrast);
+      }
+    }
+  }
 
-	[itemprop="acceptedAnswer"] {
-		color: #000;
-		background-color: var(--faq-surface);
-		padding: 0;
-	}
+  /* Sticky header anchor offset */
+  [id] { scroll-margin-top: 6rem; }
 
-	[itemprop="acceptedAnswer"] * {
-		color: #000;
-	}
+  /* “Light style” variant support (maps to .accordion.style_light) */
+  &.style_light {
+    details.faq-item {
+      border-top: 1px solid var(--color-content-borders, #dfe6ec);
 
-	[id] { scroll-margin-top: 6rem; }
+      &:last-child { border-bottom: 1px solid var(--color-content-borders, #dfe6ec); }
 
+      > summary {
+        border-left: none;
+        background: #fff;
+        color: var(--color-Text, #222);
+        padding: 12px 40px 12px 10px;
+        font-weight: bold;
+
+        &::before {
+          content: '';
+          width: 2em;
+          height: 2em;
+          position: absolute;
+          top: 9px;
+          right: 5px;
+          mask: url("../../assets/img/angle-down.svg") no-repeat center / contain;
+          -webkit-mask: url("../../assets/img/angle-down.svg") no-repeat center / contain;
+          background-color: var(--color-primary-ci-hell, #CED9E7);
+        }
+
+        &:hover,
+        &:focus {
+          background-color: var(--color-ContentRegions, #f5f7f9);
+          color: var(--color-Text, #222);
+
+          &::before {
+            mask: url("../../assets/img/angle-down.svg") no-repeat center / contain;
+            -webkit-mask: url("../../assets/img/angle-down.svg") no-repeat center / contain;
+            background-color: var(--color-primary-ci-hell, #CED9E7);
+          }
+        }
+      }
+
+      &[open] > summary {
+        background-color: var(--color-ContentRegions, #f5f7f9);
+        color: var(--color-Text, #222);
+
+        &::before {
+          mask: url("../../assets/img/angle-up.svg") no-repeat center / contain;
+          -webkit-mask: url("../../assets/img/angle-up.svg") no-repeat center / contain;
+          background-color: var(--color-primary-ci-hell, #CED9E7);
+        }
+      }
+
+      &[open] > summary:hover,
+      &[open] > summary:focus {
+        background-color: var(--color-StandardHellgrau, #e9edf2);
+        color: var(--color-Text, #222);
+      }
+    }
+  }
+}
+
+/* BK 2025-08-31 : trying to make it aninmate as smooth as jQuery's toggle() per default */
+/* Put summary on row 1 and “everything after summary” on row 2 */
+.rrze-faq details.faq-item {
+  display: grid;
+  grid-template-rows: auto 0fr;           /* row 1: summary, row 2: content */
+  transition: grid-template-rows 300ms ease;
+}
+
+.rrze-faq details.faq-item > summary { grid-row: 1; }
+
+.rrze-faq details.faq-item > *:not(summary) {
+  grid-row: 2;
+  overflow: hidden;                        /* hide when collapsed */
+}
+
+/* Let children shrink inside the hidden row */
+.rrze-faq details.faq-item > *:not(summary) > * { min-height: 0; }
+
+.rrze-faq details.faq-item[open] { grid-template-rows: auto 1fr; }
+
+/* Optional polish */
+.rrze-faq details.faq-item > *:not(summary) {
+  transition: opacity 300ms ease, transform 300ms ease;
+  opacity: 0;
+  transform: translateY(-4px);
+}
+.rrze-faq details.faq-item[open] > *:not(summary) {
+  opacity: 1;
+  transform: translateY(0);
 }
