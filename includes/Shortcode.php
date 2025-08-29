@@ -470,6 +470,7 @@ class Shortcode
         $postID = get_the_ID();
         $headerID = (new Tools())->getHeaderID($postID);
 
+        wp_enqueue_script('rrze-faq-accordion');
         wp_enqueue_style('rrze-faq-css');
 
         $content = Tools::renderFAQWrapper($postID, $content, $headerID, $masonry, $color, $additional_class, $this->bSchema);

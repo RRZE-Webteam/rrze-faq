@@ -122,16 +122,14 @@ class Tools
             $classes .= ' ' . trim($additional_class);
         }
 
-        $label = $postID ? get_the_title($postID) : '';
-        if (!$label) {
-            $label = __('FAQ', 'rrze-faq');
-        }
-
-        $heading = '<h2 id="' . esc_attr($headerID) . '" class="screen-reader-text">' . esc_html($label) . '</h2>';
-
-        return '<div ' . ($bSchema ? 'itemscope itemtype="https://schema.org/FAQPage" ' : '') .
-            'class="' . esc_attr($classes) . '" role="region" aria-labelledby="' . esc_attr($headerID) . '">' .
-            $heading . $content . '</div>';
+        return '<div ' . ($bSchema ? 'itemscope itemtype="https://schema.org/FAQPage" ' : '')
+            . 'class="' . esc_attr($classes) . '" role="region" aria-labelledby="' . esc_attr($headerID) . '"'
+            . ' data-accordion="single"'
+            . ' data-scroll-offset="96"'
+            . '>'
+            . '<h2 id="' . esc_attr($headerID) . '" class="screen-reader-text">' . esc_html(get_the_title($postID) ?: __('FAQ', 'rrze-faq')) . '</h2>'
+            . $content
+            . '</div>';
     }
 
 

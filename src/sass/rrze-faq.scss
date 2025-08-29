@@ -244,9 +244,6 @@ details.faq-item summary {
     }
   }
 
-  /* Sticky header anchor offset */
-  [id] { scroll-margin-top: 6rem; }
-
   /* “Light style” variant support (maps to .accordion.style_light) */
   &.style_light {
     details.faq-item {
@@ -306,33 +303,17 @@ details.faq-item summary {
   }
 }
 
-/* BK 2025-08-31 : trying to make it aninmate as smooth as jQuery's toggle() per default */
-/* Put summary on row 1 and “everything after summary” on row 2 */
-.rrze-faq details.faq-item {
-  display: grid;
-  grid-template-rows: auto 0fr;           /* row 1: summary, row 2: content */
-  transition: grid-template-rows 300ms ease;
+
+// BK 2025-08-31 : somehow the theme FAU-Einrichtungen seams to use anchor offset hacks or related to sticky headers -> this is my workaround
+/* Disable generic :target offset hacks inside the FAQ block */
+.rrze-faq [id]:target::before,
+.rrze-faq details.faq-item:target::before {
+  content: none !important;
+  display: none !important;
 }
 
-.rrze-faq details.faq-item > summary { grid-row: 1; }
-
-.rrze-faq details.faq-item > *:not(summary) {
-  grid-row: 2;
-  overflow: hidden;                        /* hide when collapsed */
-}
-
-/* Let children shrink inside the hidden row */
-.rrze-faq details.faq-item > *:not(summary) > * { min-height: 0; }
-
-.rrze-faq details.faq-item[open] { grid-template-rows: auto 1fr; }
-
-/* Optional polish */
-.rrze-faq details.faq-item > *:not(summary) {
-  transition: opacity 300ms ease, transform 300ms ease;
-  opacity: 0;
-  transform: translateY(-4px);
-}
-.rrze-faq details.faq-item[open] > *:not(summary) {
-  opacity: 1;
-  transform: translateY(0);
+/* If some CSS adds padding/margins to :target, neutralize it here */
+.rrze-faq [id]:target {
+  padding-top: 0 !important;
+  margin-top: 0 !important;
 }
