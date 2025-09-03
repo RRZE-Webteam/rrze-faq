@@ -28,9 +28,9 @@ window.addEventListener('load', setHeaderVar);
       // Utility: robust ID selector
       function byId(id) {
         try {
-          return $('#'+CSS.escape(id));
+          return $('#' + CSS.escape(id));
         } catch (e) {
-          return $('#'+id.replace(/([ !"#$%&'()*+,.\/:;<=>?@\[\\\]^`{|}~])/g, '\\$1'));
+          return $('#' + id.replace(/([ !"#$%&'()*+,.\/:;<=>?@\[\\\]^`{|}~])/g, '\\$1'));
         }
       }
 
@@ -58,7 +58,7 @@ window.addEventListener('load', setHeaderVar);
         closeSiblings($target);
 
         var $sum = $target.children('summary').first();
-        if ($sum.length) { try { $sum.trigger('focus'); } catch(e) {} }
+        if ($sum.length) { try { $sum.trigger('focus'); } catch (e) { } }
 
         if (doScroll) {
           var top = $target.offset().top - scrollOffset;
@@ -79,14 +79,27 @@ window.addEventListener('load', setHeaderVar);
 
         // Native 'toggle' event (supported in modern browsers)
         $d.on('toggle', function () {
-          if (this.open) closeSiblings($d);
+          if (this.open) {
+            closeSiblings($d);
+
+            // refresh Hash in URL
+            if ($d.attr('id')) {
+              history.replaceState(null, null, '#' + $d.attr('id'));
+            }
+          }
         });
 
         // Fallback: after summary click, check open state
         $d.children('summary').on('click', function () {
           setTimeout(function () {
-            if ($d.prop('open')) closeSiblings($d);
-          }, 0);
+            if ($d.prop('open'))
+              closeSiblings($d);
+
+              // refresh Hash in URL
+              if ($d.attr('id')) {
+                history.replaceState(null, null, '#' + $d.attr('id'));
+              }
+            }, 0);
         });
       });
 
