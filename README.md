@@ -140,16 +140,16 @@ You can configure:
   https://www.anleitungen.rrze.fau.de/wp-json/wp/v2/faq
 
 - Filtered by tag:  
-  https://www.anleitungen.rrze.fau.de/wp-json/wp/v2/faq?filter[faq_tag]=Matrix
+  https://www.anleitungen.rrze.fau.de/wp-json/wp/v2/faq?filter[rrze_faq_tag]=Matrix
 
 - Multiple tags:  
-  https://www.anleitungen.rrze.fau.de/wp-json/wp/v2/faq?filter[faq_tag]=Matrix%2BAccounts
+  https://www.anleitungen.rrze.fau.de/wp-json/wp/v2/faq?filter[rrze_faq_tag]=Matrix%2BAccounts
 
 - Category:  
-  https://www.anleitungen.rrze.fau.de/wp-json/wp/v2/faq?filter[faq_category]=Dienste
+  https://www.anleitungen.rrze.fau.de/wp-json/wp/v2/faq?filter[rrze_faq_category]=Dienste
 
 - Category + tag:  
-  https://www.anleitungen.rrze.fau.de/wp-json/wp/v2/faq?filter[faq_category]=Dienste&filter[faq_tag]=Sprache
+  https://www.anleitungen.rrze.fau.de/wp-json/wp/v2/faq?filter[rrze_faq_category]=Dienste&filter[rrze_faq_tag]=Sprache
 
 - Pagination:  
   https://developer.wordpress.org/rest-api/using-the-rest-api/pagination/
