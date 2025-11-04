@@ -203,25 +203,25 @@ class RESTAPI
      */
     public function registerTaxRestFields()
     {
-        // register_rest_field(
-        //     'rrze_faq',
-        //     'rrze_faq_category',
-        //     array(
-        //         'get_callback' => [$this, 'getCategories'],
-        //         'update_callback' => null,
-        //         'schema' => null,
-        //     )
-        // );
+        register_rest_field(
+            'rrze_faq',
+            'rrze_faq_category',
+            array(
+                'get_callback' => [$this, 'getCategories'],
+                'update_callback' => null,
+                'schema' => null,
+            )
+        );
 
-        // register_rest_field(
-        //     'rrze_faq',
-        //     'rrze_faq_tag',
-        //     array(
-        //         'get_callback' => [$this, 'getTags'],
-        //         'update_callback' => null,
-        //         'schema' => null,
-        //     )
-        // );
+        register_rest_field(
+            'rrze_faq',
+            'rrze_faq_tag',
+            array(
+                'get_callback' => [$this, 'getTags'],
+                'update_callback' => null,
+                'schema' => null,
+            )
+        );
 
         $fields = array('rrze_faq_category', 'rrze_faq_tag');
         foreach ($fields as $field) {
