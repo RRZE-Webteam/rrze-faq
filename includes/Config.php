@@ -271,7 +271,7 @@ class Config
 						'val' => __('Tabs', 'rrze-faq')
 					]
 				],
-				'default' => 'a-z',
+				'default' => '',
 				'field_type' => 'select',
 				'label' => __('Glossary style', 'rrze-faq'),
 				'type' => 'string'

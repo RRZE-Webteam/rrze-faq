@@ -8,14 +8,6 @@ $allowed = [
 $atts = [];
 $attrs = (array) ($attributes ?? []);
 
-if ( ! empty($attrs['glossary']) ) {
-    if ( empty($attrs['glossarystyle']) ) {
-        $attrs['glossarystyle'] = 'a-z';
-    }
-} else {
-    unset($attrs['glossarystyle']);
-}
-
 foreach ($attrs as $key => $value) {
     if ( ! in_array($key, $allowed, true) ) continue;
     if ($value === '' || $value === null) continue;           
