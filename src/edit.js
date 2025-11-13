@@ -387,9 +387,9 @@ export default function Edit({ attributes, setAttributes }) {
 				>
 					<SelectControl
 						label={__('Glossary style', 'rrze-faq')}
-						value={glossarystyle || 'a-z'}
+						value={glossarystyle}
 						options={glossarystyleoptions}
-						onChange={(value) => setAttributes({ glossarystyle: value || 'a-z' })}
+						onChange={(value) => setAttributes({ glossarystyle: value})}
 					/>					
 					{!glossary && (
 						<>
