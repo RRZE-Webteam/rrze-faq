@@ -95,11 +95,11 @@ class Tools
      * 
      * @param string $question  The FAQ question text.
      * @param string $answer    The FAQ answer HTML content.
-     * @param int    $hstart    The heading level (1–6) for the question.
+     * @param string $hstart    The heading level (1–6) for the question.
      * @param bool   $useSchema Whether to output Schema.org Question/Answer markup.
      * @return string           The complete HTML string for the FAQ item.
      */
-    public static function renderFAQItem(string $question, string $answer, int $hstart, bool $useSchema): string
+    public static function renderFAQItem(string $question, string $answer, string $hstart, bool $useSchema): string
     {
         if ($useSchema) {
             return '<div itemscope itemprop="mainEntity" itemtype="https://schema.org/Question">'
