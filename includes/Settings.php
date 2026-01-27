@@ -357,6 +357,24 @@ class Settings
             'step' => true,
         ]);
 
+        // Allow minimal SVG markup for rrze-elements icons
+        $allowed_tags['svg'] = array_merge($allowed_tags['svg'] ?? [], [
+            'class' => true,
+            'aria-hidden' => true,
+            'role' => true,
+            'focusable' => true,
+            'xmlns' => true,
+            'viewbox' => true,
+            'width' => true,
+            'height' => true,
+        ]);
+
+        $allowed_tags['use'] = array_merge($allowed_tags['use'] ?? [], [
+            'href' => true,
+            'xlink:href' => true,
+        ]);
+
+
         return $allowed_tags;
     }
 
