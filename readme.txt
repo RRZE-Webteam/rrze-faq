@@ -16,6 +16,7 @@ The plugin enables the creation of FAQs and synchronization with other FAU websi
 
 Features:
 * Output of FAQs by category, tag, or domain
+* Search-as-you-type
 * Grouping as accordion or list
 * Glossary as A-Z index, tabs, or tag cloud
 * REST API support
