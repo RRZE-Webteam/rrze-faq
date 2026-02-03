@@ -76,6 +76,7 @@ export default function Edit({ attributes, setAttributes }) {
 		hide_accordion,
 		glossarystyle,
 		glossary,
+		search
 	} = attributes;
 	const blockProps = useBlockProps();
 	const [categorystate, setSelectedCategories] = useState(['']);
@@ -389,8 +390,18 @@ export default function Edit({ attributes, setAttributes }) {
 						label={__('Glossary style', 'rrze-faq')}
 						value={glossarystyle}
 						options={glossarystyleoptions}
-						onChange={(value) => setAttributes({ glossarystyle: value})}
-					/>					
+						onChange={(value) => setAttributes({ glossarystyle: value })}
+					/>
+					<ToggleControl
+						checked={!!search}
+						label={__('Show search field', 'rrze-faq')}
+						help={__('Shows a search input above the FAQ list to filter questions.', 'rrze-faq')}
+						onChange={() => 
+							setAttributes({ 
+								search: !search 
+							})
+						}
+					/>
 					{!glossary && (
 						<>
 							<ToggleControl

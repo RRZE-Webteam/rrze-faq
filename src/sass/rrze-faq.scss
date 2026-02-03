@@ -55,6 +55,10 @@ $borderColor:  #dfe6ec;
 
 .faq-term-content { margin-left: 1em; }
 
+/* search field */
+.rrze-faq-search { margin: 0 0 1rem; }
+.rrze-faq-search__input { width: 100%; max-width: 32rem; }
+
 /* Masonry columns for tiles */
 .faq-masonry {
   column-count: 1;

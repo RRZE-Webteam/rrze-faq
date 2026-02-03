@@ -112,8 +112,7 @@ class Tools
     }
 
 
-    public static function renderFAQWrapper(?int $postID = null, string &$content, string &$headerID, bool &$masonry, string &$color, string &$additional_class, bool &$bSchema): string
-    {
+    public static function renderFAQWrapper(?int $postID = null, string &$content, string &$headerID, bool &$masonry, string &$color, string &$additional_class, bool &$bSchema, bool $search = false): string {
         $classes = 'rrze-faq';
         if ($masonry) {
             $classes .= ' faq-masonry';
@@ -122,12 +121,33 @@ class Tools
             $classes .= ' ' . trim($additional_class);
         }
 
+        $searchMarkup = '';
+        if ($search) {
+            $searchId = $headerID . '-search';
+            $searchMarkup =
+                '<div class="rrze-faq-search">'
+                . '<label class="screen-reader-text" for="' . esc_attr($searchId) . '">'
+                . esc_html__('Search FAQ', 'rrze-faq')
+                . '</label>'
+                . '<input type="search"'
+                . ' id="' . esc_attr($searchId) . '"'
+                . ' class="rrze-faq-search__input"'
+                . ' placeholder="' . esc_attr__('Search…', 'rrze-faq') . '"'
+                . ' data-minlen="3"'
+                . ' autocomplete="off"'
+                . ' />'
+                . '</div>';
+        }
+
         return '<div ' . ($bSchema ? 'itemscope itemtype="https://schema.org/FAQPage" ' : '')
             . 'class="' . esc_attr($classes) . '" role="region" aria-labelledby="' . esc_attr($headerID) . '"'
             . ' data-accordion="single"'
             . ' data-scroll-offset="96"'
             . '>'
-            . '<h2 id="' . esc_attr($headerID) . '" class="screen-reader-text">' . esc_html(get_the_title($postID) ?: __('FAQ', 'rrze-faq')) . '</h2>'
+            . '<h2 id="' . esc_attr($headerID) . '" class="screen-reader-text">'
+            . esc_html(get_the_title($postID) ?: __('FAQ', 'rrze-faq'))
+            . '</h2>'
+            . $searchMarkup
             . $content
             . '</div>';
     }

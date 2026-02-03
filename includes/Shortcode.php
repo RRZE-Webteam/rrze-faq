@@ -96,6 +96,9 @@ class Shortcode
                     case 'load-open':
                         $atts['load_open'] = ' load="open"';
                         break;
+                    case 'search':
+                        $atts['search'] = true;
+                        break;
                 }
             }
         }
@@ -169,7 +172,7 @@ class Shortcode
                 $answer = str_replace(']]>', ']]&gt;', apply_filters('the_content', get_post_field('post_content', $id)));
                 $useSchema = (get_post_meta($id, 'source', true) === 'website');
 
-                if ($useSchema){
+                if ($useSchema) {
                     $this->bSchema = true;
                 }
 
@@ -354,7 +357,7 @@ class Shortcode
                         $source = get_post_meta($ID, "source", true);
                         $useSchema = ($source === 'website');
 
-                        if ($useSchema){
+                        if ($useSchema) {
                             $this->bSchema = true;
                         }
 
@@ -379,7 +382,7 @@ class Shortcode
                     $source = get_post_meta($post->ID, "source", true);
                     $useSchema = ($source === 'website');
 
-                    if ($useSchema){
+                    if ($useSchema) {
                         $this->bSchema = true;
                     }
 
@@ -447,6 +450,7 @@ class Shortcode
         extract($atts);
 
         $content = '';
+        $search = !empty($atts['search']);
         $glossarystyle = (isset($glossarystyle) ? $glossarystyle : '');
         $hide_title = (isset($hide_title) ? $hide_title : false);
         $color = (isset($color) ? $color : '');
@@ -473,7 +477,11 @@ class Shortcode
         wp_enqueue_script('rrze-faq-accordion');
         wp_enqueue_style('rrze-faq-css');
 
-        $content = Tools::renderFAQWrapper($postID, $content, $headerID, $masonry, $color, $additional_class, $this->bSchema);
+        if ($search) {
+            wp_enqueue_script('rrze-faq-search');
+        }
+
+        $content = Tools::renderFAQWrapper($postID, $content, $headerID, $masonry, $color, $additional_class, $this->bSchema, $search);
 
         return $content;
 

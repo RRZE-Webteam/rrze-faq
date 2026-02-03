@@ -387,6 +387,13 @@ class Config
 				'default' => FALSE,
 				'checked' => FALSE
 			],
+			'search' => [
+				'field_type' => 'toggle',
+				'label' => __('Show search field', 'rrze-faq'),
+				'type' => 'boolean',
+				'default' => FALSE,
+				'checked' => FALSE
+			],
 			'additional_class' => [
 				'default' => '',
 				'field_type' => 'text',
