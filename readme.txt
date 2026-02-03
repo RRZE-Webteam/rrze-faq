@@ -4,7 +4,7 @@ Tags: faq, shortcode, block, widget, categories
 Requires at least: 6.1
 Tested up to: 6.8
 Requires PHP: 8.2
-Stable tag: 5.4.46
+Stable tag: 5.5.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -16,6 +16,7 @@ The plugin enables the creation of FAQs and synchronization with other FAU websi
 
 Features:
 * Output of FAQs by category, tag, or domain
+* Search-as-you-type
 * Grouping as accordion or list
 * Glossary as A-Z index, tabs, or tag cloud
 * REST API support

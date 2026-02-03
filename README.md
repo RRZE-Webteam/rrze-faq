@@ -87,6 +87,11 @@ The output order follows the order of the IDs listed.
 - `"glossary"`: Disables the glossary display  
 Default: accordion view is enabled
 
+**search**:  
+- `"true"`: Shows a search input above the FAQ list to filter questions.  
+- `"false"`: Doesn't show the search input  
+By default, the search input is not shown.
+
 **masonry**:  
 - `"true"`: Displays FAQs in a grid (masonry) layout  
 - `"false"`: Displays FAQs in the default stacked layout  

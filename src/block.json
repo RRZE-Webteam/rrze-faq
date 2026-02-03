@@ -33,6 +33,10 @@
 		"masonry": {
 			"type": "boolean"
 		},
+		"search": {
+			"type": "boolean",
+			"default": false
+		},
 		"color": {
 			"type": "string"
 		},
@@ -60,6 +64,12 @@
 		"html": false
 	},
 	"textdomain": "rrze-faq",
+	"viewScript": [
+  "file:./rrze-faq-accordion.js",
+  "file:./rrze-faq-search.js"
+],
+"style": "file:./css/rrze-faq.css",
+
 	"editorScript": "file:./index.js",
 	"render": "file:./render.php"
 }

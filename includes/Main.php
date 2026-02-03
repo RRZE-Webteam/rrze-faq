@@ -95,6 +95,19 @@ class Main
             filemtime(plugin_dir_path($this->pluginFile) . 'build/rrze-faq-accordion.js'),
             true
         );
+
+        wp_register_script(
+            'rrze-faq-search',
+            plugins_url('build/rrze-faq-search.js', $this->pluginFile),
+            [],
+            filemtime(plugin_dir_path($this->pluginFile) . 'build/rrze-faq-search.js'),
+            true
+        );
+
+        if (is_admin()) {
+            wp_enqueue_script('rrze-faq-accordion');
+            wp_enqueue_script('rrze-faq-search');
+        }
     }
 
 
